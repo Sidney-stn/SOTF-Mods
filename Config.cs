@@ -2,13 +2,13 @@ using RedLoader;
 
 namespace SimpleNetworkEvents;
 
-public static class Config
+internal static class Config
 {
-    public static ConfigCategory Category { get; private set; }
+    internal static ConfigCategory Category { get; private set; }
 
     //public static ConfigEntry<bool> SomeEntry { get; private set; }
 
-    public static void Init()
+    internal static void Init()
     {
         Category = ConfigSystem.CreateFileCategory("SimpleNetworkEvents", "SimpleNetworkEvents", "SimpleNetworkEvents.cfg");
 

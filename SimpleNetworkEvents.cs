@@ -1,4 +1,6 @@
-﻿using SonsSdk;
+﻿using Sons.Gui;
+using SonsSdk;
+using UnityEngine;
 
 namespace SimpleNetworkEvents;
 
@@ -27,11 +29,32 @@ public class SimpleNetworkEvents : SonsMod
     {
         // Do your mod initialization which involves game or sdk references here
         // This is for stuff like UI creation, event registration etc.
-        SimpleNetworkEventsUi.Create();
     }
 
     protected override void OnGameStart()
     {
         // This is called once the player spawns in the world and gains control.
+
+        // Adding Quit Event
+        Misc.Msg("[OnGameStart] Added Custom Quit Event");
+        PauseMenu.add_OnQuitEvent((Il2CppSystem.Action)Quitting);
+
+        // Adding CustomGlobalEventListener to Component of GameObject
+        customGlobalEventListener = new GameObject("CustomGlobalEventListenerGameObject");
+        customGlobalEventListener.AddComponent<CustomGlobalEventListener>();
     }
+
+    private void Quitting()
+    {
+        // Removing CustomGlobalEventListener from GameObject
+        CustomGlobalEventListener component = customGlobalEventListener.GetComponent<CustomGlobalEventListener>();
+        component.RemoveGlobalEventListener();
+        component.CleanUpAndDestoy();
+        UnityEngine.Object.Destroy(customGlobalEventListener);
+
+        // Removig Quit Event
+        PauseMenu.remove_OnQuitEvent((Il2CppSystem.Action)Quitting);
+    }
+
+    internal static GameObject customGlobalEventListener;
 }
