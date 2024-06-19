@@ -123,4 +123,8 @@
         <None Remove="ReleaseBuild\**" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Discord.Net" Version="3.15.2" />
+    </ItemGroup>
+
 </Project>

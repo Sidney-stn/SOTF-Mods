@@ -10,6 +10,7 @@ public static class Config
     public static ConfigEntry<bool> EnableLogging { get; private set; }
     public static ConfigEntry<bool> CheckNamePrinting { get; private set; }
     public static ConfigEntry<bool> PrintSentChatEvent { get; private set; }
+    public static ConfigEntry<string> DiscordBotToken { get; private set; }
 
     public static void Init()
     {
@@ -35,6 +36,11 @@ public static class Config
         PrintSentChatEvent = Category.CreateEntry(
            "enable_print_chat_event_broadcast",
            true,
+           "Enable ChatEvent ToString Printing To Console",
+           "Enable ChatEvent ToString Printing To Console");
+        DiscordBotToken = Category.CreateEntry(
+           "discord_bot_token_broadcast",
+           "TOKEN",
            "Enable ChatEvent ToString Printing To Console",
            "Enable ChatEvent ToString Printing To Console");
     }

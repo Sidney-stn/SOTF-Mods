@@ -34,7 +34,7 @@ namespace BroadcastMessage
 
         private static void SetName(string name)
         {
-            if (name == null) { Misc.ErrorMsg("Unable To Set Server Name, since input string is null"); return; }
+            if (name == null || name == "") { Misc.ErrorMsg("Unable To Set Server Name, since input string is null or empty"); return; }
             IPlayerState state = LocalPlayer.Transform.GetComponent<BoltEntity>().GetState<IPlayerState>();
             if ( state == null ) { Misc.ErrorMsg("IPlayerState state is null! Unable to get the name"); return; }
             state.name = name;
