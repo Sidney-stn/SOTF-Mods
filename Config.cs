@@ -33,14 +33,16 @@ public static class Config
            true,
            "Enable Logging To Console",
            "Enable Logging Of Logging Statements To The Console");
+
         PrintSentChatEvent = Category.CreateEntry(
            "enable_print_chat_event_broadcast",
            true,
            "Enable ChatEvent ToString Printing To Console",
            "Enable ChatEvent ToString Printing To Console");
+
         DiscordBotToken = Category.CreateEntry(
            "discord_bot_token_broadcast",
-           "TOKEN",
+           "MTI1MzAyOTI4ODEyNzYzMTQzMg.G4HH1G.4N35NMqweqaW_E6K_RVVagFGiKNr_KjQAyHCj8",
            "Enable ChatEvent ToString Printing To Console",
            "Enable ChatEvent ToString Printing To Console");
     }

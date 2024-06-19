@@ -9,156 +9,94 @@ using UnityEngine;
 
 namespace BroadcastMessage
 {
-    internal class DiscordBot
+    public class DiscordBotManager
     {
+        private DiscordSocketClient _client;
+        private string _botToken = Config.DiscordBotToken.Value; // Directly using the configuration value
 
-
-        [RegisterTypeInIl2Cpp]
-        public class DiscordBotManager : MonoBehaviour
+        // Method to initialize and start the bot
+        public async Task StartBotAsync()
         {
-            private DiscordSocketClient _client;
-            private string _botToken = Config.DiscordBotToken.Value; // Replace with your actual bot token
+            Misc.Msg("DiscordBotManager StartBotAsync()");
+            Misc.Msg($"Config DiscordBotToken Value: {_botToken}");
 
-            void Start()
+            _client = new DiscordSocketClient();
+
+            // Log bot messages to the console
+            _client.Log += Log;
+
+            // Handle message received event
+            _client.MessageReceived += MessageReceivedAsync;
+
+            if (string.IsNullOrEmpty(_botToken) || _botToken == "TOKEN")
             {
-                // Initialize and start the bot
-                Misc.Msg("DiscordBotManager Start()");
-                Task.Run(() => StartBotAsync());
+                Misc.Msg("Config DiscordBotToken is invalid, please update it in your configuration.");
+                _client.Log -= Log;
+                _client.MessageReceived -= MessageReceivedAsync;
+                return;
             }
 
-            private async Task StartBotAsync()
+            await _client.LoginAsync(TokenType.Bot, _botToken);
+            await _client.StartAsync();
+
+            Misc.Msg("Bot is connected!");
+        }
+
+        // Method to stop the bot and dispose of resources
+        public async Task StopBotAsync()
+        {
+            if (_client != null)
             {
-                Misc.Msg("DiscordBotManager StartBotAsync()");
-                Misc.Msg($"Config DiscordBotToken Value: {Config.DiscordBotToken.Value}");
-                _client = new DiscordSocketClient();
-
-                // Log bot messages to the Unity console
-                _client.Log += Log;
-
-                // Handle message received event
-                _client.MessageReceived += MessageReceivedAsync;
-                if (Config.DiscordBotToken.Value == null || Config.DiscordBotToken.Value == "" || Config.DiscordBotToken.Value == "TOKEN")
-                {
-                    Misc.Msg("Config DiscordBotToken is invalid, please update it in BroadcastMessage.cfg");
-                    _client.Log -= Log;
-                    _client.MessageReceived -= MessageReceivedAsync;
-                    return;
-                }
-
-                await _client.LoginAsync(TokenType.Bot, _botToken);
-                await _client.StartAsync();
-
-                Misc.Msg("Bot is connected!");
-
-                // Keep the bot running indefinitely
-                await Task.Delay(-1);
-            }
-
-            private Task Log(LogMessage log)
-            {
-                Misc.Msg(log.ToString());
-                return Task.CompletedTask;
-            }
-
-            private async Task MessageReceivedAsync(SocketMessage message)
-            {
-                // Ignore messages from the bot itself
-                if (message.Author.Id == _client.CurrentUser.Id)
-                    return;
-
-                // Log the message to the Unity console
-                Misc.Msg($"Received message from {message.Author.Username}: {message.Content}");
-
-                // Send a response to the same channel
-                if (message.Content.ToLower().Contains("hello bot"))
-                {
-                    await message.Channel.SendMessageAsync("Hello! How can I assist you today?");
-                }
-            }
-
-            public async Task SendMessageToChannel(ulong channelId, string message)
-            {
-                // Get the channel by ID
-                var channel = _client.GetChannel(channelId) as IMessageChannel;
-
-                if (channel != null)
-                {
-                    // Send a message to the channel
-                    await channel.SendMessageAsync(message);
-                    Misc.Msg($"Sent message to channel {channel.Name}: {message}");
-                }
-            }
-
-            void OnApplicationQuit()
-            {
-                // Ensure the bot logs out and disposes of resources when the application quits
-                _client.LogoutAsync();
+                await _client.LogoutAsync();
                 _client.Dispose();
+                Misc.Msg("Bot is disconnected!");
             }
         }
 
+        private Task Log(LogMessage log)
+        {
+            Misc.Msg(log.ToString());
+            return Task.CompletedTask;
+        }
 
-        //    private DiscordSocketClient _client;
-        //    private string _botToken = Config.DiscordBotToken.Value; // Replace with your bot token
+        private async Task MessageReceivedAsync(SocketMessage message)
+        {
+            // Ignore messages from the bot itself
+            if (message.Author.Id == _client.CurrentUser.Id)
+                return;
 
-        //    public async Task StartBotAsync()
-        //    {
-        //        _client = new DiscordSocketClient();
+            // Log the message to the console
+            Misc.Msg($"Received message from {message.Author.Username}: {message.Content}");
 
-        //        // Log bot messages to the console
-        //        _client.Log += Log;
+            // Trigger the OnMessageReceived event
+            OnMessageReceived?.Invoke(message);
 
-        //        // Handle message received event
-        //        _client.MessageReceived += MessageReceivedAsync;
-        //        if (Config.DiscordBotToken.Value == null || Config.DiscordBotToken.Value == "" || Config.DiscordBotToken.Value == "TOKEN")
-        //        {
-        //            Misc.Msg("Config DiscordBotToken is invalid, please update it in BroadcastMessage.cfg");
-        //            _client.Log -= Log;
-        //            _client.MessageReceived -= MessageReceivedAsync;
-        //            return;
-        //        }
-        //        await _client.LoginAsync(TokenType.Bot, _botToken);
-        //        await _client.StartAsync();
+            // Send a response to the same channel
+            if (message.Content.ToLower().Contains("hello bot"))
+            {
+                await message.Channel.SendMessageAsync("Hello! How can I assist you today?");
+            }
+        }
 
-        //        Misc.Msg("Bot is connected!");
+        // Method to send a message to a specified channel
+        public async Task SendMessageToChannel(ulong channelId, string message)
+        {
+            // Get the channel by ID
+            var channel = _client.GetChannel(channelId) as IMessageChannel;
 
-        //        // Block this task until the program is closed.
-        //        await Task.Delay(-1);
-        //    }
+            if (channel != null)
+            {
+                // Send a message to the channel
+                await channel.SendMessageAsync(message);
+                Misc.Msg($"Sent message to channel {channel.Name}: {message}");
+            }
+            else
+            {
+                Misc.Msg("Channel not found or invalid.");
+            }
+        }
 
-        //    private Task Log(LogMessage log)
-        //    {
-        //        Misc.Msg(log.ToString());
-        //        return Task.CompletedTask;
-        //    }
-
-        //    private async Task MessageReceivedAsync(SocketMessage message)
-        //    {
-        //        // Ignore messages from the bot itself
-        //        if (message.Author.Id == _client.CurrentUser.Id)
-        //            return;
-
-        //        // Log the message
-        //        Misc.Msg($"Received message from {message.Author.Username}: {message.Content}");
-
-        //        // Send a response to the same channel
-        //        if (message.Content.ToLower().Contains("hello bot"))
-        //        {
-        //            await message.Channel.SendMessageAsync("Hello! How can I assist you today?");
-        //        }
-        //    }
-
-        //    public async Task SendMessageToChannel(ulong channelId, string message)
-        //    {
-        //        // Get the channel by ID
-        //        var channel = _client.GetChannel(channelId) as IMessageChannel;
-
-        //        if (channel != null)
-        //        {
-        //            // Send a message to the channel
-        //            await channel.SendMessageAsync(message);
-        //            Misc.Msg($"Sent message to channel {channel.Name}: {message}");
-        //        }
-        //    }
+        // Event delegate for received messages
+        public event Action<SocketMessage> OnMessageReceived;
     }
 }

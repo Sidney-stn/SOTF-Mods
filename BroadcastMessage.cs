@@ -1,12 +1,5 @@
-﻿using Bolt;
-using Sons.Gui;
-using SonsSdk;
-using SonsSdk.Attributes;
-using UnityEngine;
-using TheForest.Utils;
-using SUI;
-using Sons.World;
-using static BroadcastMessage.DiscordBot;
+﻿using SonsSdk;
+
 
 namespace BroadcastMessage;
 
@@ -46,15 +39,15 @@ public class BroadcastMessage : SonsMod
         // This is called once the player spawns in the world and gains control.
         if (Config.EnableFiveSecondPrinting.Value) { BroadcastInfo.GenerateObjectWithMono(); }
 
-        // Start Discord Bot
-        GameObject discord_server_go = new GameObject();
-        discord_server_go.AddComponent<DiscordBot.DiscordBotManager>();
+        // Create the BotService instance
+        BotService botService = new BotService();
 
-        DiscordBotManager discordBotManager = discord_server_go.GetComponent<DiscordBotManager>();
+        // Start the Discord bot
+        botService.StartBot();
 
-        ulong exampleChannelId = 1116004344370827466; // Replace with your actual channel ID
-        discordBotManager.SendMessageToChannel(exampleChannelId, "Hello from Unity!");
-
+        // Optionally, send a message to a channel after starting
+        ulong channelId = 123456789012345678; // Replace with your actual channel ID
+        botService.SendMessage(channelId, "Hello from the game!");
     }
 
     private void Quitting()
