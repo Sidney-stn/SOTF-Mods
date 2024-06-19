@@ -10,15 +10,15 @@ namespace BroadcastMessage
     internal class BroadcastInfo
     {
 
-        internal static void SendChatMessage(string name = "[Discord] rnd", string text = "Test")
+        internal static void SendChatMessage(string name = "[Discord] Unkown", string text = "Message")
         {
             if (!BoltNetwork.isRunning)
             {
                 Misc.Msg("BoltNetwork Is Not Running!");
                 return;
             }
-
-            FixPlayerName((ulong)CoopSteamServer.SteamId);
+            SetName(name);
+            if (Config.CheckNamePrinting.Value) { CheckName(); }
 
             ChatEvent chatEvent = ChatEvent.Create(GlobalTargets.Everyone, ReliabilityModes.ReliableOrdered);
             chatEvent.Message = text;
@@ -27,25 +27,20 @@ namespace BroadcastMessage
             chatEvent.Send();
         }
 
-        internal static void FixPlayerName(ulong steamID)
+        internal static void CheckName()
         {
-            try
-            {
-                if (GameServerManager.IsDedicatedServer)
-                {
-                    SingletonBehaviour<MultiplayerPlayerRoles>.TryGetInstance(out MultiplayerPlayerRoles multiplayerPlayerRoles);
-                    string text;
-                    GameServerManager.GetRegisteredClientName(new CSteamID(steamID), out text);
-                    if (string.IsNullOrWhiteSpace(text))
-                    {
-                        text = steamID.ToString();
-                    }
-                    Misc.Msg($"Dedicated Server Name: {text}, steamID: {steamID}");
-                    //multiplayerPlayerRoles.UpdatePlayerName(steamID, text);
-                    multiplayerPlayerRoles.UpdatePlayerName(steamID, "Mjau");
-                }
-            }
-            catch (Exception ex) { Misc.Msg(ex.Message); }
+            IPlayerState state = LocalPlayer.Transform.GetComponent<BoltEntity>().GetState<IPlayerState>();
+            if (state == null) { Misc.ErrorMsg("IPlayerState state is null! Unable to get the name"); return; }
+            Misc.Msg($"Server Name: {state.name}");
+        }
+
+        internal static void SetName(string name)
+        {
+            if (name == null) { Misc.ErrorMsg("Unable To Set Server Name, since input string is null"); return; }
+            IPlayerState state = LocalPlayer.Transform.GetComponent<BoltEntity>().GetState<IPlayerState>();
+            Misc.Msg($"Server Name: {state.name}");
+            if ( state == null ) { Misc.ErrorMsg("IPlayerState state is null! Unable to get the name"); return; }
+            state.name = name;
         }
 
         internal static void GenerateObjectWithMono()

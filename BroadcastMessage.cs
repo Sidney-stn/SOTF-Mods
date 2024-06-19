@@ -4,6 +4,7 @@ using SonsSdk;
 using SonsSdk.Attributes;
 using UnityEngine;
 using TheForest.Utils;
+using SUI;
 
 namespace BroadcastMessage;
 
@@ -13,7 +14,7 @@ public class BroadcastMessage : SonsMod
     {
 
         // Uncomment any of these if you need a method to run on a specific update loop.
-        OnUpdateCallback = OnUpdate;
+        //OnUpdateCallback = OnUpdate;
         //OnLateUpdateCallback = MyLateUpdateMethod;
         //OnFixedUpdateCallback = MyFixedUpdateMethod;
         //OnGUICallback = MyGUIMethod;
@@ -41,7 +42,8 @@ public class BroadcastMessage : SonsMod
     protected override void OnGameStart()
     {
         // This is called once the player spawns in the world and gains control.
-        BroadcastInfo.GenerateObjectWithMono();
+        if (Config.EnableFiveSecondPrinting.Value) { BroadcastInfo.GenerateObjectWithMono(); }
+        
     }
 
     private void Quitting()
@@ -51,13 +53,5 @@ public class BroadcastMessage : SonsMod
     protected void OnUpdate()
     {
 
-    }
-
-
-    [DebugCommand("testchat")]
-    private void Testchat(string name)
-    {
-        Misc.Msg($"Sending message: {name}");
-        BroadcastInfo.SendChatMessage(name);
     }
 }

@@ -11,6 +11,12 @@ namespace BroadcastMessage
     {
         internal static void Msg(string msg)
         {
+            if (!Config.EnableLogging.Value) { return; }
+            RLog.Msg(msg);
+        }
+
+        internal static void ErrorMsg(string msg)
+        {
             RLog.Msg(msg);
         }
     }
