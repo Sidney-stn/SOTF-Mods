@@ -14,26 +14,34 @@ namespace BroadcastMessage
         private DiscordSocketClient _client;
         private string _botToken = Config.DiscordBotToken.Value; // Directly using the configuration value
 
-        // Start the bot using Task.Run to handle async operations
+        private Thread botThread;
+        private bool shouldStop = false;
+
+        // Start the bot using a background thread
         public void StartBot()
         {
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await StartBotInternalAsync();
-                }
-                catch (Exception ex)
-                {
-                    Misc.Msg($"Error starting bot: {ex.Message}");
-                }
-            });
+            botThread = new Thread(RunBot);
+            botThread.IsBackground = true;
+            botThread.Start();
         }
 
-        // Internal async method to handle bot startup
-        private async Task StartBotInternalAsync()
+        // The main bot loop running on a separate thread
+        private void RunBot()
         {
-            Misc.Msg("DiscordBotManager StartBotAsync()");
+            try
+            {
+                InitializeBot().GetAwaiter().GetResult(); // Initialize and connect the bot synchronously
+            }
+            catch (Exception ex)
+            {
+                Misc.Msg($"Error starting bot: {ex.Message}");
+            }
+        }
+
+        // Initialize and connect the bot
+        private async Task InitializeBot()
+        {
+            Misc.Msg("DiscordBotManager InitializeBot()");
             Misc.Msg($"Config DiscordBotToken Value: {_botToken}");
 
             _client = new DiscordSocketClient();
@@ -56,54 +64,51 @@ namespace BroadcastMessage
             await _client.StartAsync();
 
             Misc.Msg("Bot is connected!");
+
+            // Keep the bot running
+            while (!shouldStop)
+            {
+                Thread.Sleep(100); // Keep the thread alive
+            }
         }
 
-        // Stop the bot using Task.Run to handle async operations
+        // Stop the bot
         public void StopBot()
         {
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await StopBotInternalAsync();
-                }
-                catch (Exception ex)
-                {
-                    Misc.Msg($"Error stopping bot: {ex.Message}");
-                }
-            });
-        }
+            shouldStop = true;
 
-        // Internal async method to handle bot shutdown
-        private async Task StopBotInternalAsync()
-        {
             if (_client != null)
             {
-                await _client.LogoutAsync();
+                _client.LogoutAsync().GetAwaiter().GetResult();
                 _client.Dispose();
                 _client = null;
                 Misc.Msg("Bot is disconnected!");
             }
+
+            if (botThread != null && botThread.IsAlive)
+            {
+                botThread.Join(); // Wait for the bot thread to finish
+            }
         }
 
-        // Method to send a message to a specified channel
+        // Method to send a message to a specified channel using a separate thread
         public void SendMessageToChannel(ulong channelId, string message)
         {
-            Task.Run(async () =>
+            new Thread(() =>
             {
                 try
                 {
-                    await SendMessageToChannelInternalAsync(channelId, message);
+                    SendMessageToChannelInternal(channelId, message).GetAwaiter().GetResult();
                 }
                 catch (Exception ex)
                 {
                     Misc.Msg($"Error sending message: {ex.Message}");
                 }
-            });
+            }).Start();
         }
 
-        // Internal async method to send a message
-        private async Task SendMessageToChannelInternalAsync(ulong channelId, string message)
+        // Internal method to send a message
+        private async Task SendMessageToChannelInternal(ulong channelId, string message)
         {
             var channel = _client.GetChannel(channelId) as IMessageChannel;
 
