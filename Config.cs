@@ -43,13 +43,13 @@ public static class Config
 
         DiscordBotToken = Category.CreateEntry(
            "discord_bot_token_broadcast",
-           "MTI1MzAyOTI4ODEyNzYzMTQzMg.G4HH1G.4N35NMqweqaW_E6K_RVVagFGiKNr_KjQAyHCj8",
+           "TOKEN",
            "Discord Bot Token",
            "Enter Discord Bot Token");
 
         DiscordChannelId = Category.CreateEntry(
            "discord_channel_id_broadcast",
-           1116004344370827466,
+           0,
            "Discord Channel ID",
            "Enter Discord Channel ID");
     }
