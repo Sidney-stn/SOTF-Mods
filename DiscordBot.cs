@@ -13,38 +13,40 @@ namespace BroadcastMessage
         // PATHS
         internal static string dllPath = Assembly.GetExecutingAssembly().Location;
         internal static string directory = Path.GetDirectoryName(dllPath);
-        internal static string fileDir = Path.Join(directory, "BroadcastMessage");
-
+        internal static string fileDir = Path.Combine(directory, "BroadcastMessage");
 
         private Process botProcess;
-        private readonly string botExecutablePath = Path.Join(fileDir, "DiscordBotApp.exe");
-        private readonly string botTokenFilePath = Path.Join(fileDir, "bot_token.txt");
-        private readonly string responseFilePath = Path.Join(fileDir, "bot_response.txt");
+        private readonly string botExecutablePath = Path.Combine(fileDir, "DiscordBotApp.exe");
+        private readonly string botTokenFilePath = Path.Combine(fileDir, "bot_token.txt");
+        private readonly string responseFilePath = Path.Combine(fileDir, "bot_response.txt");
 
         public void StartBot()
         {
             try
             {
+                Misc.Msg($"Expected path for DiscordBotApp.exe: {botExecutablePath}");
+
                 if (File.Exists(botExecutablePath))
                 {
+                    Misc.Msg("Found DiscordBotApp.exe.");
+
                     // Write the bot token to a file
                     File.WriteAllText(botTokenFilePath, Config.DiscordBotToken.Value);
 
                     botProcess = new Process();
                     botProcess.StartInfo.FileName = botExecutablePath;
-                    // Invisible Window
-                    //botProcess.StartInfo.CreateNoWindow = true;
-                    //botProcess.StartInfo.UseShellExecute = false;
+
                     // Make the process window visible
                     botProcess.StartInfo.CreateNoWindow = false;
                     botProcess.StartInfo.UseShellExecute = true;
+
                     botProcess.Start();
 
                     Misc.Msg("Bot process started.");
                 }
                 else
                 {
-                    Misc.Msg("Bot executable not found.");
+                    Misc.Msg("Bot executable not found at specified path.");
                 }
             }
             catch (Exception ex)
@@ -96,15 +98,36 @@ namespace BroadcastMessage
         {
             if (File.Exists(responseFilePath))
             {
-                string response = File.ReadAllText(responseFilePath);
-                if (!string.IsNullOrEmpty(response))
+                // Read all lines from the response file
+                var lines = File.ReadLines(responseFilePath);
+                foreach (var line in lines)
                 {
-                    Misc.Msg($"Received message from bot: {response}");
-                    // Process the received message here
+                    // Skip empty lines
+                    if (string.IsNullOrWhiteSpace(line))
+                        continue;
 
-                    // Optionally, clear the response file after reading
-                    File.WriteAllText(responseFilePath, string.Empty);
+                    // Find the first space to split username and message
+                    int firstSpaceIndex = line.IndexOf(' ');
+                    if (firstSpaceIndex > 0)
+                    {
+                        string username = line.Substring(0, firstSpaceIndex);
+                        string message = line.Substring(firstSpaceIndex + 1);
+
+                        // Log the received message in the desired format
+                        Misc.Msg($"Received message from {username}: {message}");
+
+                        // Process the received message here if needed
+                        // For example, you could invoke some handler or add the message to a queue
+                    }
+                    else
+                    {
+                        // Handle the case where no space is found (invalid format)
+                        Misc.Msg($"Invalid message format: {line}");
+                    }
                 }
+
+                // Optionally, clear the response file after reading
+                File.WriteAllText(responseFilePath, string.Empty);
             }
         }
     }

@@ -5,6 +5,8 @@ namespace BroadcastMessage;
 
 public class BroadcastMessage : SonsMod
 {
+    DiscordBotManager botManager;
+
     public BroadcastMessage()
     {
 
@@ -32,11 +34,12 @@ public class BroadcastMessage : SonsMod
 
         // Add in-game settings ui for your mod.
         // SettingsRegistry.CreateSettings(this, null, typeof(Config));
-        Misc.Msg($"DLLPath: {DiscordBotManager.dllPath}, Directory: {DiscordBotManager.directory}, FileDirectory: {DiscordBotManager.fileDir}");
+
+        // Misc.Msg($"DLLPath: {DiscordBotManager.dllPath}, Directory: {DiscordBotManager.directory}, FileDirectory: {DiscordBotManager.fileDir}");
         // [BroadcastMessage] DLLPath: C:\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\Mods\BroadcastMessage.dll, Directory: C:\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\Mods, FileDirectory: C:\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\Mods\BroadcastMessage
 
         // Create the DiscordBotManager instance
-        DiscordBotManager botManager = new DiscordBotManager();
+        botManager = new DiscordBotManager();
 
         // Start the Discord bot
         botManager.StartBot();
