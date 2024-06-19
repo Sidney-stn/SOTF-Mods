@@ -1,9 +1,7 @@
 ﻿using Bolt;
 using TheForest.Utils;
 using UnityEngine;
-using Sons.Multiplayer;
-using Endnight.Types;
-using Steamworks;
+
 
 namespace BroadcastMessage
 {
@@ -23,7 +21,7 @@ namespace BroadcastMessage
             ChatEvent chatEvent = ChatEvent.Create(GlobalTargets.Everyone, ReliabilityModes.ReliableOrdered);
             chatEvent.Message = text;
             chatEvent.Sender = LocalPlayer.Transform.GetComponent<BoltEntity>().networkId;
-            Misc.Msg($"ChatEvent To String: {chatEvent.ToString()}");
+            if (Config.PrintSentChatEvent.Value) { Misc.Msg($"ChatEvent To String: {chatEvent.ToString()}"); }
             chatEvent.Send();
         }
 
@@ -34,11 +32,10 @@ namespace BroadcastMessage
             Misc.Msg($"Server Name: {state.name}");
         }
 
-        internal static void SetName(string name)
+        private static void SetName(string name)
         {
             if (name == null) { Misc.ErrorMsg("Unable To Set Server Name, since input string is null"); return; }
             IPlayerState state = LocalPlayer.Transform.GetComponent<BoltEntity>().GetState<IPlayerState>();
-            Misc.Msg($"Server Name: {state.name}");
             if ( state == null ) { Misc.ErrorMsg("IPlayerState state is null! Unable to get the name"); return; }
             state.name = name;
         }

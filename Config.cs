@@ -8,8 +8,8 @@ public static class Config
 
     public static ConfigEntry<bool> EnableFiveSecondPrinting { get; private set; }
     public static ConfigEntry<bool> EnableLogging { get; private set; }
-
     public static ConfigEntry<bool> CheckNamePrinting { get; private set; }
+    public static ConfigEntry<bool> PrintSentChatEvent { get; private set; }
 
     public static void Init()
     {
@@ -19,7 +19,7 @@ public static class Config
             "enable_five_second_printing_broadcast",
             true,
             "Enable Five Second Printing",
-            "Enable The Corutine That Runs Every 5 Seconds");
+            "Enable The Corutine That Runs Every 5 Seconds, Disables Sending Of Messages Automatically (FOR TESTING)");
 
         EnableLogging = Category.CreateEntry(
            "enable_logging_broadcast",
@@ -32,6 +32,11 @@ public static class Config
            true,
            "Enable Logging To Console",
            "Enable Logging Of Logging Statements To The Console");
+        PrintSentChatEvent = Category.CreateEntry(
+           "enable_print_chat_event_broadcast",
+           true,
+           "Enable ChatEvent ToString Printing To Console",
+           "Enable ChatEvent ToString Printing To Console");
     }
 
     // Same as the callback in "CreateSettings". Called when the settings ui is closed.
