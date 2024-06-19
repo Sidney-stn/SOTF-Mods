@@ -46,5 +46,22 @@ namespace BroadcastMessage
             gameObject.AddComponent<BroadCastMono.BroadCastMonoBehaviour>();
         }
 
+        public static DiscordBotManager botManager;
+
+        public static void SetAndActivateBotManager()
+        {
+            // Create the DiscordBotManager instance
+            botManager = new DiscordBotManager();
+
+            // Start the Discord bot
+            botManager.StartBot();
+        }
+
+        internal static void GenerateCheckDiscordMessageMono()
+        {
+            GameObject gameObject = new GameObject();
+            gameObject.AddComponent<BroadCastMono.BroadCastCheckTextFileMonoBehaviour>();
+        }
+
     }
 }

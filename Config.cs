@@ -11,6 +11,7 @@ public static class Config
     public static ConfigEntry<bool> CheckNamePrinting { get; private set; }
     public static ConfigEntry<bool> PrintSentChatEvent { get; private set; }
     public static ConfigEntry<string> DiscordBotToken { get; private set; }
+    public static ConfigEntry<Int64> DiscordChannelId { get; private set; }
 
     public static void Init()
     {
@@ -43,8 +44,14 @@ public static class Config
         DiscordBotToken = Category.CreateEntry(
            "discord_bot_token_broadcast",
            "MTI1MzAyOTI4ODEyNzYzMTQzMg.G4HH1G.4N35NMqweqaW_E6K_RVVagFGiKNr_KjQAyHCj8",
-           "Enable ChatEvent ToString Printing To Console",
-           "Enable ChatEvent ToString Printing To Console");
+           "Discord Bot Token",
+           "Enter Discord Bot Token");
+
+        DiscordChannelId = Category.CreateEntry(
+           "discord_channel_id_broadcast",
+           1116004344370827466,
+           "Discord Channel ID",
+           "Enter Discord Channel ID");
     }
 
     // Same as the callback in "CreateSettings". Called when the settings ui is closed.

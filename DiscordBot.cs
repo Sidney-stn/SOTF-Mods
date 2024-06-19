@@ -19,12 +19,23 @@ namespace BroadcastMessage
         private readonly string botExecutablePath = Path.Combine(fileDir, "DiscordBotApp.exe");
         private readonly string botTokenFilePath = Path.Combine(fileDir, "bot_token.txt");
         private readonly string responseFilePath = Path.Combine(fileDir, "bot_response.txt");
+        private readonly string discordChannelFilePath = Path.Combine(fileDir, "discord_channel_id.txt");
 
         public void StartBot()
         {
             try
             {
                 Misc.Msg($"Expected path for DiscordBotApp.exe: {botExecutablePath}");
+                if (File.Exists(discordChannelFilePath))
+                {
+                    // Write the discord channel id to a file
+                    File.WriteAllText(discordChannelFilePath, Config.DiscordChannelId.Value.ToString());
+                }
+                else
+                {
+                    Misc.Msg("DiscordChannelId File not found at path, making new one");
+                    File.WriteAllText(discordChannelFilePath, Config.DiscordChannelId.Value.ToString());
+                }
 
                 if (File.Exists(botExecutablePath))
                 {
@@ -106,22 +117,25 @@ namespace BroadcastMessage
                     if (string.IsNullOrWhiteSpace(line))
                         continue;
 
-                    // Find the first space to split username and message
-                    int firstSpaceIndex = line.IndexOf(' ');
-                    if (firstSpaceIndex > 0)
+                    // Find the first colon to split username and message
+                    int colonIndex = line.IndexOf(':');
+                    if (colonIndex > 0 && colonIndex < line.Length - 1)
                     {
-                        string username = line.Substring(0, firstSpaceIndex);
-                        string message = line.Substring(firstSpaceIndex + 1);
+                        // Extract the username and the message
+                        string username = line.Substring(0, colonIndex).Trim();
+                        string message = line.Substring(colonIndex + 1).Trim();
 
                         // Log the received message in the desired format
                         Misc.Msg($"Received message from {username}: {message}");
+                        string username_prefix = $"[Discord] {username}";
+                        BroadcastInfo.SendChatMessage(username_prefix, message);
 
                         // Process the received message here if needed
                         // For example, you could invoke some handler or add the message to a queue
                     }
                     else
                     {
-                        // Handle the case where no space is found (invalid format)
+                        // Handle the case where no valid colon is found (invalid format)
                         Misc.Msg($"Invalid message format: {line}");
                     }
                 }

@@ -14,8 +14,7 @@ namespace BroadcastMessage
             private void Start()
             {
                 // Start the coroutine
-                //StartCoroutine(LoopEveryFiveSeconds().WrapToIl2Cpp());
-                Misc.Msg("Start() BroadCastMonoBehaviour");
+                Misc.Msg("Start() BroadCastCheckTextFileMonoBehaviour");
                 CheckIfRecivedMessages().RunCoro();
             }
 
@@ -24,10 +23,9 @@ namespace BroadcastMessage
                 while (true) // This creates an infinite loop
                 {
                     // Perform your action here
-                    Misc.Msg("Action performed at " + Time.time);
-                    BroadcastInfo.SendChatMessage();
-
-                    // Wait for 5 seconds
+                    Misc.Msg("Checked if recived message");
+                    BroadcastInfo.botManager.CheckForResponses();
+                    // Wait for 10 seconds
                     yield return new WaitForSeconds(10f);
                 }
             }

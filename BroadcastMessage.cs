@@ -5,7 +5,7 @@ namespace BroadcastMessage;
 
 public class BroadcastMessage : SonsMod
 {
-    DiscordBotManager botManager;
+    
 
     public BroadcastMessage()
     {
@@ -38,20 +38,14 @@ public class BroadcastMessage : SonsMod
         // Misc.Msg($"DLLPath: {DiscordBotManager.dllPath}, Directory: {DiscordBotManager.directory}, FileDirectory: {DiscordBotManager.fileDir}");
         // [BroadcastMessage] DLLPath: C:\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\Mods\BroadcastMessage.dll, Directory: C:\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\Mods, FileDirectory: C:\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\Mods\BroadcastMessage
 
-        // Create the DiscordBotManager instance
-        botManager = new DiscordBotManager();
-
-        // Start the Discord bot
-        botManager.StartBot();
-
-        // Example: Send a command to the bot
-        botManager.SendCommand("Hello from the game!");
+        //// Example: Send a command to the bot
+        //botManager.SendCommand("Hello from the game!");
     }
 
     protected override void OnGameStart()
     {
-        
-
+        BroadcastInfo.SetAndActivateBotManager();
+        BroadcastInfo.GenerateCheckDiscordMessageMono();
     }
 
 
