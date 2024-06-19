@@ -119,6 +119,10 @@ namespace DiscordBotApp
                                         await channel.SendMessageAsync(command);
                                     }
                                 }
+                                else
+                                {
+                                    Console.WriteLine("Received empty command, possibly client has closed.");
+                                }
                             }
                             catch (IOException ex)
                             {
@@ -134,7 +138,7 @@ namespace DiscordBotApp
                         }
                     }
 
-                    Console.WriteLine("Client disconnected, waiting for a new connection...");
+                    Console.WriteLine("Client disconnected. Cleaning up and ready for new connection.");
                 }
 
                 // Pause briefly before accepting the next connection to avoid a tight loop
