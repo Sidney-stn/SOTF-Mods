@@ -91,39 +91,54 @@ namespace DiscordBotApp
 
         private static async Task ListenForCommands()
         {
-            using (var pipeServer = new NamedPipeServerStream("DiscordBotPipe", PipeDirection.InOut, 1, PipeTransmissionMode.Message, PipeOptions.Asynchronous))
+            while (true)
             {
-                Console.WriteLine("Waiting for connection...");
-                await pipeServer.WaitForConnectionAsync();
-
-                Console.WriteLine("Client connected.");
-                using (var reader = new StreamReader(pipeServer))
-                using (var writer = new StreamWriter(pipeServer) { AutoFlush = true })
+                using (var pipeServer = new NamedPipeServerStream("DiscordBotPipe", PipeDirection.InOut, 1, PipeTransmissionMode.Message, PipeOptions.Asynchronous))
                 {
-                    while (pipeServer.IsConnected)
+                    Console.WriteLine("Waiting for connection...");
+                    await pipeServer.WaitForConnectionAsync();
+
+                    Console.WriteLine("Client connected.");
+                    using (var reader = new StreamReader(pipeServer))
+                    using (var writer = new StreamWriter(pipeServer) { AutoFlush = true })
                     {
-                        try
+                        while (pipeServer.IsConnected)
                         {
-                            string command = await reader.ReadLineAsync();
-                            if (!string.IsNullOrEmpty(command))
+                            try
                             {
-                                Console.WriteLine($"Command received: {command}");
-                                // Handle the command, for example by sending it as a message
-                                ulong channelId = (ulong)_channelID; // Replace with your actual channel ID
-                                var channel = _client.GetChannel(channelId) as IMessageChannel;
-                                if (channel != null)
+                                string command = await reader.ReadLineAsync();
+                                if (!string.IsNullOrEmpty(command))
                                 {
-                                    await channel.SendMessageAsync(command);
+                                    Console.WriteLine($"Command received: {command}");
+
+                                    // Handle the command, for example by sending it as a message
+                                    ulong channelId = (ulong)_channelID; // Replace with your actual channel ID
+                                    var channel = _client.GetChannel(channelId) as IMessageChannel;
+                                    if (channel != null)
+                                    {
+                                        await channel.SendMessageAsync(command);
+                                    }
                                 }
                             }
-                        }
-                        catch (IOException ex)
-                        {
-                            Console.WriteLine($"Named pipe read error: {ex.Message}");
-                            break;
+                            catch (IOException ex)
+                            {
+                                Console.WriteLine($"Named pipe read error: {ex.Message}");
+                                break;
+                            }
+                            catch (ObjectDisposedException)
+                            {
+                                // This exception might be thrown if the pipe is disposed while reading
+                                Console.WriteLine("Pipe was disposed.");
+                                break;
+                            }
                         }
                     }
+
+                    Console.WriteLine("Client disconnected, waiting for a new connection...");
                 }
+
+                // Pause briefly before accepting the next connection to avoid a tight loop
+                await Task.Delay(100);
             }
         }
 
