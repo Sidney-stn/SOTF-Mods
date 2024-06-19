@@ -14,8 +14,24 @@ namespace BroadcastMessage
         private DiscordSocketClient _client;
         private string _botToken = Config.DiscordBotToken.Value; // Directly using the configuration value
 
-        // Method to initialize and start the bot
-        public async Task StartBotAsync()
+        // Start the bot using Task.Run to handle async operations
+        public void StartBot()
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await StartBotInternalAsync();
+                }
+                catch (Exception ex)
+                {
+                    Misc.Msg($"Error starting bot: {ex.Message}");
+                }
+            });
+        }
+
+        // Internal async method to handle bot startup
+        private async Task StartBotInternalAsync()
         {
             Misc.Msg("DiscordBotManager StartBotAsync()");
             Misc.Msg($"Config DiscordBotToken Value: {_botToken}");
@@ -42,14 +58,63 @@ namespace BroadcastMessage
             Misc.Msg("Bot is connected!");
         }
 
-        // Method to stop the bot and dispose of resources
-        public async Task StopBotAsync()
+        // Stop the bot using Task.Run to handle async operations
+        public void StopBot()
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await StopBotInternalAsync();
+                }
+                catch (Exception ex)
+                {
+                    Misc.Msg($"Error stopping bot: {ex.Message}");
+                }
+            });
+        }
+
+        // Internal async method to handle bot shutdown
+        private async Task StopBotInternalAsync()
         {
             if (_client != null)
             {
                 await _client.LogoutAsync();
                 _client.Dispose();
+                _client = null;
                 Misc.Msg("Bot is disconnected!");
+            }
+        }
+
+        // Method to send a message to a specified channel
+        public void SendMessageToChannel(ulong channelId, string message)
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await SendMessageToChannelInternalAsync(channelId, message);
+                }
+                catch (Exception ex)
+                {
+                    Misc.Msg($"Error sending message: {ex.Message}");
+                }
+            });
+        }
+
+        // Internal async method to send a message
+        private async Task SendMessageToChannelInternalAsync(ulong channelId, string message)
+        {
+            var channel = _client.GetChannel(channelId) as IMessageChannel;
+
+            if (channel != null)
+            {
+                await channel.SendMessageAsync(message);
+                Misc.Msg($"Sent message to channel {channel.Name}: {message}");
+            }
+            else
+            {
+                Misc.Msg("Channel not found or invalid.");
             }
         }
 
@@ -75,24 +140,6 @@ namespace BroadcastMessage
             if (message.Content.ToLower().Contains("hello bot"))
             {
                 await message.Channel.SendMessageAsync("Hello! How can I assist you today?");
-            }
-        }
-
-        // Method to send a message to a specified channel
-        public async Task SendMessageToChannel(ulong channelId, string message)
-        {
-            // Get the channel by ID
-            var channel = _client.GetChannel(channelId) as IMessageChannel;
-
-            if (channel != null)
-            {
-                // Send a message to the channel
-                await channel.SendMessageAsync(message);
-                Misc.Msg($"Sent message to channel {channel.Name}: {message}");
-            }
-            else
-            {
-                Misc.Msg("Channel not found or invalid.");
             }
         }
 

@@ -36,19 +36,17 @@ public class BroadcastMessage : SonsMod
 
     protected override void OnGameStart()
     {
-        // This is called once the player spawns in the world and gains control.
-        if (Config.EnableFiveSecondPrinting.Value) { BroadcastInfo.GenerateObjectWithMono(); }
-
-        // Create the BotService instance
-        BotService botService = new BotService();
+        // Create the DiscordBotManager instance
+        DiscordBotManager botManager = new DiscordBotManager();
 
         // Start the Discord bot
-        botService.StartBot();
+        botManager.StartBot();
 
         // Optionally, send a message to a channel after starting
-        ulong channelId = 123456789012345678; // Replace with your actual channel ID
-        botService.SendMessage(channelId, "Hello from the game!");
+        //ulong channelId = 1116004344370827466; // Replace with your actual channel ID
+        //botManager.SendMessageToChannel(channelId, "Hello from the game!");
     }
+
 
     private void Quitting()
     {
