@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipes;
 using System.Reflection;
 using System.Threading;
 
@@ -38,6 +39,9 @@ namespace BroadcastMessage
                     botProcess.Start();
 
                     Misc.Msg("Bot process started.");
+
+                    // Start a background thread to listen for messages from the bot
+                    new Thread(ListenForResponses).Start();
                 }
                 else
                 {
@@ -67,23 +71,59 @@ namespace BroadcastMessage
             }
         }
 
-        // Example method to send a command (write command to file)
+        // Method to send a command using named pipes
         public void SendCommand(string command)
         {
-            File.WriteAllText(commandFilePath, command);
-            Misc.Msg($"Command sent to bot: {command}");
+            using (var pipeClient = new NamedPipeClientStream(".", "DiscordBotPipe", PipeDirection.Out))
+            {
+                try
+                {
+                    pipeClient.Connect(1000); // Try to connect with a timeout
+                    using (var writer = new StreamWriter(pipeClient) { AutoFlush = true })
+                    {
+                        writer.WriteLine(command);
+                        Misc.Msg($"Command sent to bot: {command}");
+                    }
+                }
+                catch (TimeoutException)
+                {
+                    Misc.Msg("No bot process connected to send command to.");
+                }
+            }
         }
 
-        // Example method to receive messages (read from response file)
-        public void ReceiveMessages()
+        // Background method to listen for responses from the bot
+        private void ListenForResponses()
         {
-            if (File.Exists(responseFilePath))
+            using (var pipeClient = new NamedPipeClientStream(".", "DiscordBotPipe", PipeDirection.In))
             {
-                string response = File.ReadAllText(responseFilePath);
-                if (!string.IsNullOrEmpty(response))
+                try
                 {
-                    Misc.Msg($"Received message from bot: {response}");
-                    // Process the received message here
+                    pipeClient.Connect(1000); // Try to connect with a timeout
+                    using (var reader = new StreamReader(pipeClient))
+                    {
+                        while (pipeClient.IsConnected)
+                        {
+                            try
+                            {
+                                string response = reader.ReadLine();
+                                if (!string.IsNullOrEmpty(response))
+                                {
+                                    Misc.Msg($"Received message from bot: {response}");
+                                    // Process the received message here
+                                }
+                            }
+                            catch (IOException ex)
+                            {
+                                Misc.Msg($"Named pipe read error: {ex.Message}");
+                                break;
+                            }
+                        }
+                    }
+                }
+                catch (TimeoutException)
+                {
+                    Misc.Msg("No bot process connected to receive messages from.");
                 }
             }
         }
