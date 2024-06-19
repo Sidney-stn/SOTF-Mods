@@ -15,8 +15,10 @@ namespace DiscordBotApp
 
         private static DiscordSocketClient _client;
         private static string _botToken;
+        private static Int64 _channelID;
         private static readonly string botTokenFilePath = Path.Join(directory, "bot_token.txt");
         private static readonly string responseFilePath = Path.Join(directory, "bot_response.txt");
+        private static readonly string discordChannelFilePath = Path.Join(directory, "discord_channel_id.txt");
 
         static async Task Main(string[] args)
         {
@@ -29,6 +31,25 @@ namespace DiscordBotApp
             else
             {
                 Console.WriteLine("Bot token file not found.");
+                return;
+            }
+            if (File.Exists(discordChannelFilePath))
+            {
+                string int64String = File.ReadAllText(discordChannelFilePath);
+                // Convert the string to Int64 and assign it to _channelID
+                if (Int64.TryParse(int64String, out _channelID))
+                {
+                    Console.WriteLine($"Channel ID loaded successfully: {_channelID}");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to parse the Channel ID from the file.");
+                    return;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Discord Channel Id file not found.");
                 return;
             }
 
@@ -88,7 +109,7 @@ namespace DiscordBotApp
                             {
                                 Console.WriteLine($"Command received: {command}");
                                 // Handle the command, for example by sending it as a message
-                                ulong channelId = 1116004344370827466; // Replace with your actual channel ID
+                                ulong channelId = (ulong)_channelID; // Replace with your actual channel ID
                                 var channel = _client.GetChannel(channelId) as IMessageChannel;
                                 if (channel != null)
                                 {
@@ -121,8 +142,9 @@ namespace DiscordBotApp
             // Log the message to the console
             Console.WriteLine($"Received message from {message.Author.Username}: {message.Content}");
 
-            // Write the message to the response file
-            File.WriteAllText(responseFilePath, $"{message.Author.Username}: {message.Content}");
+            // Append the message to the response file with a new line
+            // Use AppendAllText to ensure each message is on a new line
+            File.AppendAllText(responseFilePath, $"{message.Author.Username}: {message.Content}{Environment.NewLine}");
 
             // Example response
             if (message.Content.ToLower().Contains("hello bot"))
