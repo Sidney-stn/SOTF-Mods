@@ -17,10 +17,8 @@ namespace BroadcastMessage
 
 
         private Process botProcess;
-        //private readonly string botExecutablePath = @"C:\Users\julia\Documents\SOTF MODDING REDLOADER\BroadcastMessageDiscordBotApp\DiscordBotApp\bin\Debug\net6.0\DiscordBotApp.exe"; // Update this path
         private readonly string botExecutablePath = Path.Join(fileDir, "DiscordBotApp.exe");
         private readonly string botTokenFilePath = Path.Join(fileDir, "bot_token.txt");
-        private readonly string commandFilePath = Path.Join(fileDir, "bot_command.txt");
         private readonly string responseFilePath = Path.Join(fileDir, "bot_response.txt");
 
         public void StartBot()
@@ -34,14 +32,15 @@ namespace BroadcastMessage
 
                     botProcess = new Process();
                     botProcess.StartInfo.FileName = botExecutablePath;
-                    botProcess.StartInfo.CreateNoWindow = true;
-                    botProcess.StartInfo.UseShellExecute = false;
+                    // Invisible Window
+                    //botProcess.StartInfo.CreateNoWindow = true;
+                    //botProcess.StartInfo.UseShellExecute = false;
+                    // Make the process window visible
+                    botProcess.StartInfo.CreateNoWindow = false;
+                    botProcess.StartInfo.UseShellExecute = true;
                     botProcess.Start();
 
                     Misc.Msg("Bot process started.");
-
-                    // Start a background thread to listen for messages from the bot
-                    new Thread(ListenForResponses).Start();
                 }
                 else
                 {
@@ -92,38 +91,19 @@ namespace BroadcastMessage
             }
         }
 
-        // Background method to listen for responses from the bot
-        private void ListenForResponses()
+        // Method to check for messages from the bot (read from response file)
+        public void CheckForResponses()
         {
-            using (var pipeClient = new NamedPipeClientStream(".", "DiscordBotPipe", PipeDirection.In))
+            if (File.Exists(responseFilePath))
             {
-                try
+                string response = File.ReadAllText(responseFilePath);
+                if (!string.IsNullOrEmpty(response))
                 {
-                    pipeClient.Connect(1000); // Try to connect with a timeout
-                    using (var reader = new StreamReader(pipeClient))
-                    {
-                        while (pipeClient.IsConnected)
-                        {
-                            try
-                            {
-                                string response = reader.ReadLine();
-                                if (!string.IsNullOrEmpty(response))
-                                {
-                                    Misc.Msg($"Received message from bot: {response}");
-                                    // Process the received message here
-                                }
-                            }
-                            catch (IOException ex)
-                            {
-                                Misc.Msg($"Named pipe read error: {ex.Message}");
-                                break;
-                            }
-                        }
-                    }
-                }
-                catch (TimeoutException)
-                {
-                    Misc.Msg("No bot process connected to receive messages from.");
+                    Misc.Msg($"Received message from bot: {response}");
+                    // Process the received message here
+
+                    // Optionally, clear the response file after reading
+                    File.WriteAllText(responseFilePath, string.Empty);
                 }
             }
         }

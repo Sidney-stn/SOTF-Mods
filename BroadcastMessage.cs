@@ -34,10 +34,7 @@ public class BroadcastMessage : SonsMod
         // SettingsRegistry.CreateSettings(this, null, typeof(Config));
         Misc.Msg($"DLLPath: {DiscordBotManager.dllPath}, Directory: {DiscordBotManager.directory}, FileDirectory: {DiscordBotManager.fileDir}");
         // [BroadcastMessage] DLLPath: C:\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\Mods\BroadcastMessage.dll, Directory: C:\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\Mods, FileDirectory: C:\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\Mods\BroadcastMessage
-    }
 
-    protected override void OnGameStart()
-    {
         // Create the DiscordBotManager instance
         DiscordBotManager botManager = new DiscordBotManager();
 
@@ -46,6 +43,11 @@ public class BroadcastMessage : SonsMod
 
         // Example: Send a command to the bot
         botManager.SendCommand("Hello from the game!");
+    }
+
+    protected override void OnGameStart()
+    {
+        
 
     }
 
