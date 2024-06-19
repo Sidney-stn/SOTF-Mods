@@ -93,16 +93,49 @@ namespace BroadcastMessage
             {
                 try
                 {
+                    // Attempt to connect to the server
+                    Misc.Msg("Attempting to connect to the bot process...");
                     pipeClient.Connect(1000); // Try to connect with a timeout
-                    using (var writer = new StreamWriter(pipeClient) { AutoFlush = true })
+
+                    // Check if the connection was successful
+                    if (pipeClient.IsConnected)
                     {
-                        writer.WriteLine(command);
-                        Misc.Msg($"Command sent to bot: {command}");
+                        Misc.Msg("Pipe client connected.");
+
+                        using (var writer = new StreamWriter(pipeClient) { AutoFlush = true })
+                        {
+                            writer.WriteLine(command);
+                            Misc.Msg($"Command sent to bot: {command}");
+
+                            // Explicitly flush and close the writer
+                            writer.Flush();
+                        }
+
+                        // Explicitly close the pipe after sending the command
+                        pipeClient.Close();
+                        Misc.Msg("Pipe client closed after sending the command.");
+                    }
+                    else
+                    {
+                        Misc.Msg("No bot process connected to send command to.");
                     }
                 }
                 catch (TimeoutException)
                 {
-                    Misc.Msg("No bot process connected to send command to.");
+                    Misc.Msg("No bot process connected to send command to (timeout).");
+                }
+                catch (IOException ex)
+                {
+                    Misc.Msg($"IO error during command sending: {ex.Message}");
+                }
+                finally
+                {
+                    // Ensure the pipe client is properly closed if still connected
+                    if (pipeClient.IsConnected)
+                    {
+                        pipeClient.Close();
+                        Misc.Msg("Pipe client closed in finally block.");
+                    }
                 }
             }
         }
@@ -130,7 +163,7 @@ namespace BroadcastMessage
 
                         // Log the received message in the desired format
                         Misc.Msg($"Received message from {username}: {message}");
-                        string username_prefix = $"[Discord] {username}";
+                        string username_prefix = $"[DS] {username}";
                         BroadcastInfo.SendChatMessage(username_prefix, message);
 
                         // Process the received message here if needed

@@ -6,7 +6,6 @@ public static class Config
 {
     public static ConfigCategory Category { get; private set; }
 
-    public static ConfigEntry<bool> EnableFiveSecondPrinting { get; private set; }
     public static ConfigEntry<bool> EnableLogging { get; private set; }
     public static ConfigEntry<bool> CheckNamePrinting { get; private set; }
     public static ConfigEntry<bool> PrintSentChatEvent { get; private set; }
@@ -16,12 +15,6 @@ public static class Config
     public static void Init()
     {
         Category = ConfigSystem.CreateFileCategory("BroadcastMessage", "BroadcastMessage", "BroadcastMessage.cfg");
-
-        EnableFiveSecondPrinting = Category.CreateEntry(
-            "enable_five_second_printing_broadcast",
-            false,
-            "Enable Five Second Printing",
-            "Enable The Corutine That Runs Every 5 Seconds, Disables Sending Of Messages Automatically (FOR TESTING)");
 
         EnableLogging = Category.CreateEntry(
            "enable_logging_broadcast",

@@ -46,16 +46,5 @@ public class BroadcastMessage : SonsMod
     {
         BroadcastInfo.SetAndActivateBotManager();
         BroadcastInfo.GenerateCheckDiscordMessageMono();
-        if (Config.EnableFiveSecondPrinting.Value) { BroadcastInfo.GenerateObjectWithMonoForFiveSecondTimer(); }
-    }
-
-
-    private void Quitting()
-    {
-
-    }
-    protected void OnUpdate()
-    {
-
     }
 }

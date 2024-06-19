@@ -15,7 +15,13 @@ namespace BroadcastMessage
                 Misc.Msg("BoltNetwork Is Not Running!");
                 return;
             }
+
+            if (name == null || name == "") { Misc.ErrorMsg("Unable To Set Server Name, since input string is null or empty"); return; }
+            IPlayerState state = LocalPlayer.Transform.GetComponent<BoltEntity>().GetState<IPlayerState>();
+            if (state == null) { Misc.ErrorMsg("IPlayerState state is null! Unable to get the name"); return; }
+            state.name = name;
             SetName(name);
+
             if (Config.CheckNamePrinting.Value) { CheckName(); }
 
             ChatEvent chatEvent = ChatEvent.Create(GlobalTargets.AllClients, ReliabilityModes.ReliableOrdered);
@@ -32,11 +38,11 @@ namespace BroadcastMessage
             Misc.Msg($"Server Name: {state.name}");
         }
 
-        private static void SetName(string name)
+        private static void SetName(string name) // Depricated Moved
         {
             if (name == null || name == "") { Misc.ErrorMsg("Unable To Set Server Name, since input string is null or empty"); return; }
             IPlayerState state = LocalPlayer.Transform.GetComponent<BoltEntity>().GetState<IPlayerState>();
-            if ( state == null ) { Misc.ErrorMsg("IPlayerState state is null! Unable to get the name"); return; }
+            if (state == null) { Misc.ErrorMsg("IPlayerState state is null! Unable to get the name"); return; }
             state.name = name;
         }
 
@@ -52,12 +58,6 @@ namespace BroadcastMessage
                 }
             }
             return "UNKNOWN";
-        }
-
-        internal static void GenerateObjectWithMonoForFiveSecondTimer()
-        {
-            GameObject gameObject = new GameObject();
-            gameObject.AddComponent<BroadCastMono.BroadCastMonoBehaviour>();
         }
 
         public static DiscordBotManager botManager;
