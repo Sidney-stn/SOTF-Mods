@@ -19,7 +19,7 @@ public static class Config
 
         EnableFiveSecondPrinting = Category.CreateEntry(
             "enable_five_second_printing_broadcast",
-            true,
+            false,
             "Enable Five Second Printing",
             "Enable The Corutine That Runs Every 5 Seconds, Disables Sending Of Messages Automatically (FOR TESTING)");
 
@@ -49,7 +49,7 @@ public static class Config
 
         DiscordChannelId = Category.CreateEntry(
            "discord_channel_id_broadcast",
-           0,
+           (Int64)0,
            "Discord Channel ID",
            "Enter Discord Channel ID");
     }

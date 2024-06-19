@@ -17,7 +17,7 @@ public class BroadcastMessage : SonsMod
         //OnGUICallback = MyGUIMethod;
 
         // Uncomment this to automatically apply harmony patches in your assembly.
-        //HarmonyPatchAll = true;
+        HarmonyPatchAll = true;
     }
 
     protected override void OnInitializeMod()
@@ -46,6 +46,7 @@ public class BroadcastMessage : SonsMod
     {
         BroadcastInfo.SetAndActivateBotManager();
         BroadcastInfo.GenerateCheckDiscordMessageMono();
+        if (Config.EnableFiveSecondPrinting.Value) { BroadcastInfo.GenerateObjectWithMonoForFiveSecondTimer(); }
     }
 
 

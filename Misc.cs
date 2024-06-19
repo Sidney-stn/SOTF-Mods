@@ -17,7 +17,7 @@ namespace BroadcastMessage
 
         internal static void ErrorMsg(string msg)
         {
-            RLog.Msg(msg);
+            RLog.Error(msg);
         }
     }
 }

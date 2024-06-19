@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Endnight.Extensions;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
@@ -26,6 +27,7 @@ namespace BroadcastMessage
             try
             {
                 Misc.Msg($"Expected path for DiscordBotApp.exe: {botExecutablePath}");
+                if (Config.DiscordChannelId.Value == (Int64)0 || Config.DiscordChannelId.Value == 0) { Misc.ErrorMsg("DiscordChannelId Is null, Pleace Update It BroadcastMessage.cfg"); return; }
                 if (File.Exists(discordChannelFilePath))
                 {
                     // Write the discord channel id to a file
@@ -42,6 +44,7 @@ namespace BroadcastMessage
                     Misc.Msg("Found DiscordBotApp.exe.");
 
                     // Write the bot token to a file
+                    if (Config.DiscordBotToken.Value == "" || Config.DiscordBotToken.Value.IsNullOrWhitespace() || Config.DiscordBotToken.Value.ToLower() == "token") { Misc.ErrorMsg("DiscordBotToken Is null, Pleace Update It BroadcastMessage.cfg"); return; }
                     File.WriteAllText(botTokenFilePath, Config.DiscordBotToken.Value);
 
                     botProcess = new Process();

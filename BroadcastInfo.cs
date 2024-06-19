@@ -18,7 +18,7 @@ namespace BroadcastMessage
             SetName(name);
             if (Config.CheckNamePrinting.Value) { CheckName(); }
 
-            ChatEvent chatEvent = ChatEvent.Create(GlobalTargets.Everyone, ReliabilityModes.ReliableOrdered);
+            ChatEvent chatEvent = ChatEvent.Create(GlobalTargets.AllClients, ReliabilityModes.ReliableOrdered);
             chatEvent.Message = text;
             chatEvent.Sender = LocalPlayer.Transform.GetComponent<BoltEntity>().networkId;
             if (Config.PrintSentChatEvent.Value) { Misc.Msg($"ChatEvent To String: {chatEvent.ToString()}"); }
@@ -40,7 +40,21 @@ namespace BroadcastMessage
             state.name = name;
         }
 
-        internal static void GenerateObjectWithMono()
+        internal static string VerifyName(NetworkId evntsender)
+        {
+            foreach (BoltPlayerSetup boltPlayerSetup in GameObject.FindObjectsOfType<BoltPlayerSetup>())
+            {
+                NetworkId networkid = boltPlayerSetup._entity._entity.NetworkId;
+                if (networkid == evntsender)
+                {
+                    String name = boltPlayerSetup.state.name;
+                    return (string.IsNullOrEmpty(name)) ? "UNKNOWN" : name;
+                }
+            }
+            return "UNKNOWN";
+        }
+
+        internal static void GenerateObjectWithMonoForFiveSecondTimer()
         {
             GameObject gameObject = new GameObject();
             gameObject.AddComponent<BroadCastMono.BroadCastMonoBehaviour>();
