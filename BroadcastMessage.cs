@@ -42,9 +42,9 @@ public class BroadcastMessage : SonsMod
         // Start the Discord bot
         botManager.StartBot();
 
-        // Optionally, send a message to a channel after starting
-        //ulong channelId = 1116004344370827466; // Replace with your actual channel ID
-        //botManager.SendMessageToChannel(channelId, "Hello from the game!");
+        // Example: Send a command to the bot
+        botManager.SendCommand("Hello from the game!");
+
     }
 
 
