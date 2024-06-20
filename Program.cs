@@ -96,45 +96,60 @@ namespace DiscordBotApp
                 using (var pipeServer = new NamedPipeServerStream("DiscordBotPipe", PipeDirection.InOut, 1, PipeTransmissionMode.Message, PipeOptions.Asynchronous))
                 {
                     Console.WriteLine("Waiting for connection...");
-                    await pipeServer.WaitForConnectionAsync();
-
-                    Console.WriteLine("Client connected.");
-                    using (var reader = new StreamReader(pipeServer))
-                    using (var writer = new StreamWriter(pipeServer) { AutoFlush = true })
+                    try
                     {
-                        while (pipeServer.IsConnected)
-                        {
-                            try
-                            {
-                                string command = await reader.ReadLineAsync();
-                                if (!string.IsNullOrEmpty(command))
-                                {
-                                    Console.WriteLine($"Command received: {command}");
+                        await pipeServer.WaitForConnectionAsync();
+                        Console.WriteLine("Client connected.");
 
-                                    // Handle the command, for example by sending it as a message
-                                    ulong channelId = (ulong)_channelID; // Replace with your actual channel ID
-                                    var channel = _client.GetChannel(channelId) as IMessageChannel;
-                                    if (channel != null)
+                        using (var reader = new StreamReader(pipeServer))
+                        using (var writer = new StreamWriter(pipeServer) { AutoFlush = true })
+                        {
+                            while (pipeServer.IsConnected)
+                            {
+                                try
+                                {
+                                    string command = await reader.ReadLineAsync();
+                                    if (!string.IsNullOrEmpty(command))
                                     {
-                                        await channel.SendMessageAsync(command);
+                                        Console.WriteLine($"Command received: {command}");
+
+                                        // Handle the command, for example by sending it as a message
+                                        ulong channelId = (ulong)_channelID; // Replace with your actual channel ID
+                                        var channel = _client.GetChannel(channelId) as IMessageChannel;
+                                        if (channel != null)
+                                        {
+                                            await channel.SendMessageAsync(command);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Received empty command, possibly client has closed.");
                                     }
                                 }
-                                else
+                                catch (IOException ex)
                                 {
-                                    Console.WriteLine("Received empty command, possibly client has closed.");
+                                    Console.WriteLine($"Named pipe read error: {ex.Message}");
+                                    break;
+                                }
+                                catch (ObjectDisposedException)
+                                {
+                                    // This exception might be thrown if the pipe is disposed while reading
+                                    Console.WriteLine("Pipe was disposed.");
+                                    break;
                                 }
                             }
-                            catch (IOException ex)
-                            {
-                                Console.WriteLine($"Named pipe read error: {ex.Message}");
-                                break;
-                            }
-                            catch (ObjectDisposedException)
-                            {
-                                // This exception might be thrown if the pipe is disposed while reading
-                                Console.WriteLine("Pipe was disposed.");
-                                break;
-                            }
+                        }
+                    }
+                    catch (IOException ex)
+                    {
+                        Console.WriteLine($"Pipe connection error: {ex.Message}");
+                    }
+                    finally
+                    {
+                        if (pipeServer.IsConnected)
+                        {
+                            pipeServer.Disconnect();
+                            Console.WriteLine("Pipe server disconnected.");
                         }
                     }
 
