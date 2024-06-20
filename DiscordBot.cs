@@ -164,7 +164,6 @@ namespace BroadcastMessage
                         // Log the received message in the desired format
                         Misc.Msg($"Received message from {username}: {message}");
                         string username_prefix = $"[DS] {username}";
-                        //BroadcastInfo.SendChatMessage(username_prefix, message);
                         BroadCastMono.BroadCastCheckTextFileMonoBehaviour.SendChatMessage(username_prefix, message);
 
                         // Process the received message here if needed

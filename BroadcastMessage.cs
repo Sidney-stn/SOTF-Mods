@@ -7,6 +7,8 @@ namespace BroadcastMessage;
 
 public class BroadcastMessage : SonsMod
 {
+    internal static BroadCastExtras.SimpleSaveGameType? saveTypeGotten;
+    internal static bool? isDedicated;
     public BroadcastMessage()
     {
 
@@ -43,22 +45,27 @@ public class BroadcastMessage : SonsMod
         BroadCastEvents.OnHostModeGotten += BroadCastExtras.OnHostModeGottenCorrectly;
     }
 
-    protected override void OnApplicationQuit() // Works Good For Dedicated Server, Would be Best if it was on leave World On MulitplayerHost
+    protected override void OnApplicationQuit()
     {
-        Misc.Msg("OnApplicationQuit");
-        try
+        if (isDedicated == true)
         {
+            Misc.Msg("OnApplicationQuit (Dedicated Server)");
             BroadcastInfo.StopBot();
             BroadcastInfo.KillMonoBehavior();
             BroadCastEvents.OnHostModeGotten -= BroadCastExtras.OnHostModeGottenCorrectly;
-        } catch (Exception ex) { Misc.Msg("Cathced Error"); }
+        }
+        saveTypeGotten = null;
+        isDedicated = null;
     }
 
     internal static void OnLeaveWorld()
     {
-        Misc.Msg("OnLeaveWorld");
+        if (isDedicated == true) { return; }
+        Misc.Msg("OnLeaveWorld (MultiplayerHost)");
         BroadcastInfo.StopBot();
         BroadcastInfo.KillMonoBehavior();
         BroadCastEvents.OnHostModeGotten -= BroadCastExtras.OnHostModeGottenCorrectly;
+        saveTypeGotten = null;
+        isDedicated = null;
     }
 }

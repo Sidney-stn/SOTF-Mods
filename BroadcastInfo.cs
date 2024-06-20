@@ -67,5 +67,10 @@ namespace BroadcastMessage
             monoGameObject.GetComponent<BroadCastMono.BroadCastCheckTextFileMonoBehaviour>().KillSelf();
         }
 
+        internal static bool? isDedicatedFromBroadCastMessage
+        {
+            get { return BroadcastMessage.isDedicated; }
+        }
+
     }
 }

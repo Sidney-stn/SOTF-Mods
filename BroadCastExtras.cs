@@ -100,6 +100,9 @@ namespace BroadcastMessage
             SonsSdk.SdkEvents.OnInWorldUpdate.Unsubscribe(BroadCastExtras.CheckHostModeOnWorldUpdate);
             if (!GameServerManager.IsDedicatedServer && BroadCastExtras.hostMode == SimpleSaveGameType.Multiplayer)
             {
+                BroadcastMessage.isDedicated = false;  // Sets Static Vars In BroadcastMessage. Used for fixing quit errors
+                BroadcastMessage.saveTypeGotten = SimpleSaveGameType.Multiplayer;  // Sets Static Vars In BroadcastMessage. Used for fixing quit errors
+
                 dialogManager = BroadCastExtras.FindObjectInSpecificScene().GetComponent<ModalDialogManager>();
                 if (dialogManager != null)
                 {
@@ -116,6 +119,8 @@ namespace BroadcastMessage
             }
             else if (GameServerManager.IsDedicatedServer)
             {
+                BroadcastMessage.isDedicated = true;  // Sets Static Vars In BroadcastMessage. Used for fixing quit errors
+                BroadcastMessage.saveTypeGotten = SimpleSaveGameType.Multiplayer;  // Sets Static Vars In BroadcastMessage. Used for fixing quit errors
                 Misc.Msg("Running From Dedicated Server");
                 BroadcastInfo.SetAndActivateBotManager();
                 BroadcastInfo.InitilizeMonoBehavior();
