@@ -9,6 +9,7 @@ public class Patch
     [HarmonyPostfix]
     public static void PostfixOnEvent(ChatEvent evnt)
     {
+        if (BroadCastExtras.hostMode != BroadCastExtras.SimpleSaveGameType.Multiplayer) { return; }
         Misc.Msg("Postfix OnEvent Loaded");
 
         // Check if the chatEvent has data.

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net6</TargetFramework>
@@ -54,6 +54,18 @@
         <Reference Include="Endnight">
             <HintPath>$(GameDir)\_RedLoader\Game\Endnight.dll</HintPath>
         </Reference>
+        <Reference Include="Sons.GameApplication">
+          <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\Sons.GameApplication.dll</HintPath>
+        </Reference>
+        <Reference Include="Sons.Gameplay.GameSetup">
+          <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\Sons.Gameplay.GameSetup.dll</HintPath>
+        </Reference>
+        <Reference Include="Sons.Gameplay.LevelProps">
+          <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\Sons.Gameplay.LevelProps.dll</HintPath>
+        </Reference>
+        <Reference Include="Sons.Gameplay.StatusEffects">
+          <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\Sons.Gameplay.StatusEffects.dll</HintPath>
+        </Reference>
         <Reference Include="Sons.Gui.Multiplayer">
           <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\Sons.Gui.Multiplayer.dll</HintPath>
         </Reference>
@@ -65,6 +77,9 @@
         </Reference>
         <Reference Include="Sons.Gui.VersionUpgrade">
           <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\Sons.Gui.VersionUpgrade.dll</HintPath>
+        </Reference>
+        <Reference Include="Sons.Save">
+          <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\Sons.Save.dll</HintPath>
         </Reference>
       <Reference Include="SonsSdk">
         <HintPath>$(GameDir)\_RedLoader\net6\SonsSdk.dll</HintPath>

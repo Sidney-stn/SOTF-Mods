@@ -9,41 +9,6 @@ namespace BroadcastMessage
     internal class BroadcastInfo
     {
 
-        private static string lastUsername;
-
-        internal static async void SendChatMessage(string name = "[Discord] Unkown", string text = "Message")
-        {
-            if (!BoltNetwork.isRunning)
-            {
-                Misc.Msg("BoltNetwork Is Not Running!");
-                return;
-            }
-            if (lastUsername != name)
-            {
-                SetName(name);
-                lastUsername = name;
-                Misc.Msg("Before Delay");
-                await DelayCode();
-                Misc.Msg("After Delay");
-            }
-
-            ChatEvent chatEvent = ChatEvent.Create(GlobalTargets.AllClients, ReliabilityModes.ReliableOrdered);
-            chatEvent.Message = text;
-            chatEvent.Sender = LocalPlayer.Transform.GetComponent<BoltEntity>().networkId;
-            if (Config.PrintSentChatEvent.Value) { Misc.Msg($"ChatEvent To String: {chatEvent.ToString()}"); }
-            chatEvent.Send();
-        }
-
-        private static async Task DelayCode()
-        {
-            await Task.Run(DelayTimer);
-        }
-
-        public static async Task DelayTimer()
-        {
-            await Task.Delay(5000);
-        }
-
         internal static void CheckName()
         {
             IPlayerState state = LocalPlayer.Transform.GetComponent<BoltEntity>().GetState<IPlayerState>();
@@ -51,7 +16,7 @@ namespace BroadcastMessage
             Misc.Msg($"Server Name: {state.name}");
         }
 
-        private static void SetName(string name)
+        internal static void SetName(string name)
         {
             if (name == null || name == "") { Misc.ErrorMsg("Unable To Set Server Name, since input string is null or empty"); return; }
             IPlayerState state = LocalPlayer.Transform.GetComponent<BoltEntity>().GetState<IPlayerState>();
@@ -61,7 +26,7 @@ namespace BroadcastMessage
 
         internal static string VerifyName(NetworkId evntsender)
         {
-            foreach (BoltPlayerSetup boltPlayerSetup in GameObject.FindObjectsOfType<BoltPlayerSetup>())
+            foreach (BoltPlayerSetup boltPlayerSetup in GameObject.FindObjectsOfType<BoltPlayerSetup>())  // Would be smart to refactor this
             {
                 NetworkId networkid = boltPlayerSetup._entity._entity.NetworkId;
                 if (networkid == evntsender)
@@ -84,10 +49,22 @@ namespace BroadcastMessage
             botManager.StartBot();
         }
 
-        internal static void GenerateCheckDiscordMessageMono()
+        public static void StopBot()
         {
-            GameObject gameObject = new GameObject();
-            gameObject.AddComponent<BroadCastMono.BroadCastCheckTextFileMonoBehaviour>();
+            // Stop the Discord bot
+            botManager.StopBot();
+        }
+
+        public static GameObject monoGameObject;
+        internal static void InitilizeMonoBehavior()
+        {
+            monoGameObject = new GameObject();
+            monoGameObject.AddComponent<BroadCastMono.BroadCastCheckTextFileMonoBehaviour>();
+        }
+
+        internal static void KillMonoBehavior()
+        {
+            monoGameObject.GetComponent<BroadCastMono.BroadCastCheckTextFileMonoBehaviour>().KillSelf();
         }
 
     }

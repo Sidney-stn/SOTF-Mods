@@ -1,12 +1,12 @@
-﻿using SonsSdk;
+﻿using Sons.Gui;
+using Sons.Multiplayer;
+using SonsSdk;
 
 
 namespace BroadcastMessage;
 
 public class BroadcastMessage : SonsMod
 {
-    
-
     public BroadcastMessage()
     {
 
@@ -34,17 +34,31 @@ public class BroadcastMessage : SonsMod
 
         // Add in-game settings ui for your mod.
         // SettingsRegistry.CreateSettings(this, null, typeof(Config));
-
-        // Misc.Msg($"DLLPath: {DiscordBotManager.dllPath}, Directory: {DiscordBotManager.directory}, FileDirectory: {DiscordBotManager.fileDir}");
-        // [BroadcastMessage] DLLPath: C:\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\Mods\BroadcastMessage.dll, Directory: C:\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\Mods, FileDirectory: C:\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\Mods\BroadcastMessage
-
-        //// Example: Send a command to the bot
-        //botManager.SendCommand("Hello from the game!");
     }
 
     protected override void OnGameStart()
     {
-        BroadcastInfo.SetAndActivateBotManager();
-        BroadcastInfo.GenerateCheckDiscordMessageMono();
+        // So I Can Get HostMode Correctly
+        SonsSdk.SdkEvents.OnInWorldUpdate.Subscribe(BroadCastExtras.CheckHostModeOnWorldUpdate);
+        BroadCastEvents.OnHostModeGotten += BroadCastExtras.OnHostModeGottenCorrectly;
+    }
+
+    protected override void OnApplicationQuit() // Works Good For Dedicated Server, Would be Best if it was on leave World On MulitplayerHost
+    {
+        if (GameServerManager.IsDedicated)
+        {
+            BroadcastInfo.StopBot();
+            BroadcastInfo.KillMonoBehavior();
+            BroadCastEvents.OnHostModeGotten -= BroadCastExtras.OnHostModeGottenCorrectly;
+        }
+        Misc.Msg("OnApplicationQuit");
+    }
+
+    internal static void OnLeaveWorld()
+    {
+        Misc.Msg("OnLeaveWorld");
+        BroadcastInfo.StopBot();
+        BroadcastInfo.KillMonoBehavior();
+        BroadCastEvents.OnHostModeGotten -= BroadCastExtras.OnHostModeGottenCorrectly;
     }
 }

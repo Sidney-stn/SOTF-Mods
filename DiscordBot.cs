@@ -95,7 +95,7 @@ namespace BroadcastMessage
                 {
                     // Attempt to connect to the server
                     Misc.Msg("Attempting to connect to the bot process...");
-                    pipeClient.Connect(2000); // Try to connect with a timeout
+                    pipeClient.Connect(1000); // Try to connect with a timeout
 
                     // Check if the connection was successful
                     if (pipeClient.IsConnected)
@@ -164,7 +164,8 @@ namespace BroadcastMessage
                         // Log the received message in the desired format
                         Misc.Msg($"Received message from {username}: {message}");
                         string username_prefix = $"[DS] {username}";
-                        BroadcastInfo.SendChatMessage(username_prefix, message);
+                        //BroadcastInfo.SendChatMessage(username_prefix, message);
+                        BroadCastMono.BroadCastCheckTextFileMonoBehaviour.SendChatMessage(username_prefix, message);
 
                         // Process the received message here if needed
                         // For example, you could invoke some handler or add the message to a queue
