@@ -7,16 +7,16 @@
 
     <ItemGroup>
       <Reference Include="com.rlabrecque.steamworks.net">
-        <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\com.rlabrecque.steamworks.net.dll</HintPath>
+        <HintPath>$(GameDir)\_RedLoader\Game\com.rlabrecque.steamworks.net.dll</HintPath>
       </Reference>
       <Reference Include="Iced">
-        <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Dependencies\SupportModules\Iced.dll</HintPath>
+        <HintPath>$(GameDir)\_RedLoader\Dependencies\SupportModules\Iced.dll</HintPath>
       </Reference>
       <Reference Include="Il2Cpp">
-        <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Dependencies\SupportModules\Il2Cpp.dll</HintPath>
+        <HintPath>$(GameDir)\_RedLoader\Dependencies\SupportModules\Il2Cpp.dll</HintPath>
       </Reference>
       <Reference Include="Il2CppAssemblyGenerator">
-        <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Dependencies\Il2CppAssemblyGenerator\Il2CppAssemblyGenerator.dll</HintPath>
+        <HintPath>$(GameDir)\_RedLoader\Dependencies\Il2CppAssemblyGenerator\Il2CppAssemblyGenerator.dll</HintPath>
       </Reference>
       <Reference Include="Il2CppInterop.Common">
         <HintPath>$(GameDir)\_RedLoader\net6\Il2CppInterop.Common.dll</HintPath>
@@ -25,7 +25,7 @@
         <HintPath>$(GameDir)\_RedLoader\net6\Il2CppInterop.Generator.dll</HintPath>
       </Reference>
       <Reference Include="Il2CppInterop.HarmonySupport">
-        <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Dependencies\SupportModules\Il2CppInterop.HarmonySupport.dll</HintPath>
+        <HintPath>$(GameDir)\_RedLoader\Dependencies\SupportModules\Il2CppInterop.HarmonySupport.dll</HintPath>
       </Reference>
       <Reference Include="Il2CppInterop.Runtime">
         <HintPath>$(GameDir)\_RedLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
@@ -34,16 +34,16 @@
         <HintPath>$(GameDir)\_RedLoader\Game\Il2Cppmscorlib.dll</HintPath>
       </Reference>
       <Reference Include="Il2CppSystem">
-        <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Dependencies\Il2CppSystem.dll</HintPath>
+        <HintPath>$(GameDir)\_RedLoader\Dependencies\Il2CppSystem.dll</HintPath>
       </Reference>
       <Reference Include="Microsoft.Extensions.Logging.Abstractions">
-        <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Dependencies\SupportModules\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+        <HintPath>$(GameDir)\_RedLoader\Dependencies\SupportModules\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
       </Reference>
       <Reference Include="MonoMod.RuntimeDetour">
-        <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Dependencies\Il2CppAssemblyGenerator\MonoMod.RuntimeDetour.dll</HintPath>
+        <HintPath>$(GameDir)\_RedLoader\Dependencies\Il2CppAssemblyGenerator\MonoMod.RuntimeDetour.dll</HintPath>
       </Reference>
       <Reference Include="MonoMod.Utils">
-        <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Dependencies\Il2CppAssemblyGenerator\MonoMod.Utils.dll</HintPath>
+        <HintPath>$(GameDir)\_RedLoader\Dependencies\Il2CppAssemblyGenerator\MonoMod.Utils.dll</HintPath>
       </Reference>
       <Reference Include="RedLoader">
         <HintPath>$(GameDir)\_RedLoader\net6\RedLoader.dll</HintPath>
@@ -51,36 +51,36 @@
       <Reference Include="Sons">
         <HintPath>$(GameDir)\_RedLoader\Game\Sons.dll</HintPath>
       </Reference>
-        <Reference Include="Endnight">
-            <HintPath>$(GameDir)\_RedLoader\Game\Endnight.dll</HintPath>
-        </Reference>
-        <Reference Include="Sons.GameApplication">
-          <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\Sons.GameApplication.dll</HintPath>
-        </Reference>
-        <Reference Include="Sons.Gameplay.GameSetup">
-          <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\Sons.Gameplay.GameSetup.dll</HintPath>
-        </Reference>
-        <Reference Include="Sons.Gameplay.LevelProps">
-          <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\Sons.Gameplay.LevelProps.dll</HintPath>
-        </Reference>
-        <Reference Include="Sons.Gameplay.StatusEffects">
-          <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\Sons.Gameplay.StatusEffects.dll</HintPath>
-        </Reference>
-        <Reference Include="Sons.Gui.Multiplayer">
-          <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\Sons.Gui.Multiplayer.dll</HintPath>
-        </Reference>
-        <Reference Include="Sons.Gui.Multiplayer.Notifications">
-          <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\Sons.Gui.Multiplayer.Notifications.dll</HintPath>
-        </Reference>
-        <Reference Include="Sons.Gui.Options">
-          <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\Sons.Gui.Options.dll</HintPath>
-        </Reference>
-        <Reference Include="Sons.Gui.VersionUpgrade">
-          <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\Sons.Gui.VersionUpgrade.dll</HintPath>
-        </Reference>
-        <Reference Include="Sons.Save">
-          <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\Game\Sons.Save.dll</HintPath>
-        </Reference>
+      <Reference Include="Endnight">
+        <HintPath>$(GameDir)\_RedLoader\Game\Endnight.dll</HintPath>
+      </Reference>
+      <Reference Include="Sons.GameApplication">
+        <HintPath>$(GameDir)\_RedLoader\Game\Sons.GameApplication.dll</HintPath>
+      </Reference>
+      <Reference Include="Sons.Gameplay.GameSetup">
+        <HintPath>$(GameDir)\_RedLoader\Game\Sons.Gameplay.GameSetup.dll</HintPath>
+      </Reference>
+      <Reference Include="Sons.Gameplay.LevelProps">
+        <HintPath>$(GameDir)\_RedLoader\Game\Sons.Gameplay.LevelProps.dll</HintPath>
+      </Reference>
+      <Reference Include="Sons.Gameplay.StatusEffects">
+        <HintPath>$(GameDir)\_RedLoader\Game\Sons.Gameplay.StatusEffects.dll</HintPath>
+      </Reference>
+      <Reference Include="Sons.Gui.Multiplayer">
+        <HintPath>$(GameDir)\_RedLoader\Game\Sons.Gui.Multiplayer.dll</HintPath>
+      </Reference>
+      <Reference Include="Sons.Gui.Multiplayer.Notifications">
+        <HintPath>$(GameDir)\_RedLoader\Game\Sons.Gui.Multiplayer.Notifications.dll</HintPath>
+      </Reference>
+      <Reference Include="Sons.Gui.Options">
+        <HintPath>$(GameDir)\_RedLoader\Game\Sons.Gui.Options.dll</HintPath>
+      </Reference>
+      <Reference Include="Sons.Gui.VersionUpgrade">
+        <HintPath>$(GameDir)\_RedLoader\Game\Sons.Gui.VersionUpgrade.dll</HintPath>
+      </Reference>
+      <Reference Include="Sons.Save">
+        <HintPath>$(GameDir)\_RedLoader\Game\Sons.Save.dll</HintPath>
+      </Reference>
       <Reference Include="SonsSdk">
         <HintPath>$(GameDir)\_RedLoader\net6\SonsSdk.dll</HintPath>
       </Reference>
