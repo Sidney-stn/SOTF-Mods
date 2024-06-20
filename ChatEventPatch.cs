@@ -16,7 +16,7 @@ public class Patch
         if (evnt != null && !string.IsNullOrEmpty(evnt.Message))
         {
             string username = BroadcastInfo.VerifyName(evnt.Sender);
-            if (username.ToLower().StartsWith("[discord]") || username.ToLower().StartsWith("[ds]")) { return; }
+            if (username.ToLower().StartsWith("[discord]") || username.ToLower().StartsWith("[dc]")) { return; }
             Misc.Msg($"Username: {username}");
             Misc.Msg($"Message: {evnt.Message}");
             Misc.Msg($"NetworkId: {evnt.Sender}");

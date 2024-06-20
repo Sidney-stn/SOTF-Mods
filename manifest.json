@@ -1,11 +1,11 @@
 {
-  "$schema": "https://raw.githubusercontent.com/ToniMacaroni/RedLoader/main/MetadataSchema.json",
-  "id": "BroadcastMessage",
-  "author": "SmokyAce",
-  "platform": "Universal",
-  "version": "1.0.0",
-  "description": "Discord Chat Integration into the game",
-  "gameVersion": "1.0.0",
-  "type": "Mod",
-  "url": "..."
+    "$schema": "https://raw.githubusercontent.com/ToniMacaroni/RedLoader/main/MetadataSchema.json",
+    "id": "BroadcastMessage",
+    "author": "SmokyAce",
+    "platform": "Universal",
+    "version": "1.0.0",
+    "description": "Discord Chat Integration into the game",
+    "gameVersion": "1.0.0",
+    "type": "Mod",
+    "url": "https://github.com/move123456789/SOTF-Mods"
 }

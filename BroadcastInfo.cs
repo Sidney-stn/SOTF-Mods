@@ -26,15 +26,15 @@ namespace BroadcastMessage
 
         internal static string VerifyName(NetworkId evntsender)
         {
-            foreach (BoltPlayerSetup boltPlayerSetup in GameObject.FindObjectsOfType<BoltPlayerSetup>())  // Would be smart to refactor this
+            var playerSetup = GameObject.FindObjectsOfType<BoltPlayerSetup>()
+                                        .FirstOrDefault(bps => bps._entity._entity.NetworkId == evntsender);
+
+            if (playerSetup != null)
             {
-                NetworkId networkid = boltPlayerSetup._entity._entity.NetworkId;
-                if (networkid == evntsender)
-                {
-                    String name = boltPlayerSetup.state.name;
-                    return (string.IsNullOrEmpty(name)) ? "UNKNOWN" : name;
-                }
+                string name = playerSetup.state.name;
+                return string.IsNullOrEmpty(name) ? "UNKNOWN" : name;
             }
+
             return "UNKNOWN";
         }
 
