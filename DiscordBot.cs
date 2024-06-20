@@ -95,7 +95,7 @@ namespace BroadcastMessage
                 {
                     // Attempt to connect to the server
                     Misc.Msg("Attempting to connect to the bot process...");
-                    pipeClient.Connect(1000); // Try to connect with a timeout
+                    pipeClient.Connect(2000); // Try to connect with a timeout
 
                     // Check if the connection was successful
                     if (pipeClient.IsConnected)

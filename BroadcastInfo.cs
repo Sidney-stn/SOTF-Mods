@@ -1,4 +1,5 @@
 ﻿using Bolt;
+using Endnight.Extensions;
 using TheForest.Utils;
 using UnityEngine;
 
@@ -8,27 +9,39 @@ namespace BroadcastMessage
     internal class BroadcastInfo
     {
 
-        internal static void SendChatMessage(string name = "[Discord] Unkown", string text = "Message")
+        private static string lastUsername;
+
+        internal static async void SendChatMessage(string name = "[Discord] Unkown", string text = "Message")
         {
             if (!BoltNetwork.isRunning)
             {
                 Misc.Msg("BoltNetwork Is Not Running!");
                 return;
             }
-
-            if (name == null || name == "") { Misc.ErrorMsg("Unable To Set Server Name, since input string is null or empty"); return; }
-            IPlayerState state = LocalPlayer.Transform.GetComponent<BoltEntity>().GetState<IPlayerState>();
-            if (state == null) { Misc.ErrorMsg("IPlayerState state is null! Unable to get the name"); return; }
-            state.name = name;
-            SetName(name);
-
-            if (Config.CheckNamePrinting.Value) { CheckName(); }
+            if (lastUsername != name)
+            {
+                SetName(name);
+                lastUsername = name;
+                Misc.Msg("Before Delay");
+                await DelayCode();
+                Misc.Msg("After Delay");
+            }
 
             ChatEvent chatEvent = ChatEvent.Create(GlobalTargets.AllClients, ReliabilityModes.ReliableOrdered);
             chatEvent.Message = text;
             chatEvent.Sender = LocalPlayer.Transform.GetComponent<BoltEntity>().networkId;
             if (Config.PrintSentChatEvent.Value) { Misc.Msg($"ChatEvent To String: {chatEvent.ToString()}"); }
             chatEvent.Send();
+        }
+
+        private static async Task DelayCode()
+        {
+            await Task.Run(DelayTimer);
+        }
+
+        public static async Task DelayTimer()
+        {
+            await Task.Delay(5000);
         }
 
         internal static void CheckName()
@@ -38,7 +51,7 @@ namespace BroadcastMessage
             Misc.Msg($"Server Name: {state.name}");
         }
 
-        private static void SetName(string name) // Depricated Moved
+        private static void SetName(string name)
         {
             if (name == null || name == "") { Misc.ErrorMsg("Unable To Set Server Name, since input string is null or empty"); return; }
             IPlayerState state = LocalPlayer.Transform.GetComponent<BoltEntity>().GetState<IPlayerState>();
