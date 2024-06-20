@@ -100,65 +100,21 @@ namespace BroadcastMessage
                 chatEvent.Send();
                 if (BroadcastInfo.isDedicatedFromBroadCastMessage == false)  // Fixes So MulitplayerHost Also Get Messages
                 {
-                    GameObject playerStandin = BroadCastExtras.FindObjectInSpecificScene("SonsMain", "PlayerStandin");
-                    ChatBox localChatBox = playerStandin.GetComponentInChildren<ChatBox>();
-                    //ChatBox[] localChatBos = playerStandin.GetComponentsInChildren<ChatBox>();
-                    //foreach (ChatBox chatBox in localChatBos)
-                    //{
-                    //    Misc.Msg($"ChatBox Found");
-                    //    foreach (Il2CppSystem.Collections.Generic.KeyValuePair<Bolt.NetworkId, ChatBox.Player> entry in localChatBox._players) { Misc.Msg($"Key (NetworkId): {entry.key}, Value (Player): {entry.Value}"); }
-                    //}
 
-
-                    if (localChatBox == null) { Misc.ErrorMsg($"localChatBox not found! (is null)"); }
-                    if (localChatBox != null)
-                    {
-                        foreach (var entry in localChatBox._players)
-                        {
-                            // Assuming 'entry' is of the Il2CppSystem KeyValuePair type
-                            Bolt.NetworkId key = entry.key; // Il2CppSystem uses lowercase 'key'
-                            TheForest.UI.Multiplayer.ChatBox.Player player = entry.value; // Il2CppSystem uses lowercase 'value'
-
-                            Misc.Msg($"Key (NetworkId): {key}, Value (Player): {player}");
-
-                            if (player._name == "You")
-                            {
-                                Misc.Msg($"You found: {player._name}");
-                            }
-
-
-                        }
-                    }
-                    //if (localChatBox != null)
-                    //{
-                    //    Bolt.NetworkId myNetworkId = LocalPlayer.Transform.GetComponent<BoltEntity>().networkId;
-                    //    Misc.Msg($"MyNetworkId: {myNetworkId}");
-                    //    foreach (Il2CppSystem.Collections.Generic.KeyValuePair<Bolt.NetworkId, ChatBox.Player> entry in localChatBox._players)
-                    //    {
-                    //        Misc.Msg($"Key (NetworkId): {entry.key}, Value (Player): {entry.Value}");
-                    //        Bolt.NetworkId key = entry.key;
-                    //        if (myNetworkId == key)
-                    //        {
-                    //            Misc.Msg("ChatBox NetworkId Matched localChatBox._players key");
-                    //            ChatBox.Player player = entry.value;
-                    //            player._name = name;
-                    //            SendHostChatMessage(text);
-                    //            player._name = "You";
-                    //            break;
-                    //        }
-                    //    }
-                    //}
-
+                    HudGui.Instance.Chatbox.RegisterPlayer($"{name}", LocalPlayer.Entity.networkId, Color.cyan);
+                    ChatEvent newChatEvent = ChatEvent.Create(GlobalTargets.OnlySelf, ReliabilityModes.ReliableOrdered);
+                    newChatEvent.Message = text;
+                    newChatEvent.Sender = LocalPlayer.Transform.GetComponent<BoltEntity>().networkId;
+                    newChatEvent.Send();
+                    WaitToChangeNameToYou().RunCoro();
                 }
                 
             }
 
-            private static void SendHostChatMessage(string text)
+            private static IEnumerator WaitToChangeNameToYou()
             {
-                ChatEvent newChatEvent = ChatEvent.Create(GlobalTargets.OnlySelf, ReliabilityModes.ReliableOrdered);
-                newChatEvent.Message = text;
-                newChatEvent.Sender = LocalPlayer.Transform.GetComponent<BoltEntity>().networkId;
-                newChatEvent.Send();
+                yield return new WaitForSeconds(1f);
+                HudGui.Instance.Chatbox.RegisterPlayer($"You", LocalPlayer.Entity.networkId, Color.cyan);
             }
 
             private void Start()

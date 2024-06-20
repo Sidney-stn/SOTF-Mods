@@ -125,6 +125,7 @@ namespace BroadcastMessage
                 BroadcastInfo.SetAndActivateBotManager();
                 BroadcastInfo.InitilizeMonoBehavior();
             }
+            else { BroadcastMessage.saveTypeGotten = SimpleSaveGameType.SinglePlayer; }
 
             Misc.ErrorMsg($"IsDedicatedServer: {GameServerManager.IsDedicatedServer}, HostMode: {BroadCastExtras.hostMode}");
         }
