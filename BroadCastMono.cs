@@ -46,31 +46,17 @@ namespace BroadcastMessage
 
                 // Check if the provided name matches the last used name
                 BroadcastInfo.SetName(name);
-                if (name == lastUsedName)
+                if (instance != null)
                 {
-                    // If the name is the same, send the message instantly
-                    SendMessageNow(text);
+                    instance.SendDelayedMessage(name, text).RunCoro();
                 }
-                else
-                {
-                    // If the name is different, start a coroutine to delay the message
-                    // Note: Coroutines can only be started from a MonoBehaviour instance
-                    if (instance != null)
-                    {
-                        instance.SendDelayedMessage(name, text).RunCoro();
-                    }
-                        
-                }
-
-                // Update the last used name
-                lastUsedName = name;
             }
 
             // Coroutine to send the message after a delay
             private IEnumerator SendDelayedMessage(string name, string text)
             {
                 // Wait for 5 seconds
-                yield return new WaitForSeconds(5);
+                yield return new WaitForSeconds(1f);
 
                 // Send the message after the delay
                 SendMessageNow(text);

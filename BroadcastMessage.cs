@@ -45,13 +45,13 @@ public class BroadcastMessage : SonsMod
 
     protected override void OnApplicationQuit() // Works Good For Dedicated Server, Would be Best if it was on leave World On MulitplayerHost
     {
-        if (GameServerManager.IsDedicated)
+        Misc.Msg("OnApplicationQuit");
+        try
         {
             BroadcastInfo.StopBot();
             BroadcastInfo.KillMonoBehavior();
             BroadCastEvents.OnHostModeGotten -= BroadCastExtras.OnHostModeGottenCorrectly;
-        }
-        Misc.Msg("OnApplicationQuit");
+        } catch (Exception ex) { Misc.Msg("Cathced Error"); }
     }
 
     internal static void OnLeaveWorld()
