@@ -5,8 +5,8 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<GameDir>C:\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\Mods\BroadcastMessage\</GameDir>
-
+	<GameDir>C:\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest</GameDir>
+	<ModName>BroadcastMessage</ModName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,10 +14,10 @@
   </ItemGroup>
 
 	<Target Name="CustomPostBuild" AfterTargets="PostBuildEvent">
-		<Copy SourceFiles="$(TargetDir)DiscordBotApp.dll" DestinationFolder="$(GameDir)" />
-		<Copy SourceFiles="$(TargetDir)DiscordBotApp.exe" DestinationFolder="$(GameDir)" />
-		<Copy SourceFiles="$(TargetDir)DiscordBotApp.runtimeconfig.json" DestinationFolder="$(GameDir)" />
-		<Copy SourceFiles="$(TargetDir)DiscordBotApp.pdb" DestinationFolder="$(GameDir)" />
+		<Copy SourceFiles="$(TargetDir)DiscordBotApp.dll" DestinationFolder="$(GameDir)\Mods\$(ModName)" />
+		<Copy SourceFiles="$(TargetDir)DiscordBotApp.exe" DestinationFolder="$(GameDir)\Mods\$(ModName)" />
+		<Copy SourceFiles="$(TargetDir)DiscordBotApp.runtimeconfig.json" DestinationFolder="$(GameDir)\Mods\$(ModName)" />
+		<Copy SourceFiles="$(TargetDir)DiscordBotApp.pdb" DestinationFolder="$(GameDir)\Mods\$(ModName)" />
 	</Target>
 
 
