@@ -14,10 +14,19 @@
   </ItemGroup>
 
 	<Target Name="CustomPostBuild" AfterTargets="PostBuildEvent">
-		<Copy SourceFiles="$(TargetDir)DiscordBotApp.dll" DestinationFolder="$(GameDir)\Mods\$(ModName)" />
-		<Copy SourceFiles="$(TargetDir)DiscordBotApp.exe" DestinationFolder="$(GameDir)\Mods\$(ModName)" />
-		<Copy SourceFiles="$(TargetDir)DiscordBotApp.runtimeconfig.json" DestinationFolder="$(GameDir)\Mods\$(ModName)" />
-		<Copy SourceFiles="$(TargetDir)DiscordBotApp.pdb" DestinationFolder="$(GameDir)\Mods\$(ModName)" />
+		<Copy SourceFiles="$(TargetDir)DiscordBotApp.dll" DestinationFolder="$(GameDir)\Mods\$(ModName)\" />
+		<Copy SourceFiles="$(TargetDir)DiscordBotApp.exe" DestinationFolder="$(GameDir)\Mods\$(ModName)\" />
+		<Copy SourceFiles="$(TargetDir)DiscordBotApp.runtimeconfig.json" DestinationFolder="$(GameDir)\Mods\$(ModName)\" />
+		<Copy SourceFiles="$(TargetDir)DiscordBotApp.pdb" DestinationFolder="$(GameDir)\Mods\$(ModName)\" />
+		<Copy SourceFiles="$(TargetDir)Discord.Net.Commands.dll" DestinationFolder="$(GameDir)\Mods\$(ModName)\" />
+		<Copy SourceFiles="$(TargetDir)Discord.Net.Core.dll" DestinationFolder="$(GameDir)\Mods\$(ModName)\" />
+		<Copy SourceFiles="$(TargetDir)Discord.Net.Interactions.dll" DestinationFolder="$(GameDir)\Mods\$(ModName)\" />
+		<Copy SourceFiles="$(TargetDir)Discord.Net.Rest.dll" DestinationFolder="$(GameDir)\Mods\$(ModName)\" />
+		<Copy SourceFiles="$(TargetDir)Discord.Net.Webhook.dll" DestinationFolder="$(GameDir)\Mods\$(ModName)\" />
+		<Copy SourceFiles="$(TargetDir)Discord.Net.WebSocket.dll" DestinationFolder="$(GameDir)\Mods\$(ModName)\" />
+		<Copy SourceFiles="$(TargetDir)Newtonsoft.Json.dll" DestinationFolder="$(GameDir)\Mods\$(ModName)\" />
+		<Copy SourceFiles="$(TargetDir)Microsoft.Bcl.AsyncInterfaces.dll" DestinationFolder="$(GameDir)\Mods\$(ModName)\" />
+		<Copy SourceFiles="$(TargetDir)System.Interactive.Async.dll" DestinationFolder="$(GameDir)\Mods\$(ModName)\" />
 	</Target>
 
 
