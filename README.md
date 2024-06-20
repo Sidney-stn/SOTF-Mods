@@ -37,10 +37,10 @@
 12. Edit BroadcastMessage.cfg (In SOTF Game Dir/UserData/) (If not there launch the game)  
 ![BroadcastMessageCFG IMAGE!](https://imgur.com/tg3Ma3D.png)  
 13. Edit "TOKEN" to the token you reset e.g "jasidjoaiignnisdnfnsdnfsdlgskdkfnsgnbsbdg"  
-14. Edit the 0 to the copied Discord Channel Id
-15. Save and Close the Config
-16. Start the DedicatedServer or Lauch a MultiplayerGame
-17. COMPLETE!
+14. Edit the 0 to the copied Discord Channel Id  
+15. Save and Close the Config  
+16. Start the DedicatedServer or Lauch a MultiplayerGame  
+17. COMPLETE!  
 
 ### Created By SmokyAce and ThirtyTwelve
 - Everything in this project is free for use
