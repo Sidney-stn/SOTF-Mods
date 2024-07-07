@@ -13,29 +13,6 @@ namespace HotKeyCommands
         {
             if (!LocalPlayer.IsInWorld || HotKeyCommands.debugConsole == null || command.IsNullOrWhitespace()) { return; }
             HotKeyCommands.debugConsole.SendCommand(command);
-            //string cmd;
-            //string args;
-            //int firstSpaceIndex = command.IndexOf(' ');
-            //if (firstSpaceIndex == -1)
-            //{
-            //    // No space found, the entire command is a single word
-            //    cmd = command;
-            //    args = string.Empty;
-            //}
-            //else
-            //{
-            //    // Split the command into cmd and args
-            //    cmd = command.Substring(0, firstSpaceIndex);
-            //    args = command.Substring(firstSpaceIndex + 1).Trim();
-            //}
-            //if (!cmd.IsNullOrWhitespace() && args == string.Empty)
-            //{
-            //    HotKeyCommands.debugConsole.SendCommand(cmd);
-            //} else if (!cmd.IsNullOrWhitespace() && !args.IsNullOrWhitespace())
-            //{
-            //    DebugConsole.TryRunDynamicCommand(command, args, HotKeyCommands.debugConsole);
-            //}
-
         }
         internal static void Command1()
         {
