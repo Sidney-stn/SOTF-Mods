@@ -93,16 +93,9 @@ public class HotKeyCommands : SonsMod
                 {
                     Msg("UnityExplorer.UI.UIManager type found.");
 
-                    // Find an instance of the UIManager type in the scene
-                    var foundDebugConsole = FindOrCreateComponentOfType(uiManagerType);
-                    if (foundDebugConsole != null)
-                    {
-                        Msg("UnityExplorer.UI.UIManager instance found or created.");
-                    }
-                    else
-                    {
-                        Msg("UnityExplorer.UI.UIManager instance not found in the scene.");
-                    }
+                    // Check the value of the static property or field
+                    bool showMenu = CheckShowMenuProperty(uiManagerType);
+                    Msg($"UnityExplorer.UI.UIManager.ShowMenu is {showMenu}");
                 }
                 else
                 {
@@ -120,6 +113,34 @@ public class HotKeyCommands : SonsMod
         }
     }
 
+    private static bool CheckShowMenuProperty(Type uiManagerType)
+    {
+        try
+        {
+            // Attempt to get the property first
+            PropertyInfo showMenuProperty = uiManagerType.GetProperty("ShowMenu", BindingFlags.Static | BindingFlags.Public);
+            if (showMenuProperty != null)
+            {
+                return (bool)showMenuProperty.GetValue(null);
+            }
+
+            // If the property is not found, attempt to get the field
+            FieldInfo showMenuField = uiManagerType.GetField("ShowMenu", BindingFlags.Static | BindingFlags.Public);
+            if (showMenuField != null)
+            {
+                return (bool)showMenuField.GetValue(null);
+            }
+
+            Msg("ShowMenu property or field not found.");
+        }
+        catch (Exception ex)
+        {
+            Msg($"Error checking ShowMenu property: {ex.Message}");
+        }
+
+        return false;
+    }
+
     private static Type ClassSearch(string input)
     {
         Msg($"Starting ClassSearch with input: {input}");
@@ -130,7 +151,6 @@ public class HotKeyCommands : SonsMod
 
         foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
         {
-            Msg($"Searching in assembly: {asm.FullName}");
             foreach (Type type in asm.GetTypes())
             {
                 if (!string.IsNullOrEmpty(nameFilter) && type.FullName.Contains(nameFilter, StringComparison.OrdinalIgnoreCase))
@@ -143,37 +163,6 @@ public class HotKeyCommands : SonsMod
 
         Msg("No matching type found.");
         return null;
-    }
-
-
-    private static object FindOrCreateComponentOfType(Type type)
-    {
-        try
-        {
-            // Use reflection to search through all active GameObjects and their components
-            foreach (GameObject go in UnityEngine.Object.FindObjectsOfType<GameObject>())
-            {
-                MethodInfo getComponentMethod = typeof(GameObject).GetMethod("GetComponent", BindingFlags.Instance | BindingFlags.Public);
-                var component = getComponentMethod.Invoke(go, new object[] { type });
-
-                if (component != null)
-                {
-                    return component;
-                }
-            }
-
-            // If no instance found, create a new one
-            Msg("No existing instance found, creating a new one.");
-            GameObject newGameObject = new GameObject("UnityExplorer_UIManager");
-            MethodInfo addComponentMethod = typeof(GameObject).GetMethod("AddComponent", BindingFlags.Instance | BindingFlags.Public);
-            var newComponent = addComponentMethod.MakeGenericMethod(type).Invoke(newGameObject, null);
-            return newComponent;
-        }
-        catch (Exception ex)
-        {
-            Msg($"Error in FindOrCreateComponentOfType: {ex.Message}");
-            return null;
-        }
     }
 
 
