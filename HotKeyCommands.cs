@@ -62,8 +62,13 @@ public class HotKeyCommands : SonsMod
 
     public static void LoadUnityExplorerDllIfFound()
     {
-        if (alreadyLoaded) { Msg("UnityExplorer Dll Should Already Be Found And Loaded, returning"); return; }
+        if (alreadyLoaded)
+        {
+            Msg("UnityExplorer Dll Should Already Be Found And Loaded, returning");
+            return;
+        }
         alreadyLoaded = true;
+
         // Get the directory of the executing assembly
         string executingAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
@@ -89,10 +94,10 @@ public class HotKeyCommands : SonsMod
                     Msg("UnityExplorer.UI.UIManager type found.");
 
                     // Find an instance of the UIManager type in the scene
-                    var foundDebugConsole = FindComponentOfType(uiManagerType);
+                    var foundDebugConsole = FindOrCreateComponentOfType(uiManagerType);
                     if (foundDebugConsole != null)
                     {
-                        Msg("UnityExplorer.UI.UIManager instance found.");
+                        Msg("UnityExplorer.UI.UIManager instance found or created.");
                     }
                     else
                     {
@@ -141,14 +146,14 @@ public class HotKeyCommands : SonsMod
     }
 
 
-    private static object FindComponentOfType(Type type)
+    private static object FindOrCreateComponentOfType(Type type)
     {
         try
         {
             // Use reflection to search through all active GameObjects and their components
             foreach (GameObject go in UnityEngine.Object.FindObjectsOfType<GameObject>())
             {
-                MethodInfo getComponentMethod = typeof(GameObject).GetMethod("GetComponent", new Type[] { typeof(Type) });
+                MethodInfo getComponentMethod = typeof(GameObject).GetMethod("GetComponent", BindingFlags.Instance | BindingFlags.Public);
                 var component = getComponentMethod.Invoke(go, new object[] { type });
 
                 if (component != null)
@@ -156,14 +161,21 @@ public class HotKeyCommands : SonsMod
                     return component;
                 }
             }
-            return null;
+
+            // If no instance found, create a new one
+            Msg("No existing instance found, creating a new one.");
+            GameObject newGameObject = new GameObject("UnityExplorer_UIManager");
+            MethodInfo addComponentMethod = typeof(GameObject).GetMethod("AddComponent", BindingFlags.Instance | BindingFlags.Public);
+            var newComponent = addComponentMethod.MakeGenericMethod(type).Invoke(newGameObject, null);
+            return newComponent;
         }
         catch (Exception ex)
         {
-            Msg($"Error in FindComponentOfType: {ex.Message}");
+            Msg($"Error in FindOrCreateComponentOfType: {ex.Message}");
             return null;
         }
     }
+
 
     internal static void Msg(string msg)
     {
