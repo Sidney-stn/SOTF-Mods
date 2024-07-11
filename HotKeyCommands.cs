@@ -58,8 +58,6 @@ public class HotKeyCommands : SonsMod
         LoadUnityExplorerDllIfFound();
     }
 
-    internal static bool alreadyLoaded = false;
-
     public static void LoadUnityExplorerDllIfFound()
     {
         if (alreadyLoaded)
@@ -88,13 +86,13 @@ public class HotKeyCommands : SonsMod
                 Msg("UnityExplorer.dll found and loaded.");
 
                 // Use the ClassSearch method to find the UnityExplorer.UI.UIManager type
-                Type uiManagerType = ClassSearch("UnityExplorer.UI.UIManager");
+                uiManagerType = ClassSearch("UnityExplorer.UI.UIManager");
                 if (uiManagerType != null)
                 {
                     Msg("UnityExplorer.UI.UIManager type found.");
 
                     // Check the value of the static property or field
-                    bool showMenu = CheckShowMenuProperty(uiManagerType);
+                    bool showMenu = CheckShowMenuProperty();
                     Msg($"UnityExplorer.UI.UIManager.ShowMenu is {showMenu}");
                 }
                 else
@@ -113,10 +111,16 @@ public class HotKeyCommands : SonsMod
         }
     }
 
-    private static bool CheckShowMenuProperty(Type uiManagerType)
+    public static bool CheckShowMenuProperty()
     {
         try
         {
+            if (uiManagerType == null)
+            {
+                Msg("UIManager type is not loaded.");
+                return false;
+            }
+
             // Attempt to get the property first
             PropertyInfo showMenuProperty = uiManagerType.GetProperty("ShowMenu", BindingFlags.Static | BindingFlags.Public);
             if (showMenuProperty != null)
@@ -151,6 +155,7 @@ public class HotKeyCommands : SonsMod
 
         foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
         {
+            Msg($"Searching in assembly: {asm.FullName}");
             foreach (Type type in asm.GetTypes())
             {
                 if (!string.IsNullOrEmpty(nameFilter) && type.FullName.Contains(nameFilter, StringComparison.OrdinalIgnoreCase))
@@ -175,4 +180,6 @@ public class HotKeyCommands : SonsMod
     }
 
     public static DebugConsole debugConsole = null;
+    internal static bool alreadyLoaded = false;
+    private static Type uiManagerType;
 }
