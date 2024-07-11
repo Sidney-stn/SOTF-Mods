@@ -1,9 +1,8 @@
-﻿
-
-using Endnight.Extensions;
+﻿using Endnight.Extensions;
+using Sons.Gui;
 using TheForest;
 using TheForest.Utils;
-using static PlayerArmBlood;
+
 
 namespace HotKeyCommands
 {
@@ -11,7 +10,7 @@ namespace HotKeyCommands
     {
         private static void RunConsoleCommand(string command)
         {
-            if (!LocalPlayer.IsInWorld || HotKeyCommands.debugConsole == null || command.IsNullOrWhitespace()) { return; }
+            if (!LocalPlayer.IsInWorld || HotKeyCommands.debugConsole == null || command.IsNullOrWhitespace() || PauseMenu.IsActive) { return; }
             HotKeyCommands.debugConsole.SendCommand(command);
         }
         internal static void Command1()

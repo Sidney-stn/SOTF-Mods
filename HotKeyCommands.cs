@@ -1,6 +1,7 @@
 ﻿using RedLoader;
 using SonsSdk;
 using SUI;
+using System.Reflection;
 using TheForest;
 using UnityEngine;
 
@@ -35,6 +36,8 @@ public class HotKeyCommands : SonsMod
 
         // Adding Ingame CFG
         SettingsRegistry.CreateSettings(this, null, typeof(Config));
+
+        LoadUnityExplorerDllIfFound();
     }
 
     protected override void OnGameStart()
@@ -48,7 +51,40 @@ public class HotKeyCommands : SonsMod
         }
         else
         {
-            RLog.Msg("No GameObject with MyComponent found.");
+            RLog.Msg("No GameObject with DebugConsole found.");
+        }
+    }
+
+    public static void LoadUnityExplorerDllIfFound()
+    {
+        // Get the directory of the executing assembly
+        string executingAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+        // Get the parent directory
+        string parentDirectory = Directory.GetParent(executingAssemblyDirectory).FullName;
+
+        // Combine to get the path to the Mods directory
+        string dllPath = Path.Combine(parentDirectory, "Mods", "UnityExplorer.dll");
+
+        RLog.Msg($"Dll Path: {dllPath}");
+
+        if (File.Exists(dllPath))
+        {
+            try
+            {
+                Assembly assembly = Assembly.LoadFrom(dllPath);
+                RLog.Msg("UnityExplorer.dll found and loaded.");
+
+                UnityExplorer.Ui.UIManager foundDebugConsole = GameObject.FindObjectOfType<UnityExplorer.Ui.UIManager>();
+            }
+            catch (Exception ex)
+            {
+                RLog.Msg($"Failed to load UnityExplorer.dll: {ex.Message}");
+            }
+        }
+        else
+        {
+            RLog.Msg("UnityExplorer.dll not found.");
         }
     }
 
