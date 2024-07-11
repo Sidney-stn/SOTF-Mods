@@ -37,8 +37,6 @@ public class HotKeyCommands : SonsMod
 
         // Adding Ingame CFG
         SettingsRegistry.CreateSettings(this, null, typeof(Config));
-
-        //LoadUnityExplorerDllIfFound();
     }
 
     protected override void OnGameStart()

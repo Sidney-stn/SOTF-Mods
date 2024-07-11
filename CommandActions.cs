@@ -10,7 +10,7 @@ namespace HotKeyCommands
     {
         private static void RunConsoleCommand(string command)
         {
-            if (!LocalPlayer.IsInWorld || HotKeyCommands.debugConsole == null || command.IsNullOrWhitespace() || PauseMenu.IsActive) { return; }
+            if (!LocalPlayer.IsInWorld || HotKeyCommands.debugConsole == null || command.IsNullOrWhitespace() || PauseMenu.IsActive || LocalPlayer.IsInInventory) { return; }
             if (HotKeyCommands.CheckShowMenuProperty()) { HotKeyCommands.Msg("UnityExplorer is open, returning from command"); return; }
             HotKeyCommands.debugConsole.SendCommand(command);
         }
