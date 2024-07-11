@@ -12,6 +12,9 @@
       <Reference Include="Il2CppInterop.Generator">
         <HintPath>$(GameDir)\_RedLoader\net6\Il2CppInterop.Generator.dll</HintPath>
       </Reference>
+      <Reference Include="Il2CppInterop.HarmonySupport">
+        <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\_RedLoader\net6\Il2CppInterop.HarmonySupport.dll</HintPath>
+      </Reference>
       <Reference Include="Il2CppInterop.Runtime">
         <HintPath>$(GameDir)\_RedLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
       </Reference>

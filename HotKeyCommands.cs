@@ -1,4 +1,5 @@
-﻿using RedLoader;
+﻿using Il2CppInterop.Runtime;
+using RedLoader;
 using SonsSdk;
 using SUI;
 using System.Reflection;
@@ -37,7 +38,7 @@ public class HotKeyCommands : SonsMod
         // Adding Ingame CFG
         SettingsRegistry.CreateSettings(this, null, typeof(Config));
 
-        LoadUnityExplorerDllIfFound();
+        //LoadUnityExplorerDllIfFound();
     }
 
     protected override void OnGameStart()
@@ -51,12 +52,18 @@ public class HotKeyCommands : SonsMod
         }
         else
         {
-            RLog.Msg("No GameObject with DebugConsole found.");
+            Msg("No GameObject with DebugConsole found.");
         }
+
+        LoadUnityExplorerDllIfFound();
     }
+
+    internal static bool alreadyLoaded = false;
 
     public static void LoadUnityExplorerDllIfFound()
     {
+        if (alreadyLoaded) { Msg("UnityExplorer Dll Should Already Be Found And Loaded, returning"); return; }
+        alreadyLoaded = true;
         // Get the directory of the executing assembly
         string executingAssemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
@@ -66,25 +73,103 @@ public class HotKeyCommands : SonsMod
         // Combine to get the path to the Mods directory
         string dllPath = Path.Combine(parentDirectory, "Mods", "UnityExplorer.dll");
 
-        RLog.Msg($"Dll Path: {dllPath}");
+        Msg($"Dll Path: {dllPath}");
 
         if (File.Exists(dllPath))
         {
             try
             {
                 Assembly assembly = Assembly.LoadFrom(dllPath);
-                RLog.Msg("UnityExplorer.dll found and loaded.");
+                Msg("UnityExplorer.dll found and loaded.");
 
-                UnityExplorer.Ui.UIManager foundDebugConsole = GameObject.FindObjectOfType<UnityExplorer.Ui.UIManager>();
+                // Use the ClassSearch method to find the UnityExplorer.UI.UIManager type
+                Type uiManagerType = ClassSearch("UnityExplorer.UI.UIManager");
+                if (uiManagerType != null)
+                {
+                    Msg("UnityExplorer.UI.UIManager type found.");
+
+                    // Find an instance of the UIManager type in the scene
+                    var foundDebugConsole = FindComponentOfType(uiManagerType);
+                    if (foundDebugConsole != null)
+                    {
+                        Msg("UnityExplorer.UI.UIManager instance found.");
+                    }
+                    else
+                    {
+                        Msg("UnityExplorer.UI.UIManager instance not found in the scene.");
+                    }
+                }
+                else
+                {
+                    Msg("UnityExplorer.UI.UIManager type not found.");
+                }
             }
             catch (Exception ex)
             {
-                RLog.Msg($"Failed to load UnityExplorer.dll: {ex.Message}");
+                Msg($"Failed to load UnityExplorer.dll: {ex.Message}");
             }
         }
         else
         {
-            RLog.Msg("UnityExplorer.dll not found.");
+            Msg("UnityExplorer.dll not found.");
+        }
+    }
+
+    private static Type ClassSearch(string input)
+    {
+        Msg($"Starting ClassSearch with input: {input}");
+
+        string nameFilter = "";
+        if (!string.IsNullOrEmpty(input))
+            nameFilter = input;
+
+        foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            Msg($"Searching in assembly: {asm.FullName}");
+            foreach (Type type in asm.GetTypes())
+            {
+                if (!string.IsNullOrEmpty(nameFilter) && type.FullName.Contains(nameFilter, StringComparison.OrdinalIgnoreCase))
+                {
+                    Msg($"Found matching type: {type.FullName}");
+                    return type;
+                }
+            }
+        }
+
+        Msg("No matching type found.");
+        return null;
+    }
+
+
+    private static object FindComponentOfType(Type type)
+    {
+        try
+        {
+            // Use reflection to search through all active GameObjects and their components
+            foreach (GameObject go in UnityEngine.Object.FindObjectsOfType<GameObject>())
+            {
+                MethodInfo getComponentMethod = typeof(GameObject).GetMethod("GetComponent", new Type[] { typeof(Type) });
+                var component = getComponentMethod.Invoke(go, new object[] { type });
+
+                if (component != null)
+                {
+                    return component;
+                }
+            }
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Msg($"Error in FindComponentOfType: {ex.Message}");
+            return null;
+        }
+    }
+
+    internal static void Msg(string msg)
+    {
+        if (Config.LoggingHotKeyCommands.Value)
+        {
+            RLog.Msg(msg);
         }
     }
 

@@ -46,6 +46,7 @@ public static class Config
     public static ConfigEntry<string> Command8Input { get; private set; }
     public static ConfigEntry<string> Command9Input { get; private set; }
     public static ConfigEntry<string> Command10Input { get; private set; }
+    public static ConfigEntry<bool> LoggingHotKeyCommands { get; private set; }
 
     public static void Init()
     {
@@ -280,6 +281,12 @@ public static class Config
             "",
             "Enter Console Command Here",
             "Enter Console Command Here with or without args");
+
+        LoggingHotKeyCommands = HotKeyCommandssCategory.CreateEntry(
+            "logging_hot_key_commands",
+            false,
+            "Enable Logging",
+            "Enable Logging");
     }
 
     // Same as the callback in "CreateSettings". Called when the settings ui is closed.
