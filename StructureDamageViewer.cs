@@ -123,7 +123,7 @@ public class StructureDamageViewer : SonsMod
     {
 
         if (!LocalPlayer.IsInWorld || LocalPlayer.IsInInventory || PauseMenu.IsActive) { Misc.Msg("Requriements failed retuned"); return; }
-        Collider[] hitColliders = Physics.OverlapSphere(LocalPlayer.Transform.position, 5f, LayerMask.GetMask(new string[]
+        Collider[] hitColliders = Physics.OverlapSphere(LocalPlayer.Transform.position, Config.StructureDamageViewerScanDistance.Value, LayerMask.GetMask(new string[]
             {
                 "Prop"
             }));
