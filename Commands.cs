@@ -17,7 +17,6 @@ namespace StructureDamageViewer
             {
                 case "1":
                     Misc.Msg("1");
-                    Trigger();
                     break;
                 case "2":
                     Misc.Msg("2");
