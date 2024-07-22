@@ -79,16 +79,32 @@ public class StructureDamageViewer : SonsMod
         for (int i = 0; i < num; i++)
         {
             Misc.Msg($"[StructureDamageViewer] Processing hit {i}");
+            if (hits[i].collider == null)
+            {
+                Misc.Msg($"[StructureDamageViewer] Hit {i} has no collider");
+                continue;
+            }
+
+            GameObject hitObject = hits[i].collider.gameObject;
+            Misc.Msg($"[StructureDamageViewer] Hit {i} object: {hitObject.name}");
+
             Structure structure;
-            if (hits[i].collider.gameObject.TryGetComponentInParent(out structure))
+            if (hitObject.TryGetComponentInParent(out structure))
             {
                 Misc.Msg($"[StructureDamageViewer] Found structure: {structure.name}");
                 float num2;
                 float num3;
-                StructureDestructionManager.TryGetStructureHealth(structure, out num2, out num3);
-                string name = structure.name;
-                float structuralResistanceFactor = structure.GetStructuralResistanceFactor(6);
-                Misc.Msg($"{string.Format("Resistance Factor={0}\n", structuralResistanceFactor)} {string.Format("Health={0}/{1}", num2, num3)} ");
+                bool healthRetrieved = StructureDestructionManager.TryGetStructureHealth(structure, out num2, out num3);
+
+                if (healthRetrieved)
+                {
+                    float structuralResistanceFactor = structure.GetStructuralResistanceFactor(6);
+                    Misc.Msg($"{string.Format("Resistance Factor={0}\n", structuralResistanceFactor)} {string.Format("Health={0}/{1}", num2, num3)} ");
+                }
+                else
+                {
+                    Misc.Msg("[StructureDamageViewer] Could not retrieve health for structure");
+                }
             }
             else
             {
