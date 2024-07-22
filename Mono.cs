@@ -15,8 +15,45 @@ namespace StructureDamageViewer
         public Structure thisStructure;
         public GameObject attatcedToGameObject;
 
+        // List to hold the MeshRenderers for LODs
+        private List<MeshRenderer> lodRenderers;
+
+        // Store the original color
+        private Color originalColor;
+
+        // Colors for different health ranges
+        public Color highHealthColor = Color.green;
+        public Color mediumHealthColor = new Color(1.0f, 0.5f, 0.0f);
+        public Color lowHealthColor = Color.red;
+
         private void Start ()
         {
+            // Initialize the list
+            lodRenderers = new List<MeshRenderer>();
+
+            // Get all mesh renderers in children
+            MeshRenderer[] allRenderers = GetComponentsInChildren<MeshRenderer>();
+
+            foreach (var renderer in allRenderers)
+            {
+                // Check if the renderer's GameObject name contains "LOD0", "LOD1", or "LOD2"
+                if (renderer.gameObject.name.Contains("LOD0") || renderer.gameObject.name.Contains("LOD1") || renderer.gameObject.name.Contains("LOD2"))
+                {
+                    lodRenderers.Add(renderer);
+                }
+            }
+
+            if (lodRenderers.Count > 0)
+            {
+                // Store the original color from the first LOD renderer (assuming all LODs have the same initial color)
+                originalColor = lodRenderers[0].material.GetColor("_BaseColor"); // Use "_Color" if the shader is older
+            }
+            else
+            {
+                Misc.Msg("LOD renderers not found on the game object.");
+                Destroy(this);
+            }
+
             // Start the coroutine
             LoopEveryFiveSeconds().RunCoro();
         }
@@ -47,11 +84,70 @@ namespace StructureDamageViewer
             if (healthRetrieved)
             {
                 Misc.Msg($"{string.Format("Health={0}/{1}", num2, num3)} ");
-                if (num2 >= num3) { Destroy(this); }
+                if (num2 >= num3)
+                {
+                    // Reset the color to the original before destroying the script
+                    SetLODColors(originalColor);
+
+                    Destroy(this);
+                }
+                else if (attatcedToGameObject.name.Contains("DefensiveWall"))
+                {
+                    int childCount = attatcedToGameObject.transform.childCount;
+                    float newMaxHealth;
+                    switch (childCount)
+                    {
+                        case 0-4:
+                            newMaxHealth = num3 - (60 * childCount);
+                            UpdateColorBasedOnHealth(num2, newMaxHealth);
+                            break;
+                        case 5:
+                            UpdateColorBasedOnHealth(num2, num3);
+                            break;
+                    }
+                }
+                else
+                {
+                    UpdateColorBasedOnHealth(num2, num3);
+                }
             }
             else
             {
                 Misc.Msg("[StructureDamageViewer] Could not retrieve health for structure");
+            }
+        }
+
+        private void UpdateColorBasedOnHealth(float currentHealth, float maxHealth)
+        {
+            if (lodRenderers == null || lodRenderers.Count == 0) return;
+
+            float healthPercentage = (currentHealth / maxHealth) * 100f;
+            Color targetColor;
+
+            if (healthPercentage >= 85f && healthPercentage < 100f)
+            {
+                targetColor = highHealthColor;
+            }
+            else if (healthPercentage >= 40f && healthPercentage < 85f)
+            {
+                targetColor = mediumHealthColor;
+            }
+            else
+            {
+                targetColor = lowHealthColor;
+            }
+
+            SetLODColors(targetColor);
+        }
+
+        private void SetLODColors(Color color)
+        {
+            foreach (var renderer in lodRenderers)
+            {
+                if (renderer != null && renderer.material != null)
+                {
+                    renderer.material.SetColor("_BaseColor", color); // Use "_Color" if the shader is older
+                }
             }
         }
 
