@@ -6,15 +6,15 @@ namespace StructureDamageViewer
     {
         public static bool ShowGizmo = false;
         public static int MaxHits = 100;
+        private static RaycastHit[] hitsBuffer = new RaycastHit[MaxHits];
 
         public static int LineCastAllNonAlloc(Vector3 from, Vector3 to, float radius, out RaycastHit[] hits, int castLayers, QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.Collide)
         {
             float maxDistance = Vector3.Distance(from, to);
             Vector3 direction = (to - from).normalized;
-            RaycastHit[] results = new RaycastHit[MaxHits];
 
             // Perform the sphere cast
-            int hitCount = Physics.SphereCastNonAlloc(from, radius, direction, results, maxDistance, castLayers, queryTriggerInteraction);
+            int hitCount = Physics.SphereCastNonAlloc(from, radius, direction, hitsBuffer, maxDistance, castLayers, queryTriggerInteraction);
 
             // Optionally show gizmos for debugging
             if (hitCount > 0 && ShowGizmo)
@@ -25,7 +25,13 @@ namespace StructureDamageViewer
                 }
             }
 
-            hits = results;
+            // Copy the valid hits to the output array
+            hits = new RaycastHit[hitCount];
+            for (int i = 0; i < hitCount; i++)
+            {
+                hits[i] = hitsBuffer[i];
+            }
+
             return hitCount;
         }
     }

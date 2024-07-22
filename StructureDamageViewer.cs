@@ -3,6 +3,8 @@ using Construction.Utils;
 using Endnight.Utilities;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using RedLoader;
+using Sons.Gui;
+using Sons.Weapon;
 using SonsSdk;
 using TheForest.Utils;
 using UnityEngine;
@@ -65,7 +67,7 @@ public class StructureDamageViewer : SonsMod
         Misc.Msg($"[StructureDamageViewer] Position: {position}, To: {to}");
 
         RaycastHit[] hits;
-        int num = RaycastHelper.LineCastAllNonAlloc(position, to, 0.5f, out hits, Layers.PropMask, QueryTriggerInteraction.Collide);
+        int num = RaycastHelper.LineCastAllNonAlloc(position, to, 2f, out hits, Layers.PropMask, QueryTriggerInteraction.Collide);
 
         // Debugging information
         Misc.Msg($"[StructureDamageViewer] Number of hits: {num}");
@@ -113,4 +115,51 @@ public class StructureDamageViewer : SonsMod
         }
 
     }
+
+    public void Trigger2()
+    {
+
+        if (!LocalPlayer.IsInWorld || LocalPlayer.IsInInventory || PauseMenu.IsActive) { Misc.Msg("Requriements failed retuned"); return; }
+        bool golfCartFound = false;
+        Collider[] hitColliders = Physics.OverlapSphere(pos, detectionRadius);
+        foreach (var hitCollider in hitColliders)
+        {
+            //Misc.Msg($"Hit: {hitCollider.gameObject.name}"); // For Eleveted Debugging
+            GameObject golfCart;
+            if (hitCollider.gameObject.name == "GolfCart(Clone)") { golfCart = hitCollider.gameObject; }
+            else if (hitCollider.gameObject.name == "GolfCartDriverInteraction") { golfCart = hitCollider.gameObject.transform.GetParent().gameObject; }
+            else if (hitCollider.gameObject.name.Contains("WorldGolfCart")) { golfCart = hitCollider.gameObject; }
+            else { golfCart = null; }
+            if (golfCart != null)
+            {
+                Misc.Msg("Detected GolfCart(Clone)!");
+                SonsTools.ShowMessage("GolfCart Found, adding mods");
+                try
+                {
+                    GameObject golfCartSawBlade = GameObject.Instantiate(GolfCartModsAssets.GolfCartSawBlade);
+
+                    golfCartSawBlade.transform.GetChild(0).GetChild(0).gameObject.AddComponent<ChainSawBladeTrigger>();
+                    SawBlade.SawBladeController cont2 = golfCartSawBlade.transform.GetChild(0).GetChild(0).gameObject.AddComponent<SawBlade.SawBladeController>();
+                    cont2.golfCartClone = golfCart;
+                    cont2.golfCartSawBladePrefab = golfCartSawBlade;
+
+                    golfCartSawBlade.SetParent(golfCart.transform, false);
+                    golfCartSawBlade.transform.localPosition = new Vector3(0, 0.1f, 1.7f);
+                    golfCartFound = true;
+
+                    golfCartSawBlade.AddComponent<DestroyOnCMono>();
+
+                    ModdedCarts.Add(golfCart);
+                    SonsTools.ShowMessage("GolfCart Mods Added!");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    RLog.Error($"Error while adding GolfCartWoodController. Error: {e}");
+                    break;
+                }
+            }
+        }
+        if (!golfCartFound) { Misc.Msg($"No GolfCart Found in detection radius {detectionRadius}"); SonsTools.ShowMessage("No GolfCarts Found Nearby", 5f); return false; } else { return true; }
+        
 }
