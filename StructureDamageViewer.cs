@@ -1,11 +1,5 @@
-﻿using Construction;
-using Construction.Utils;
-using Endnight.Utilities;
-using Il2CppInterop.Runtime.InteropTypes.Arrays;
-using RedLoader;
-using Sons.Gui;
-using Sons.Weapon;
-using SonsSdk;
+﻿using SonsSdk;
+using SUI;
 using TheForest.Utils;
 using UnityEngine;
 
@@ -38,69 +32,37 @@ public class StructureDamageViewer : SonsMod
         // This is for stuff like UI creation, event registration etc.
         StructureDamageViewerUi.Create();
 
-        // Add in-game settings ui for your mod.
-        // SettingsRegistry.CreateSettings(this, null, typeof(Config));
+        // Adding Ingame CFG
+        SettingsRegistry.CreateSettings(this, null, typeof(Config));
     }
 
     protected override void OnGameStart()
     {
         // This is called once the player spawns in the world and gains control.
-        localPlayerTrackMono = LocalPlayer.GameObject.AddComponent<LocalPlayerTrackMono>();
+        Misc.localPlayerTrackMono = LocalPlayer.GameObject.AddComponent<LocalPlayerTrackMono>();
+        SonsSdk.SdkEvents.OnInWorldUpdate.Subscribe(Misc.CheckHostModeOnWorldUpdate);
+        Misc.OnHostModeGotten += Misc.OnHostModeGottenCorrectly;
+
     }
 
-    // Stores Instance
-    private LocalPlayerTrackMono localPlayerTrackMono = null;
-
-    public void Trigger2()
+    internal static void OnLeaveWorld()
     {
-
-        if (!LocalPlayer.IsInWorld || LocalPlayer.IsInInventory || PauseMenu.IsActive) { Misc.Msg("Requriements failed retuned"); return; }
-        Collider[] hitColliders = Physics.OverlapSphere(LocalPlayer.Transform.position, Config.StructureDamageViewerScanDistance.Value, LayerMask.GetMask(new string[]
-            {
-                "Prop"
-            }));
-        foreach (var hitCollider in hitColliders)
+        Misc.Msg("OnLeaveWorld");
+        Misc.OnHostModeGotten -= Misc.OnHostModeGottenCorrectly;
+        foreach (DamageMono mono in Misc.damageMonos)
         {
-            //Misc.Msg($"Hit: {hitCollider.gameObject.name}"); // For Eleveted Debugging
-            GameObject currentHit;
-            if (hitCollider.gameObject.name.Contains("Log")) { currentHit = hitCollider.gameObject; }
-            else { currentHit = null; }
-            if (currentHit != null)
-            {
-                Misc.Msg($"Detected: {hitCollider.gameObject.name}, Root: {hitCollider.transform.root.gameObject.name}");
-                SonsTools.ShowMessage($"Detected: {hitCollider.gameObject.name}, Root: {hitCollider.transform.root.gameObject.name}");
-                try
-                {
-                    Structure structure;
-                    if (currentHit.TryGetComponentInParent(out structure))
-                    {
-                        Misc.Msg($"[StructureDamageViewer] Found structure: {structure.name}");
-                        float num2;
-                        float num3;
-                        bool healthRetrieved = StructureDestructionManager.TryGetStructureHealth(structure, out num2, out num3);
-
-                        if (healthRetrieved)
-                        {
-                            float structuralResistanceFactor = structure.GetStructuralResistanceFactor(6);
-                            Misc.Msg($"{string.Format("Resistance Factor={0}\n", structuralResistanceFactor)} {string.Format("Health={0}/{1}", num2, num3)} ");
-                        }
-                        else
-                        {
-                            Misc.Msg("[StructureDamageViewer] Could not retrieve health for structure");
-                        }
-                    }
-                    else
-                    {
-                        Misc.Msg($"[StructureDamageViewer] No structure found in hit");
-                    }
-                    continue;
-                }
-                catch (Exception e)
-                {
-                    RLog.Error($"Error while finding Damaged Objects. Error: {e}");
-                    continue;
-                }
-            }
+            Misc.damageMonos.Remove(mono);
+            mono.StopCorutineCustom();
+            mono.StopAllCoroutines();
+            GameObject.Destroy(mono);
         }
+        Misc.localPlayerTrackMono.StopCorutineCustom();
+        Misc.localPlayerTrackMono.StopAllCoroutines();
+        GameObject.Destroy(Misc.localPlayerTrackMono);
+        Misc.localPlayerTrackMono = null;
+        Misc.damageMonos.Clear();
+
+        Misc.dialogManager.QuitGameConfirmDialog.remove_OnOption1Clicked((Il2CppSystem.Action)StructureDamageViewer.OnLeaveWorld);
     }
+
 }

@@ -17,13 +17,13 @@ public static class Config
             "scan_distance_structure_damage",
             5f,
             "Scan Distance",
-            "Scan For Damaged Structures");
+            "Scan For Damaged Structures (NOTE: LOD ON OBJECTS DETERMINE THE RANGE THE COLORS WILL BE SEEN. CAN'T BE CHANGES)");
 
         StructureDamageViewerScanDistance.SetRange(1f, 100f);
 
         StructureDamageViewerLogging = StructureDamageViewerCategory.CreateEntry(
             "logging_structure_damage",
-            true,
+            false,
             "Enable Logging",
             "Enable Logging Statements To Console");
     }

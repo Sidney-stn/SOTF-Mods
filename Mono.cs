@@ -26,6 +26,13 @@ namespace StructureDamageViewer
         public Color mediumHealthColor = new Color(1.0f, 0.5f, 0.0f);
         public Color lowHealthColor = Color.red;
 
+        // Flag to control coloring
+        public bool isColoringEnabled = true;
+        public bool isColoringUpdated = false;
+
+        // Update Coroutine
+        private Coroutines.CoroutineToken updateCoroutineToken;
+
         private void Start ()
         {
             // Initialize the list
@@ -55,7 +62,7 @@ namespace StructureDamageViewer
             }
 
             // Start the coroutine
-            LoopEveryFiveSeconds().RunCoro();
+            updateCoroutineToken = LoopEveryFiveSeconds().RunCoro();
         }
 
         IEnumerator LoopEveryFiveSeconds()
@@ -76,6 +83,8 @@ namespace StructureDamageViewer
         private void CheckDamage()
         {
             if (!LocalPlayer.IsInWorld || LocalPlayer.IsInInventory || PauseMenu.IsActive) { Misc.Msg("Requriements failed retuned"); return; }
+            if (!isColoringEnabled && isColoringUpdated) { return; }
+            if (Vector3.Distance(LocalPlayer.Transform.position, attatcedToGameObject.transform.position) > 50f) { return; }  // Over 50F away from objects, no need to update color since it will not be seen anyways
 
             float num2;
             float num3;
@@ -84,6 +93,7 @@ namespace StructureDamageViewer
             if (healthRetrieved)
             {
                 Misc.Msg($"{string.Format("Health={0}/{1}", num2, num3)} ");
+                //if (num2 >= num3 || num2 >= num3 - (60 * attatcedToGameObject.transform.childCount))
                 if (num2 >= num3)
                 {
                     // Reset the color to the original before destroying the script
@@ -120,7 +130,8 @@ namespace StructureDamageViewer
         private void UpdateColorBasedOnHealth(float currentHealth, float maxHealth)
         {
             if (lodRenderers == null || lodRenderers.Count == 0) return;
-
+            if (!isColoringEnabled && !isColoringUpdated) { SetLODColors(originalColor); return; }
+            
             float healthPercentage = (currentHealth / maxHealth) * 100f;
             Color targetColor;
 
@@ -140,7 +151,7 @@ namespace StructureDamageViewer
             SetLODColors(targetColor);
         }
 
-        private void SetLODColors(Color color)
+        public void SetLODColors(Color color)
         {
             foreach (var renderer in lodRenderers)
             {
@@ -149,6 +160,16 @@ namespace StructureDamageViewer
                     renderer.material.SetColor("_BaseColor", color); // Use "_Color" if the shader is older
                 }
             }
+            isColoringUpdated = true;
+        }
+
+        public void StopCorutineCustom()
+        {
+            if (updateCoroutineToken != null)
+            {
+                Coroutines.Stop(updateCoroutineToken);
+                updateCoroutineToken = null;
+            }
         }
 
     }
@@ -156,10 +177,13 @@ namespace StructureDamageViewer
     [RegisterTypeInIl2Cpp]
     public class LocalPlayerTrackMono : MonoBehaviour
     {
+        // Update Coroutine
+        private Coroutines.CoroutineToken updateCoroutineToken;
+
         private void Start()
         {
             // Start the coroutine
-            LoopEveryTenSeconds().RunCoro();
+            updateCoroutineToken = LoopEveryTenSeconds().RunCoro();
         }
 
 
@@ -187,7 +211,8 @@ namespace StructureDamageViewer
             foreach (var hitCollider in hitColliders)
             {
                 GameObject currentHit;
-                if (hitCollider.gameObject.name.Contains("Log")) { currentHit = hitCollider.gameObject; }
+                string hitColliderName = hitCollider.gameObject.name;
+                if (hitColliderName.Contains("Log") || hitColliderName.Contains("Rock")) { currentHit = hitCollider.gameObject; }
                 else { currentHit = null; }
                 if (currentHit != null)
                 {
@@ -217,6 +242,7 @@ namespace StructureDamageViewer
                                         DamageMono localInstance = currentHit.transform.root.gameObject.AddComponent<DamageMono>();
                                         localInstance.thisStructure = structure;
                                         localInstance.attatcedToGameObject = currentHit.transform.root.gameObject;
+                                        Misc.damageMonos.Add(localInstance);
                                         Misc.Msg($"Added DamageMono To: {currentHit.transform.root.gameObject.name}");
                                     }
                                 }
@@ -238,6 +264,15 @@ namespace StructureDamageViewer
                         }
                     }
                 }
+            }
+        }
+
+        public void StopCorutineCustom()
+        {
+            if (updateCoroutineToken != null)
+            {
+                Coroutines.Stop(updateCoroutineToken);
+                updateCoroutineToken = null;
             }
         }
     }

@@ -1,7 +1,4 @@
-﻿
-
-using Sons.Prefabs;
-using SonsSdk.Attributes;
+﻿using SonsSdk.Attributes;
 using TheForest.Utils;
 using UnityEngine;
 
@@ -10,19 +7,30 @@ namespace StructureDamageViewer
     public class Commands : StructureDamageViewer
     {
         [DebugCommand("StructureDamageViewer")]
-        private void SpawnGolfCartMods(string args)
+        private void StructureDamageViewerCommand(string args)
         {
             Misc.Msg("StructureDamageViewer Command");
             switch (args.ToLower())
             {
-                case "1":
-                    Misc.Msg("1");
+                case "off":
+                    Misc.Msg("OFF");
+                    foreach (DamageMono mono in Misc.damageMonos)
+                    {
+                        mono.isColoringUpdated = false;
+                        mono.isColoringEnabled = false;
+                        
+                    }
                     break;
-                case "2":
-                    Misc.Msg("2");
-                    Trigger2();
+                case "on":
+                    Misc.Msg("ON");
+                    foreach (DamageMono mono in Misc.damageMonos)
+                    {
+                        mono.isColoringUpdated = false;
+                        mono.isColoringEnabled = true;
+
+                    }
                     break;
-                case "3":
+                case "layermask":
                     Transform transform = LocalPlayer._instance._mainCam.transform;
                     Vector3 raycastStartPosition = transform.position + transform.forward * 0.2f; // Offset the start position 0.1 units in front of the player
                     RaycastHit raycastHit;
