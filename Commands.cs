@@ -20,6 +20,10 @@ namespace StructureDamageViewer
                     Trigger();
                     break;
                 case "2":
+                    Misc.Msg("2");
+                    Trigger2();
+                    break;
+                case "3":
                     Transform transform = LocalPlayer._instance._mainCam.transform;
                     Vector3 raycastStartPosition = transform.position + transform.forward * 0.2f; // Offset the start position 0.1 units in front of the player
                     RaycastHit raycastHit;
