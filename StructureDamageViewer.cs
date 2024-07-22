@@ -61,8 +61,14 @@ public class StructureDamageViewer : SonsMod
         RaycastHit raycastHit;
         Physics.Raycast(transform.position, transform.forward, out raycastHit, 25f, Layers.PropMask);
 
+        // Debugging information
+        Misc.Msg($"[StructureDamageViewer] Position: {position}, To: {to}");
+
         RaycastHit[] hits;
         int num = RaycastHelper.LineCastAllNonAlloc(position, to, 0.5f, out hits, Layers.PropMask, QueryTriggerInteraction.Collide);
+
+        // Debugging information
+        Misc.Msg($"[StructureDamageViewer] Number of hits: {num}");
 
         if (num == 0)
         {
@@ -72,15 +78,21 @@ public class StructureDamageViewer : SonsMod
 
         for (int i = 0; i < num; i++)
         {
+            Misc.Msg($"[StructureDamageViewer] Processing hit {i}");
             Structure structure;
             if (hits[i].collider.gameObject.TryGetComponentInParent(out structure))
             {
+                Misc.Msg($"[StructureDamageViewer] Found structure: {structure.name}");
                 float num2;
                 float num3;
                 StructureDestructionManager.TryGetStructureHealth(structure, out num2, out num3);
                 string name = structure.name;
                 float structuralResistanceFactor = structure.GetStructuralResistanceFactor(6);
                 Misc.Msg($"{string.Format("Resistance Factor={0}\n", structuralResistanceFactor)} {string.Format("Health={0}/{1}", num2, num3)} ");
+            }
+            else
+            {
+                Misc.Msg($"[StructureDamageViewer] No structure found in hit {i}");
             }
         }
 
