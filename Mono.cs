@@ -61,6 +61,8 @@ namespace StructureDamageViewer
                 Destroy(this);
             }
 
+            Misc.damageMonos.Add(this);
+
             // Start the coroutine
             updateCoroutineToken = LoopEveryFiveSeconds().RunCoro();
         }
@@ -165,10 +167,16 @@ namespace StructureDamageViewer
 
         public void StopCorutineCustom()
         {
-            if (updateCoroutineToken != null)
+            if (updateCoroutineToken != null && updateCoroutineToken.IsValid)
             {
+                Misc.Msg("Stopping DamageMono Coro");
                 Coroutines.Stop(updateCoroutineToken);
                 updateCoroutineToken = null;
+                Misc.Msg("Successfully stopped DamageMono Coro");
+            }
+            else
+            {
+                Misc.Msg("updateCoroutineToken is null or invalid, nothing to stop.");
             }
         }
 
@@ -242,7 +250,7 @@ namespace StructureDamageViewer
                                         DamageMono localInstance = currentHit.transform.root.gameObject.AddComponent<DamageMono>();
                                         localInstance.thisStructure = structure;
                                         localInstance.attatcedToGameObject = currentHit.transform.root.gameObject;
-                                        Misc.damageMonos.Add(localInstance);
+                                        //Misc.damageMonos.Add(localInstance);
                                         Misc.Msg($"Added DamageMono To: {currentHit.transform.root.gameObject.name}");
                                     }
                                 }
@@ -271,8 +279,59 @@ namespace StructureDamageViewer
         {
             if (updateCoroutineToken != null)
             {
+                Misc.Msg("Stopping LocalPlayerTrackMono Coro");
+                updateCoroutineToken.Stop();
                 Coroutines.Stop(updateCoroutineToken);
                 updateCoroutineToken = null;
+            }
+        }
+    }
+
+    [RegisterTypeInIl2Cpp]
+    public class TestMono : MonoBehaviour
+    {
+        private Coroutines.CoroutineToken testCoroutineToken;
+        private bool coroShouldRun;
+
+        private void Start()
+        {
+            if (testCoroutineToken == null)
+            {
+                testCoroutineToken = TestCoroutine().RunCoro();
+            }
+
+            //Invoke(nameof(StopTestCoroutine), 10); // Stop after 10 seconds for testing
+            Invoke(nameof(StopTestCoro), 10); // Stop after 10 seconds for testing
+        }
+
+        IEnumerator TestCoroutine()
+        {
+            while (true)
+            {
+                Misc.Msg("Test Coroutine Running");
+                yield return new WaitForSeconds(2f);
+            }
+        }
+
+        private void StopTestCoro()
+        {
+            Misc.Msg("Stopping Test Coroutine");
+            testCoroutineToken?.Stop();
+            Misc.Msg("Successfully stopped Test Coroutine");
+        }
+
+        private void StopTestCoroutine()
+        {
+            if (testCoroutineToken != null && testCoroutineToken.IsValid)
+            {
+                Misc.Msg("Stopping Test Coroutine");
+                Coroutines.Stop(testCoroutineToken);
+                testCoroutineToken = null;
+                Misc.Msg("Successfully stopped Test Coroutine");
+            }
+            else
+            {
+                Misc.Msg("testCoroutineToken is null or invalid, nothing to stop.");
             }
         }
     }

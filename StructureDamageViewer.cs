@@ -40,6 +40,7 @@ public class StructureDamageViewer : SonsMod
     {
         // This is called once the player spawns in the world and gains control.
         Misc.localPlayerTrackMono = LocalPlayer.GameObject.AddComponent<LocalPlayerTrackMono>();
+        LocalPlayer.GameObject.AddComponent<TestMono>();
         SonsSdk.SdkEvents.OnInWorldUpdate.Subscribe(Misc.CheckHostModeOnWorldUpdate);
         Misc.OnHostModeGotten += Misc.OnHostModeGottenCorrectly;
 
@@ -49,19 +50,30 @@ public class StructureDamageViewer : SonsMod
     {
         Misc.Msg("OnLeaveWorld");
         Misc.OnHostModeGotten -= Misc.OnHostModeGottenCorrectly;
+        Misc.Msg($"List DamageMonos Count: {Misc.damageMonos.Count}");
+
         foreach (DamageMono mono in Misc.damageMonos)
         {
-            Misc.damageMonos.Remove(mono);
+            Misc.Msg("[OnLeaveWorld] Foreach: DamageMono mono in Misc.damageMonos");
             mono.StopCorutineCustom();
-            mono.StopAllCoroutines();
+            Misc.Msg("Successfully stopped Coro");
             GameObject.Destroy(mono);
+            Misc.Msg("[OnLeaveWorld] Destroyed DamageMono");
         }
-        Misc.localPlayerTrackMono.StopCorutineCustom();
-        Misc.localPlayerTrackMono.StopAllCoroutines();
-        GameObject.Destroy(Misc.localPlayerTrackMono);
-        Misc.localPlayerTrackMono = null;
-        Misc.damageMonos.Clear();
 
+        if (Misc.localPlayerTrackMono != null)
+        {
+            Misc.localPlayerTrackMono.StopCorutineCustom();
+            GameObject.Destroy(Misc.localPlayerTrackMono);
+            Misc.Msg("Destroyed LocalPlayerTrackMono");
+            Misc.localPlayerTrackMono = null;
+        }
+        else
+        {
+            Misc.Msg("localPlayerTrackMono is null, nothing to stop or destroy.");
+        }
+
+        Misc.damageMonos.Clear();
         Misc.dialogManager.QuitGameConfirmDialog.remove_OnOption1Clicked((Il2CppSystem.Action)StructureDamageViewer.OnLeaveWorld);
     }
 
