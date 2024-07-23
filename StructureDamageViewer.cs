@@ -40,7 +40,6 @@ public class StructureDamageViewer : SonsMod
     {
         // This is called once the player spawns in the world and gains control.
         Misc.localPlayerTrackMono = LocalPlayer.GameObject.AddComponent<LocalPlayerTrackMono>();
-        LocalPlayer.GameObject.AddComponent<TestMono>();
         SonsSdk.SdkEvents.OnInWorldUpdate.Subscribe(Misc.CheckHostModeOnWorldUpdate);
         Misc.OnHostModeGotten += Misc.OnHostModeGottenCorrectly;
 
