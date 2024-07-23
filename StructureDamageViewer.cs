@@ -1,5 +1,6 @@
 ﻿using SonsSdk;
 using SUI;
+using TheForest.Items.Inventory;
 using TheForest.Utils;
 using UnityEngine;
 
@@ -43,6 +44,9 @@ public class StructureDamageViewer : SonsMod
         SonsSdk.SdkEvents.OnInWorldUpdate.Subscribe(Misc.CheckHostModeOnWorldUpdate);
         Misc.OnHostModeGotten += Misc.OnHostModeGottenCorrectly;
 
+        // Subscribe To UnityAction Listeners OnEqipped And OnUnEqupped
+        PlayerInventory playerInventory = LocalPlayer.Inventory;
+        RepairToolInHand.Initialize(playerInventory);
     }
 
     internal static void OnLeaveWorld()
@@ -73,6 +77,7 @@ public class StructureDamageViewer : SonsMod
         }
 
         Misc.damageMonos.Clear();
+        RepairToolInHand.Deinitialize(LocalPlayer.Inventory);
         Misc.dialogManager.QuitGameConfirmDialog.remove_OnOption1Clicked((Il2CppSystem.Action)StructureDamageViewer.OnLeaveWorld);
     }
 

@@ -7,11 +7,24 @@ public static class Config
     public static ConfigCategory StructureDamageViewerCategory { get; private set; }
 
     public static ConfigEntry<bool> StructureDamageViewerLogging { get; private set; }
+    public static ConfigEntry<bool> StructureDamageOnRepairTool { get; private set; }
     public static ConfigEntry<float> StructureDamageViewerScanDistance { get; private set; }
 
     public static void Init()
     {
         StructureDamageViewerCategory = ConfigSystem.CreateCategory("structureDamageViewerCategory", "StructureDamageViewerCategory");
+
+        StructureDamageOnRepairTool = StructureDamageViewerCategory.CreateEntry(
+            "only_on_repair_tool_structure_damage",
+            false,
+            "Only Color Objects When Repair Tool",
+            "Only Color Objects When Repair Tool Is In Hand");
+
+        StructureDamageOnRepairTool.OnValueChanged.Subscribe((prev, value) =>
+        {
+            // Call Method On Value Change
+            RepairToolInHand.OnConfigValueChanged();
+        });
 
         StructureDamageViewerScanDistance = StructureDamageViewerCategory.CreateEntry(
             "scan_distance_structure_damage",

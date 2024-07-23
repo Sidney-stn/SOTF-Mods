@@ -1,0 +1,127 @@
+﻿using Sons.Inventory;
+using TheForest.Items.Inventory;
+using TheForest.Utils;
+using UnityEngine.Events;
+
+
+namespace StructureDamageViewer
+{
+    public class RepairToolInHand
+    { 
+        public static void Initialize(PlayerInventory playerInventory)
+        {
+            // Subscribing to the OnItemUnequippedEvent
+            if (playerInventory.OnItemUnequippedEvent != null)
+            {
+                playerInventory.OnItemUnequippedEvent.AddListener((UnityAction<ItemInstance, int>)OnItemUnequipped);
+            }
+
+            // Subscribing to the OnItemEquippedEvent
+            if (playerInventory.OnItemEquippedEvent != null)
+            {
+                playerInventory.OnItemEquippedEvent.AddListener((UnityAction<ItemInstance, int>)OnItemEquipped);
+            }
+        }
+
+        public static void Deinitialize(PlayerInventory playerInventory)
+        {
+            // Unsubscribing from the OnItemUnequippedEvent
+            if (playerInventory.OnItemUnequippedEvent != null)
+            {
+                playerInventory.OnItemUnequippedEvent.RemoveListener((UnityAction<ItemInstance, int>)OnItemUnequipped);
+            }
+
+            // Unsubscribing from the OnItemEquippedEvent
+            if (playerInventory.OnItemEquippedEvent != null)
+            {
+                playerInventory.OnItemEquippedEvent.RemoveListener((UnityAction<ItemInstance, int>)OnItemEquipped);
+            }
+        }
+
+        public static void OnItemUnequipped(ItemInstance item, int slotIndex)
+        {
+            // Your logic for when an item is unequipped
+            Misc.Msg($"Item {item.Data.name} unequipped from slot {slotIndex}");
+            if (slotIndex == 422 && Config.StructureDamageOnRepairTool.Value)
+            {
+                foreach (DamageMono mono in Misc.damageMonos)
+                {
+                    mono.isColoringUpdated = false;
+                    mono.isColoringEnabled = false;
+
+                }
+            }
+        }
+
+        public static void OnItemEquipped(ItemInstance item, int slotIndex)
+        {
+            // Your logic for when an item is equipped
+            Misc.Msg($"Item {item.Data.name} equipped to slot {slotIndex}");
+            if (slotIndex == 422 && Config.StructureDamageOnRepairTool.Value)
+            {
+                foreach (DamageMono mono in Misc.damageMonos)
+                {
+                    mono.isColoringUpdated = false;
+                    mono.isColoringEnabled = true;
+
+                }
+            }
+        }
+
+        public static void OnConfigValueChanged()
+        {
+            if (LocalPlayer.Inventory != null && LocalPlayer.Inventory.RightHandItem != null)
+            {
+                if (Config.StructureDamageOnRepairTool.Value && LocalPlayer.Inventory.RightHandItem.Data.Id != 422)
+                {
+                    foreach (DamageMono mono in Misc.damageMonos)
+                    {
+                        mono.isColoringUpdated = false;
+                        mono.isColoringEnabled = false;
+
+                    }
+                }
+                else if (Config.StructureDamageOnRepairTool.Value && LocalPlayer.Inventory.RightHandItem.Data.Id == 422)
+                {
+                    foreach (DamageMono mono in Misc.damageMonos)
+                    {
+                        mono.isColoringUpdated = false;
+                        mono.isColoringEnabled = true;
+
+                    }
+                }
+                else if (!Config.StructureDamageOnRepairTool.Value)
+                {
+                    foreach (DamageMono mono in Misc.damageMonos)
+                    {
+                        mono.isColoringUpdated = false;
+                        mono.isColoringEnabled = true;
+
+                    }
+                }
+            }
+            else
+            {
+                if (Config.StructureDamageOnRepairTool.Value)
+                {
+                    foreach (DamageMono mono in Misc.damageMonos)
+                    {
+                        mono.isColoringUpdated = false;
+                        mono.isColoringEnabled = false;
+
+                    }
+                }
+                else if (!Config.StructureDamageOnRepairTool.Value)
+                {
+                    foreach (DamageMono mono in Misc.damageMonos)
+                    {
+                        mono.isColoringUpdated = false;
+                        mono.isColoringEnabled = true;
+
+                    }
+                }
+            }
+            
+        }
+    }
+}

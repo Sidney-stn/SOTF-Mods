@@ -71,7 +71,7 @@ namespace StructureDamageViewer
 
         public static void AddOnQuitWorld()
         {
-            dialogManager.QuitGameConfirmDialog.AddOnOption1ClickedCallback((Il2CppSystem.Action)StructureDamageViewer.OnLeaveWorld);
+            dialogManager.QuitGameConfirmDialog.AddOnOption1ClickedCallback((Il2CppSystem.Action)StructureDamageViewer.OnLeaveWorld);  // Quit World Confirm Button Press
             Misc.Msg("Added OnLeaveWorld Event");
 
         }

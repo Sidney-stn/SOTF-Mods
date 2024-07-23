@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/ToniMacaroni/RedLoader/main/MetadataSchema.json",
   "id": "StructureDamageViewer",
   "author": "SmokyAce",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "View Structure Damage",
   "gameVersion": "1.0.0",
   "platform": "Client",

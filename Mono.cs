@@ -246,7 +246,11 @@ namespace StructureDamageViewer
                                         DamageMono localInstance = currentHit.transform.root.gameObject.AddComponent<DamageMono>();
                                         localInstance.thisStructure = structure;
                                         localInstance.attatcedToGameObject = currentHit.transform.root.gameObject;
-                                        //Misc.damageMonos.Add(localInstance);
+                                        if (Config.StructureDamageOnRepairTool.Value)
+                                        {
+                                            localInstance.isColoringUpdated = false;
+                                            localInstance.isColoringEnabled = false;
+                                        }
                                         Misc.Msg($"Added DamageMono To: {currentHit.transform.root.gameObject.name}");
                                     }
                                 }
