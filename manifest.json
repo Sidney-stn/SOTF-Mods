@@ -1,9 +1,10 @@
 {
   "$schema": "https://raw.githubusercontent.com/ToniMacaroni/RedLoader/main/MetadataSchema.json",
   "id": "SimpleNetworkEvents",
-  "author": "You",
+  "author": "SmokyAce",
   "version": "1.0.0",
-  "description": "A mod that does something.",
+  "description": "Port Maches network events to RedLoader",
   "gameVersion": "1.0.0",
-  "url": "..."
+  "url": "...",
+  "platform": "Universal"
 }

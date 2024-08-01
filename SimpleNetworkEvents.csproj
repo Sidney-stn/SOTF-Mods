@@ -57,6 +57,15 @@
       <Reference Include="UnityEngine.CoreModule">
         <HintPath>$(GameDir)\_RedLoader\Game\UnityEngine.CoreModule.dll</HintPath>
       </Reference>
+		<Reference Include="Sons.Gameplay.GameSetup.dll">
+			<HintPath>$(GameDir)\_RedLoader\Game\Sons.Gameplay.GameSetup.dll</HintPath>
+		</Reference>
+		<Reference Include="Sons.Save.dll">
+			<HintPath>$(GameDir)\_RedLoader\Game\Sons.Save.dll</HintPath>
+		</Reference>
+		<Reference Include="Endnight">
+			<HintPath>$(GameDir)\_RedLoader\Game\Endnight.dll</HintPath>
+		</Reference>
     </ItemGroup>
 
     <ItemGroup>

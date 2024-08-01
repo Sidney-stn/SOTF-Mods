@@ -4,18 +4,18 @@ namespace SimpleNetworkEvents;
 
 internal static class Config
 {
-    internal static ConfigCategory Category { get; private set; }
+    internal static ConfigCategory SimpleNetworkEventsCategory { get; private set; }
 
-    //public static ConfigEntry<bool> SomeEntry { get; private set; }
+    public static ConfigEntry<bool> DebugLoggingSimpleNetworkEvents { get; private set; }
 
     internal static void Init()
     {
-        Category = ConfigSystem.CreateFileCategory("SimpleNetworkEvents", "SimpleNetworkEvents", "SimpleNetworkEvents.cfg");
+        SimpleNetworkEventsCategory = ConfigSystem.CreateCategory("simpleNetworkEvents", "SimpleNetworkEvents");
 
-        // SomeEntry = Category.CreateEntry(
-        //     "some_entry",
-        //     true,
-        //     "Some entry",
-        //     "Some entry that does some stuff.");
+        DebugLoggingSimpleNetworkEvents = SimpleNetworkEventsCategory.CreateEntry(
+            "enable_logging_advanced_network_events",
+            false,
+            "Enable Debug Logs",
+            "Enables SimpleNetworkEvents Debug Logs of the game to the console.");
     }
 }

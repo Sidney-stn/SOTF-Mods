@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace SimpleNetworkEvents
 {
@@ -100,6 +96,26 @@ namespace SimpleNetworkEvents
                 data.OnEventReceived?.Invoke(result);
             }
         }
+
+        public static void UnregisterEvent<T>() where T : SimpleEvent<T>
+        {
+            string eventId = SimpleEvent<T>.GetEventID();
+            UnregisterEvent(eventId);
+        }
+
+        private static void UnregisterEvent(string eventId)
+        {
+            var eventToUnregister = eventData.FirstOrDefault(d => d.EventId == eventId);
+            if (eventToUnregister != null)
+            {
+                eventData.Remove(eventToUnregister);
+            }
+            else
+            {
+                Misc.Msg($"No NetworkEvent found with the id: {eventId} to unregister");
+            }
+        }
+
     }
 }
 
