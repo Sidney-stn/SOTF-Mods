@@ -1,6 +1,7 @@
 ﻿using Endnight.Extensions;
 using Sons.Gui;
 using TheForest;
+using TheForest.UI.Multiplayer;
 using TheForest.Utils;
 
 
@@ -12,6 +13,8 @@ namespace HotKeyCommands
         {
             if (!LocalPlayer.IsInWorld || HotKeyCommands.debugConsole == null || command.IsNullOrWhitespace() || PauseMenu.IsActive || LocalPlayer.IsInInventory || HotKeyCommands.debugConsole._showConsole) { return; }
             if (HotKeyCommands.CheckShowMenuProperty()) { HotKeyCommands.Msg("UnityExplorer is open, returning from command"); return; }
+            
+            if (ChatBox.IsChatOpen) { HotKeyCommands.Msg("ChatBox is open, returning from command"); return; }
             foreach (string suiId in SUIUI.SuiElements)
             {
                 if (SUIUI.IsPanelActive(suiId)) { HotKeyCommands.Msg("SUI Panel is open, returning from command"); return; }
