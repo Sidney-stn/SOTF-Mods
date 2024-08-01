@@ -153,7 +153,6 @@ public class HotKeyCommands : SonsMod
 
         foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
         {
-            Msg($"Searching in assembly: {asm.FullName}");
             foreach (Type type in asm.GetTypes())
             {
                 if (!string.IsNullOrEmpty(nameFilter) && type.FullName.Contains(nameFilter, StringComparison.OrdinalIgnoreCase))

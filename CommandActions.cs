@@ -10,8 +10,12 @@ namespace HotKeyCommands
     {
         private static void RunConsoleCommand(string command)
         {
-            if (!LocalPlayer.IsInWorld || HotKeyCommands.debugConsole == null || command.IsNullOrWhitespace() || PauseMenu.IsActive || LocalPlayer.IsInInventory) { return; }
+            if (!LocalPlayer.IsInWorld || HotKeyCommands.debugConsole == null || command.IsNullOrWhitespace() || PauseMenu.IsActive || LocalPlayer.IsInInventory || HotKeyCommands.debugConsole._showConsole) { return; }
             if (HotKeyCommands.CheckShowMenuProperty()) { HotKeyCommands.Msg("UnityExplorer is open, returning from command"); return; }
+            foreach (string suiId in SUIUI.SuiElements)
+            {
+                if (SUIUI.IsPanelActive(suiId)) { HotKeyCommands.Msg("SUI Panel is open, returning from command"); return; }
+            }
             HotKeyCommands.debugConsole.SendCommand(command);
         }
         internal static void Command1()
