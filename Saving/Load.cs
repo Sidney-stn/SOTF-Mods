@@ -9,7 +9,11 @@ namespace Signs.Saving
 
         internal static void ProcessLoadData(Saving.Manager.SignsManager obj)
         {
-
+            if (Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
+            {
+                Misc.Msg("[Loading] Skipped Loading Signs On Multiplayer Client");
+                return;
+            }
             // Signs Prefab
             ModdedSigns.Clear();
             Misc.Msg($"[Loading] Signs From Save: {obj.Signs.Count.ToString()}");
@@ -22,7 +26,7 @@ namespace Signs.Saving
                 }
                 else if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
                 {
-                    GameObject sign = Prefab.SignPrefab.spawnSignMultiplayer(signsData.Position, signsData.Rotation, signsData.UniqueId);
+                    GameObject sign = Prefab.SignPrefab.spawnSignSingePlayer(signsData.Position, signsData.Rotation, false, signsData.Line1Text, signsData.Line2Text, signsData.Line3Text, signsData.Line4Text, signsData.UniqueId);
                 }
             }
         }

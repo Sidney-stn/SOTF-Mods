@@ -61,6 +61,12 @@ public class Signs : SonsMod
         Misc.OnHostModeGotten -= Misc.OnHostModeGottenCorrectly;
         Misc.dialogManager.QuitGameConfirmDialog.remove_OnOption1Clicked((Il2CppSystem.Action)OnLeaveWorld);
         GameObject.Destroy(Prefab.SignPrefab.signWithComps);
+        Prefab.SignPrefab.spawnedSigns.Clear();
+        foreach (var sign in Saving.Load.ModdedSigns)
+        {
+            GameObject.Destroy(sign);
+        }
+        Saving.Load.ModdedSigns.Clear();
     }
 
     [DebugCommand("signs")]

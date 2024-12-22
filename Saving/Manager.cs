@@ -13,6 +13,11 @@ namespace Signs.Saving
 
         public SignsManager Save()
         {
+            if (Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
+            {
+                Misc.Msg("[Saving] Only Host Saves");
+                return null;
+            }
             var saveData = new SignsManager();
 
             // Signs
@@ -20,6 +25,7 @@ namespace Signs.Saving
             {
                 foreach (var signsGameObject in Saving.Load.ModdedSigns)
                 {
+                    if (signsGameObject == null) { continue; }
                     Mono.SignController current_obj_controller = signsGameObject.GetComponent<Mono.SignController>();
                     if (current_obj_controller != null)
                     {

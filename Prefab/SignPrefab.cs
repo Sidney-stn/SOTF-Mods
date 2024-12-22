@@ -16,6 +16,7 @@ namespace Signs.Prefab
                 if (Assets.SignObj == null) { Misc.Msg("Cant Setup Sign Prefab, Sign Asset is null!"); return; }
                 signWithComps = GameObject.Instantiate(Assets.SignObj);
                 Mono.SignController signMono = signWithComps.AddComponent<Mono.SignController>();
+                Mono.DestroyOnC destroyOnC = signWithComps.AddComponent<Mono.DestroyOnC>();
             }
         }
 
