@@ -94,6 +94,16 @@ namespace Signs
             Network.Manager.RegisterEvents();
             //IngameTools.HotKeyCommandsIntegration.Setup();
             //UI.Setup.SetupUI();
+
+            Misc.Msg("[Loading] Processing deferred load.");
+
+
+            // Process all deferred load data
+            while (Saving.Load.deferredLoadQueue.Count > 0)
+            {
+                var obj = Saving.Load.deferredLoadQueue.Dequeue();
+                Saving.Load.ProcessLoadData(obj);
+            }
         }
 
         public static GameObject FindObjectInSpecificScene(string sceneName = "SonsMain", string objectName = "ModalDialogManager") // ModalDialogManager as Standard

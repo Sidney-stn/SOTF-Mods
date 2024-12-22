@@ -1,0 +1,90 @@
+﻿using Endnight.Extensions;
+using SonsSdk;
+using UnityEngine;
+
+namespace Signs.Saving
+{
+    internal class Manager : ICustomSaveable<Manager.SignsManager>
+    {
+        public string Name => "Manager";
+
+        // Used to determine if the data should also be saved in multiplayer saves
+        public bool IncludeInPlayerSave => false;
+
+        public SignsManager Save()
+        {
+            var saveData = new SignsManager();
+
+            // Signs
+            if (Saving.Load.ModdedSigns.Count != 0 || Saving.Load.ModdedSigns != null)
+            {
+                foreach (var signsGameObject in Saving.Load.ModdedSigns)
+                {
+                    Mono.SignController current_obj_controller = signsGameObject.GetComponent<Mono.SignController>();
+                    if (current_obj_controller != null)
+                    {
+                        if (current_obj_controller.UniqueId.IsNullOrWhitespace() || current_obj_controller.UniqueId == null)
+                        {
+                            // Generate New Id
+                            Misc.Msg("[Saving] Generated New Id For Sign");
+                            current_obj_controller.UniqueId = Guid.NewGuid().ToString();
+                        }
+                        if (current_obj_controller.UniqueId == "0")
+                        {
+                            Misc.Msg("[Saving] UniqueId == 0. Skipping Saving Of Sign");
+                            continue;
+                        }
+                        var SignsModData = new SignsManager.SignsModData
+                        {
+                            UniqueId = current_obj_controller.UniqueId,
+                            Position = current_obj_controller.GetPos(),
+                            Rotation = current_obj_controller.GetCurrentRotation(),
+                            Line1Text = current_obj_controller.GetLineText(1),
+                            Line2Text = current_obj_controller.GetLineText(2),
+                            Line3Text = current_obj_controller.GetLineText(3),
+                            Line4Text = current_obj_controller.GetLineText(4)
+                        };
+
+                        saveData.Signs.Add(SignsModData);
+                        Misc.Msg("[Saving] Added Sign To Save List");
+                    }
+                }
+            }
+            else { Misc.Msg("[Saving] No Sign found in LST, skipped saving"); }
+
+            return saveData;
+        }
+
+        public void Load(SignsManager obj)
+        {
+
+            if (Misc.hostMode == Misc.SimpleSaveGameType.NotIngame)
+            {
+                // Enqueue the load data if host mode is not ready
+                Misc.Msg("[Loading] Host mode not ready, deferring load.");
+                Saving.Load.deferredLoadQueue.Enqueue(obj);
+                return;
+            }
+
+            // Process the load data
+            Saving.Load.ProcessLoadData(obj);
+        }
+
+        public class SignsManager
+        {
+            public List<SignsModData> Signs = new List<SignsModData>();
+
+            public class SignsModData
+            {
+                public string UniqueId;
+                public Vector3 Position;
+                public Quaternion Rotation;
+                public string Line1Text;
+                public string Line2Text;
+                public string Line3Text;
+                public string Line4Text;
+            }
+
+        }
+    }
+}

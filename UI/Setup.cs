@@ -27,7 +27,7 @@ namespace Signs.UI
                 Misc.Msg("Setup Ui");
                 AddUI = GameObject.Instantiate(Assets.SignUi);
                 AddUI.hideFlags = HideFlags.HideAndDontSave;
-                //AddUI.SetActive(false);
+                AddUI.SetActive(false);
             }
             if (closeBtn == null)
             {
@@ -71,7 +71,7 @@ namespace Signs.UI
         {
             if (AddUI != null)
             {
-                PauseMenu.SetActive(true);
+                PauseMenu._instance.Open();
                 if (!AddUI.active) { AddUI.SetActive(true); }
             }
             if (messageText != null)

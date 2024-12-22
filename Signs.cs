@@ -35,6 +35,10 @@ public class Signs : SonsMod
         // Add in-game settings ui for your mod.
         // SettingsRegistry.CreateSettings(this, null, typeof(Config));
 
+        // Registering Save System
+        var manager = new Saving.Manager(); // Signs
+        SonsSaveTools.Register(manager);
+
         UI.Setup.SetupUI();
     }
 
@@ -84,6 +88,18 @@ public class Signs : SonsMod
                 break;
             case "sync":
                 //IngameTools.SyncShopTools.SendSyncEventLookingAt(eventType: SyncShopTools.ShopEventType.Sync);
+                break;
+            case "delsave":
+                Misc.Msg("Clearing Signs");
+                Saving.Load.ModdedSigns.Clear();
+                break;
+            case "removeall":
+                Misc.Msg("Removing All Signs");
+                foreach (var sign in Saving.Load.ModdedSigns)
+                {
+                    GameObject.Destroy(sign);
+                }
+                Saving.Load.ModdedSigns.Clear();
                 break;
             default:
                 break;
