@@ -2,10 +2,12 @@
 
 using Signs.Mono;
 using Sons.Gui;
+using Steamworks;
 using TheForest.Items.Special;
 using TheForest.Utils;
 using UnityEngine;
 using UnityEngine.UI;
+using static BoltConsole;
 
 namespace Signs.UI
 {
@@ -51,10 +53,18 @@ namespace Signs.UI
                 {
                     if (Prefab.ActiveSign.activeSign == null) { return; }
                     SignController signController = Prefab.ActiveSign.activeSign.GetComponent<SignController>();
-                    signController.SetLineText(1, line1.text);
-                    signController.SetLineText(2, line2.text);
-                    signController.SetLineText(3, line3.text);
-                    signController.SetLineText(4, line4.text);
+                    signController.SetAllText(line1.text, line2.text, line3.text, line4.text);
+                    (ulong steamId, string stringSteamId) = Misc.MySteamId();
+                    SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.UpdateText
+                    {
+                        Sender = stringSteamId,
+                        Line1Text = line1.text,
+                        Line2Text = line2.text,
+                        Line3Text = line3.text,
+                        Line4Text = line4.text,
+                        UniqueId = signController.UniqueId,
+                        ToSteamId = "None"
+                    });
                 };
                 updateBtn.onClick.AddListener(updateUi);
             }

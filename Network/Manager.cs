@@ -10,7 +10,10 @@ namespace Signs.Network
             if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
             {
                 Misc.Msg("Registerd Events");
-                //SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.SpawnShop>();
+                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.JoinedServer>();
+                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.SpawnSingeSign>();
+                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.UpdateText>();
+                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.RemoveSign>();
                 SendJoinedServerEvent();
             }
         }
@@ -20,7 +23,10 @@ namespace Signs.Network
             if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
             {
                 Misc.Msg("Unregisterd Events");
-                //SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.SpawnShop>();
+                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.JoinedServer>();
+                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.SpawnSingeSign>();
+                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.UpdateText>();
+                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.RemoveSign>();
             }
         }
 
@@ -30,12 +36,12 @@ namespace Signs.Network
             {
                 Misc.Msg("[Manager] I Joined Server, Sending JoinedServerEvent");
                 (ulong steamId, string stringSteamId) = Misc.MySteamId();
-                //SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.JoinedServer
-                //{
-                //    SenderName = Misc.GetLocalPlayerUsername(),
-                //    SenderId = stringSteamId,
+                SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.JoinedServer
+                {
+                    SenderName = Misc.GetLocalPlayerUsername(),
+                    SenderId = stringSteamId,
 
-                //});
+                });
             }
         }
     }

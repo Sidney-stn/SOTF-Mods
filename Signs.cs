@@ -1,5 +1,6 @@
 ﻿using SonsSdk;
 using SonsSdk.Attributes;
+using SUI;
 using TheForest.Utils;
 using UnityEngine;
 
@@ -32,8 +33,8 @@ public class Signs : SonsMod
         // This is for stuff like UI creation, event registration etc.
         SignsUi.Create();
 
-        // Add in-game settings ui for your mod.
-        // SettingsRegistry.CreateSettings(this, null, typeof(Config));
+        // Adding Ingame CFG
+        SettingsRegistry.CreateSettings(this, null, typeof(Config));
 
         // Registering Save System
         var manager = new Saving.Manager(); // Signs
@@ -81,9 +82,10 @@ public class Signs : SonsMod
                 {
                     Prefab.SignPrefab.spawnSignSingePlayer(raycastHit.point + Vector3.up * 0.1f, LocalPlayer.Transform.rotation);
                 }
-                else
+                else if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
                 {
-                    Prefab.SignPrefab.spawnSignMultiplayer(raycastHit.point + Vector3.up * 0.1f, LocalPlayer.Transform.rotation);
+                    Misc.Msg("[SignCmd] [Multiplayer] Trying To Spawn Sign Multiplayer");
+                    Prefab.SignPrefab.spawnSignMultiplayer(raycastHit.point + Vector3.up * 0.1f, LocalPlayer.Transform.rotation, raiseCreateEvent: true);
                 }
                 break;
             case "sync":

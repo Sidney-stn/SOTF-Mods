@@ -23,7 +23,6 @@ namespace Signs.Saving
                 else if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
                 {
                     GameObject sign = Prefab.SignPrefab.spawnSignMultiplayer(signsData.Position, signsData.Rotation, signsData.UniqueId);
-                    ModdedSigns.Add(sign);
                 }
             }
         }
