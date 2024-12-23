@@ -1,5 +1,7 @@
 ﻿using HarmonyLib;
 using RedLoader;
+using RedLoader.Utils;
+using Sons.Inventory;
 using Sons.Items.Core;
 using SonsSdk;
 using TheForest.Items.Special;
@@ -52,7 +54,7 @@ namespace Signs.Items
             itemData2._hasFirstLook = false;
             itemData2.MaxAmount = 1;
             //itemData.SetType(Sons.Items.Core.Types.Equippable, Sons.Items.Core.Types.Droppable, Sons.Items.Core.Types.CraftingMaterial, Sons.Items.Core.Types.Craftable);
-            itemData.SetType(Sons.Items.Core.Types.Equippable);
+            //itemData.SetType(Sons.Items.Core.Types.Equippable);
             itemData.SetType(Sons.Items.Core.Types.Droppable);
 
             HeldOnlyItemController controller = LocalPlayer.Transform.GetComponentInChildren<HeldOnlyItemController>();
@@ -69,7 +71,34 @@ namespace Signs.Items
             controllerItem._held = controller._heldOnlyItems[0].Held;
             controller._heldOnlyItems.AddItem(controllerItem); // Number 10 in list so [10]
 
-            //LocalPlayer.Inventory.
+
+            // SetupCustomInteraction();
+            SetupCustomInteraction();
+
+
+        }
+        public static void SetupCustomInteraction()
+        {
+            Misc.Msg("Injecting Custom Interaction");
+            // Register our class to implement ICustomInventoryItemInteraction
+            InjectorEx.Inject<ICustomInventoryItemInteraction>(typeof(CustomItemInteractionHandler));
+
+            // Now we can add it to the GameObject
+            GameObject inventoryLayoutItemGroup = ItemTools.GetInventoryLayoutItemGroup(7511).gameObject;
+            var handler = inventoryLayoutItemGroup.AddComponent<CustomItemInteractionHandler>();
+            var handler2 = inventoryLayoutItemGroup.transform.GetParent().gameObject.AddComponent<CustomItemInteractionHandler>();
         }
     }
+
+
+    [RegisterTypeInIl2Cpp]
+    public class CustomItemInteractionHandler : MonoBehaviour
+    {
+        public bool TryPerformAction(ItemInstance itemInstance, bool isUnique)
+        {
+            Misc.Msg($"Custom interaction with item: {itemInstance.Data.Id}");
+            return true;
+        }
+    }
+
 }

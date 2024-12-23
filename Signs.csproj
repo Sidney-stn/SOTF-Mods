@@ -89,6 +89,9 @@
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>$(GameDir)\_RedLoader\Game\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
+    <Reference Include="Il2CppSystem">
+      <HintPath>$(GameDir)\_RedLoader\Game\Il2CppSystem.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Update="manifest.json">
