@@ -3,7 +3,7 @@
   "id": "Signs",
   "author": "SmokyAce",
   "version": "1.0.0",
-  "description": "A mod that does something.",
+  "description": "Adds A Simple Sign In The Game",
   "gameVersion": "1.0.0",
   "type": "Mod",
   "dependencies": [ "SimpleNetworkEvents" ],
