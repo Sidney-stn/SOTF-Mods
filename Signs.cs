@@ -55,6 +55,8 @@ public class Signs : SonsMod
         Misc.OnHostModeGotten += Misc.OnHostModeGottenCorrectly;
 
         Prefab.SignPrefab.SetupSignPrefab();
+
+        Integrations.HotKeyCommandsIntegration.Setup();
     }
 
     internal static void OnLeaveWorld()
