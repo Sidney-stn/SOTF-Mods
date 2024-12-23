@@ -132,32 +132,30 @@ namespace Signs.Items
                     Vector3 targetPosition;
                     if (didHit)
                     {
-                        // Check if hit point is too close to player
-                        float minDistanceFromPlayer = 1f; // Adjust this value as needed
-                        float distanceFromPlayer = Vector3.Distance(raycastHit.point, LocalPlayer.Transform.position);
+                        targetPosition = raycastHit.point;
 
-                        if (distanceFromPlayer >= minDistanceFromPlayer)
+                        // Check minimum distance from player
+                        float minDistanceFromPlayer = 1f;
+                        float distanceFromPlayer = Vector3.Distance(targetPosition, LocalPlayer.Transform.position);
+
+                        if (distanceFromPlayer < minDistanceFromPlayer)
                         {
-                            _pivotObject.transform.position = raycastHit.point;
-                        }
-                        else
-                        {
-                            // If too close to player, place at minimum distance in look direction
-                            Vector3 forwardDirection = transform.forward;
-                            forwardDirection.y = 0; // Optional: keep it at same height
-                            forwardDirection.Normalize();
-                            _pivotObject.transform.position = LocalPlayer.Transform.position + (forwardDirection * minDistanceFromPlayer);
+                            Vector3 directionFromPlayer = (targetPosition - LocalPlayer.Transform.position).normalized;
+                            targetPosition = LocalPlayer.Transform.position + (directionFromPlayer * minDistanceFromPlayer);
                         }
                     }
                     else
                     {
-                        // If no hit, place at minimum distance in look direction
+                        // Clean fallback when no hit
                         Vector3 forwardDirection = transform.forward;
-                        forwardDirection.y = 0; // Optional: keep it at same height
+                        forwardDirection.y = 0;
                         forwardDirection.Normalize();
                         float fallbackDistance = 2f;
-                        _pivotObject.transform.position = LocalPlayer.Transform.position + (forwardDirection * fallbackDistance);
+                        targetPosition = LocalPlayer.Transform.position + (forwardDirection * fallbackDistance);
                     }
+
+                    // Direct position update instead of interpolation
+                    _pivotObject.transform.position = targetPosition;
 
                     // Handle rotation with Q and E (now rotating the pivot object)
                     if (Input.GetKey(KeyCode.Q))
@@ -188,13 +186,21 @@ namespace Signs.Items
             {
                 if (_copiedItem != null && _pivotObject != null)
                 {
-                    Vector3 finalPosition = _pivotObject.transform.position;
+                    // Calculate the offset between the centered preview and corner-pivoted placed item
+                    Bounds bounds = CalculateObjectBounds(_copiedItem);
+                    Vector3 centerToPivotOffset = bounds.extents; // Half the size of the bounds
+
+                    // Calculate the final position by moving back from the preview's center to where the corner should be
+                    Vector3 finalPosition = _pivotObject.transform.position - centerToPivotOffset;
                     Quaternion finalRotation = _pivotObject.transform.rotation;
 
+                    // Close the UI first
                     UI.SetupSignPlace.CloseUI();
 
+                    // Place the actual object
                     PlaceSignOnGround(finalPosition, finalRotation, 7511, 1);
 
+                    // Clean up
                     Destroy(_copiedItem);
                     Destroy(_pivotObject);
                     _copiedItem = null;
@@ -299,6 +305,7 @@ namespace Signs.Items
 
                 return bounds;
             }
+
         }
     }
 }
