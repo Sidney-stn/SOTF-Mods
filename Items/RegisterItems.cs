@@ -1,20 +1,19 @@
 ﻿using RedLoader;
-using RedLoader.Utils;
 using Sons.Inventory;
 using Sons.Items.Core;
 using SonsSdk;
 using UnityEngine;
-using UnityEngine.InputSystem;
-
 
 namespace Signs.Items
 {
     public class RegisterItems
     {
+        public const int SignItemId = 7511;
+
         public static void RegisterItem()
         {
             if (Config.DebugLoggingIngameSign.Value) { Misc.Msg("[RegisterItems] RegisterItem()"); }
-            ItemData itemData = ItemTools.CreateAndRegisterItem(7511, "Sign", 1, null);
+            ItemData itemData = ItemTools.CreateAndRegisterItem(SignItemId, "Sign", 1, null);
             new ItemTools.ItemBuilder(Assets.SignObj, itemData, false).AddInventoryItem(new Vector3[]
             {
                 new Vector3(0.21f, -0.2f, 1.55f),
@@ -33,7 +32,7 @@ namespace Signs.Items
                 new Vector3(0f, 0f, 0f)
             }).Recipe.AddIngredient(392, 12, false).BuildAndAdd();
 
-            ItemData itemData2 = ItemDatabaseManager.ItemById(7511);
+            ItemData itemData2 = ItemDatabaseManager.ItemById(SignItemId);
             if (itemData2 == null) { RLog.Error("CompactLogPickup RegisterItem: itemData2 == null"); return; }
             itemData2.PickupPrefab = Prefab.SignPrefab.signWithComps.transform;
             itemData2.PickupBundlePrefab = Prefab.SignPrefab.signWithComps.transform;
@@ -45,9 +44,6 @@ namespace Signs.Items
             itemData2._alwaysDropOnUnequip = true;
             itemData2._applyRandomForceOnDrop = true;
             itemData2.DropOffsetWorldUp = false;
-
-            //Sons.Items.Core.AnimatorVariables[] animatorVariables;
-            //animatorVariables.AddItem<AnimatorVariables.logHeld>();
             itemData2.EquippedAnimVars = ItemDatabaseManager.ItemById(78).EquippedAnimVars;
             itemData2._hasVisualVariant = true;
             itemData2._hasFirstLook = false;
@@ -56,24 +52,26 @@ namespace Signs.Items
             itemData2.UiData._leftClick = ItemUiData.LeftClickCommands.take;
             //itemData2.UiData._icon = ICON
 
-            //itemData.SetType(Sons.Items.Core.Types.Equippable, Sons.Items.Core.Types.Droppable, Sons.Items.Core.Types.CraftingMaterial, Sons.Items.Core.Types.Craftable);
-            //itemData.SetType(Sons.Items.Core.Types.Equippable);
-            //itemData.SetType(Sons.Items.Core.Types.Droppable);
-            itemData.SetType(Sons.Items.Core.Types.Edible);
+            itemData.SetType(Sons.Items.Core.Types.UniqueItem);
 
-            GameObject inventoryLayoutItemGroup = ItemTools.GetInventoryLayoutItemGroup(7511).gameObject;
-            InventoryLayoutItemGroup inventoryLayoutItemGroup2 = inventoryLayoutItemGroup.AddComponent<InventoryLayoutItemGroup>();
+            ItemTools.GetInventoryLayoutItemGroup(SignItemId).gameObject.AddComponent<MyCustomItemInteraction>();
 
-            // Add this hook
-            var methodInfo = typeof(InventoryLayoutItemGroup).GetMethod("OnInteractWithItem");
-            Il2CppInterop.Runtime.Hook.Create(methodInfo, (Il2CppObjectBase instance, InputAction.CallbackContext context) => {
-                if (instance == inventoryLayoutItemGroup2)
-                {
-                    Debug.Log("Our specific item was interacted with!");
-                    // Your code here
-                }
-            });
+        }
 
+        [RegisterTypeInIl2Cpp]
+        public class MyCustomItemInteraction : MonoBehaviour
+        {
+            void Update()
+            {
+                var group = ItemTools.GetInventoryLayoutItemGroup(SignItemId);
+                if (!group._itemData) { return; }
+                bool Item(InventoryLayoutItem item) => item.ItemInstance._itemID == SignItemId && item.IsHighlighted;
+                if (!group.LayoutItems.Exists((Il2CppSystem.Predicate<InventoryLayoutItem>)Item)) { group._itemData = null; return; }
+
+                Misc.Msg("click performed");
+
+                group._itemData = null;
+            }
         }
     }
 
