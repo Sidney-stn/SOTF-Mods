@@ -186,13 +186,9 @@ namespace Signs.Items
             {
                 if (_copiedItem != null && _pivotObject != null)
                 {
-                    // Calculate the offset between the centered preview and corner-pivoted placed item
-                    Bounds bounds = CalculateObjectBounds(_copiedItem);
-                    Vector3 centerToPivotOffset = bounds.extents; // Half the size of the bounds
-
                     // Calculate the final position by moving back from the preview's center to where the corner should be
-                    Vector3 finalPosition = _pivotObject.transform.position - centerToPivotOffset;
-                    Quaternion finalRotation = _pivotObject.transform.rotation;
+                    Vector3 finalPosition = _copiedItem.transform.position;
+                    Quaternion finalRotation = _copiedItem.transform.rotation;
 
                     // Close the UI first
                     UI.SetupSignPlace.CloseUI();
