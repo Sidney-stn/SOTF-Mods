@@ -43,6 +43,7 @@ public class Signs : SonsMod
         SonsSaveTools.Register(manager);
 
         UI.Setup.SetupUI();
+        UI.SetupSignPlace.SetupUi();
     }
 
     protected override void OnGameStart()
