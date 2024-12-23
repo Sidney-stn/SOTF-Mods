@@ -90,6 +90,8 @@ namespace Signs.Items
             public GameObject itemToPlace;
             private GameObject _copiedItem;
 
+            private GameObject _pivotObject; // New pivot object for centered rotation
+
             private void Awake()
             {
                 if (Instance == null)
@@ -109,57 +111,73 @@ namespace Signs.Items
             }
             private void Update()
             {
-                if (_copiedItem != null)
+                if (_copiedItem != null && _pivotObject != null)
                 {
                     if (LocalPlayer.IsInInventory || LocalPlayer.IsInMidAction || !LocalPlayer.IsInWorld)
                     {
                         return;
                     }
-                    // Get camera transform for raycasting
+
                     Transform transform = LocalPlayer._instance._mainCam.transform;
                     RaycastHit raycastHit;
 
-                    // Perform raycast
                     bool didHit = Physics.Raycast(
                         transform.position,
                         transform.forward,
                         out raycastHit,
                         5f,
-                        LayerMask.GetMask(new string[] { "Terrain", "Default", "Prop" })
+                        LayerMask.GetMask(new string[] { "Terrain", "Default", "Prop", "BasicTrigger" })
                     );
 
-                    // Update position based on raycast
+                    Vector3 targetPosition;
                     if (didHit)
                     {
-                        _copiedItem.transform.position = raycastHit.point;
+                        // Check if hit point is too close to player
+                        float minDistanceFromPlayer = 1f; // Adjust this value as needed
+                        float distanceFromPlayer = Vector3.Distance(raycastHit.point, LocalPlayer.Transform.position);
+
+                        if (distanceFromPlayer >= minDistanceFromPlayer)
+                        {
+                            _pivotObject.transform.position = raycastHit.point;
+                        }
+                        else
+                        {
+                            // If too close to player, place at minimum distance in look direction
+                            Vector3 forwardDirection = transform.forward;
+                            forwardDirection.y = 0; // Optional: keep it at same height
+                            forwardDirection.Normalize();
+                            _pivotObject.transform.position = LocalPlayer.Transform.position + (forwardDirection * minDistanceFromPlayer);
+                        }
                     }
                     else
                     {
-                        // Fallback position if no hit detected
+                        // If no hit, place at minimum distance in look direction
+                        Vector3 forwardDirection = transform.forward;
+                        forwardDirection.y = 0; // Optional: keep it at same height
+                        forwardDirection.Normalize();
                         float fallbackDistance = 2f;
-                        _copiedItem.transform.position = transform.position + (transform.forward * fallbackDistance);
+                        _pivotObject.transform.position = LocalPlayer.Transform.position + (forwardDirection * fallbackDistance);
                     }
 
-                    // Handle rotation with Q and E (keeping the existing rotation logic)
+                    // Handle rotation with Q and E (now rotating the pivot object)
                     if (Input.GetKey(KeyCode.Q))
                     {
-                        _copiedItem.transform.Rotate(Vector3.up, -90f * Time.deltaTime); // Rotate left
+                        _pivotObject.transform.Rotate(Vector3.up, -90f * Time.deltaTime);
                     }
                     else if (Input.GetKey(KeyCode.E))
                     {
-                        _copiedItem.transform.Rotate(Vector3.up, 90f * Time.deltaTime); // Rotate right
+                        _pivotObject.transform.Rotate(Vector3.up, 90f * Time.deltaTime);
                     }
 
-                    // Handle placement with left click
-                    if (Input.GetMouseButtonDown(0)) // Left click
+                    if (Input.GetMouseButtonDown(0))
                     {
                         PlaceItem();
                     }
-                    if (Input.GetMouseButtonDown(1)) // Right click
+                    if (Input.GetMouseButtonDown(1))
                     {
                         CancelPlaceItem();
                     }
-                    else if (Input.GetKey(KeyCode.Escape))  // Escape Click
+                    else if (Input.GetKey(KeyCode.Escape))
                     {
                         CancelPlaceItem();
                     }
@@ -168,23 +186,20 @@ namespace Signs.Items
 
             private void PlaceItem()
             {
-                if (_copiedItem != null)
+                if (_copiedItem != null && _pivotObject != null)
                 {
-                    // Get the current position and rotation of the preview item
-                    Vector3 finalPosition = _copiedItem.transform.position;
-                    Quaternion finalRotation = _copiedItem.transform.rotation;
+                    Vector3 finalPosition = _pivotObject.transform.position;
+                    Quaternion finalRotation = _pivotObject.transform.rotation;
 
-                    // Close the UI first
                     UI.SetupSignPlace.CloseUI();
 
-                    // Place the actual object using the static method
-                    PlaceSignOnGround(finalPosition, finalRotation, 7511, 1); // Adjust itemId and quantity as needed
+                    PlaceSignOnGround(finalPosition, finalRotation, 7511, 1);
 
-                    // Clean up
                     Destroy(_copiedItem);
+                    Destroy(_pivotObject);
                     _copiedItem = null;
+                    _pivotObject = null;
 
-                    // Self destruct the MonoBehaviour
                     SelfDestruct();
                 }
             }
@@ -213,14 +228,43 @@ namespace Signs.Items
                     LocalPlayer.Inventory.Close();
                     LocalPlayer.Inventory.StashHeldItems(false, true);
 
+                    // Create a pivot object first
+                    _pivotObject = new GameObject("ItemPivot");
+
                     _copiedItem = Instantiate(itemToPlace);  // Creates Copy Of Item
                     if (_copiedItem == null)
                     {
                         Misc.Msg($"[ItemPlacement] [StartPlaceItem] ItemPlacement.StartPlaceItem: Could not instantiate item with id {itemToPlace}");
+                        Destroy(_pivotObject);
                         return;
                     }
-                    _copiedItem.transform.position = LocalPlayer.Transform.position + LocalPlayer.Transform.forward;  // Places Item In Front Of Player
-                    _copiedItem.transform.rotation = LocalPlayer.Transform.rotation;  // Rotates Item To Face Player
+
+                    // Disable all colliders on the copied item
+                    Collider[] colliders = _copiedItem.GetComponentsInChildren<Collider>();
+                    foreach (Collider collider in colliders)
+                    {
+                        collider.enabled = false;
+                    }
+
+                    // Center the item on its bounds
+                    Bounds bounds = CalculateObjectBounds(_copiedItem);
+                    _copiedItem.transform.position -= bounds.center - _copiedItem.transform.position;
+
+                    // Make the copied item a child of the pivot
+                    _copiedItem.transform.SetParent(_pivotObject.transform, false);
+
+                    // Initial position
+                    Transform camTransform = LocalPlayer._instance._mainCam.transform;
+                    _pivotObject.transform.position = camTransform.position + camTransform.forward * 2f;
+                    _pivotObject.transform.rotation = LocalPlayer.Transform.rotation;
+
+                    // Make sure the copied item doesn't interact with physics
+                    Rigidbody[] rigidbodies = _copiedItem.GetComponentsInChildren<Rigidbody>();
+                    foreach (Rigidbody rb in rigidbodies)
+                    {
+                        rb.isKinematic = true;
+                        rb.detectCollisions = false;
+                    }
 
                     UI.SetupSignPlace.OpenUI();
                 }
@@ -232,9 +276,28 @@ namespace Signs.Items
                 {
                     Destroy(_copiedItem);
                     _copiedItem = null;
-                    UI.SetupSignPlace.CloseUI();
+
+                    if (_pivotObject != null)
+                    {
+                        Destroy(_pivotObject);
+                        _pivotObject = null;
+                    }
                     SelfDestruct();
                 }
+                UI.SetupSignPlace.CloseUI();
+            }
+
+            private Bounds CalculateObjectBounds(GameObject obj)
+            {
+                Bounds bounds = new Bounds(obj.transform.position, Vector3.zero);
+                Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
+
+                foreach (Renderer renderer in renderers)
+                {
+                    bounds.Encapsulate(renderer.bounds);
+                }
+
+                return bounds;
             }
         }
     }
