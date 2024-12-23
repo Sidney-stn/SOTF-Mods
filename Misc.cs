@@ -8,6 +8,7 @@ using Bolt;
 using Scene = UnityEngine.SceneManagement.Scene;
 using Steamworks;
 using Sons.Multiplayer;
+using static CoopPlayerUpgrades;
 
 namespace Signs
 {
@@ -97,6 +98,7 @@ namespace Signs
 
             Misc.Msg("[Loading] Processing deferred load.");
 
+            Items.RegisterItems.RegisterItem(); // Register All Ingame Inventory Items
 
             // Process all deferred load data
             while (Saving.Load.deferredLoadQueue.Count > 0)
