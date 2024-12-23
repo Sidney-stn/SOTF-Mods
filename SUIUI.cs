@@ -1,4 +1,5 @@
-﻿using static SUI.SUI;
+﻿using UnityEngine;
+using static SUI.SUI;
 
 namespace HotKeyCommands
 {
@@ -24,6 +25,43 @@ namespace HotKeyCommands
         internal static bool IsPanelActive(string panelName)
         {
             return GetPanel(panelName).Root.activeSelf;
+        }
+    }
+
+    public static class UnityUi
+    {
+        public static List<GameObject> UnityElements = new List<GameObject>();
+        public static void AddUnityElement(GameObject unityUIGameObject)
+        {
+            if (unityUIGameObject == null)
+            {
+                return;
+            }
+            if (UnityElements.Contains(unityUIGameObject))
+            {
+                return;
+            }
+            UnityElements.Add(unityUIGameObject);
+        }
+        public static void RemoveUnityElement(GameObject unityUIGameObject)
+        {
+            if (unityUIGameObject == null)
+            {
+                return;
+            }
+            if (UnityElements.Contains(unityUIGameObject))
+            {
+                UnityElements.Remove(unityUIGameObject);
+            }
+        }
+
+        internal static bool IsPanelActive(GameObject unityUIGameObject)
+        {
+            if (unityUIGameObject == null)
+            {
+                return false;
+            }
+            return unityUIGameObject.active;
         }
     }
 }

@@ -3,6 +3,7 @@ using Sons.Gui;
 using TheForest;
 using TheForest.UI.Multiplayer;
 using TheForest.Utils;
+using UnityEngine;
 
 
 namespace HotKeyCommands
@@ -18,6 +19,10 @@ namespace HotKeyCommands
             foreach (string suiId in SUIUI.SuiElements)
             {
                 if (SUIUI.IsPanelActive(suiId)) { HotKeyCommands.Msg("SUI Panel is open, returning from command"); return; }
+            }
+            foreach (GameObject unityElement in UnityUi.UnityElements)
+            {
+                if (UnityUi.IsPanelActive(unityElement)) { HotKeyCommands.Msg($"Unity Panel [{unityElement.name}] is open, returning from command"); return; }
             }
             HotKeyCommands.debugConsole.SendCommand(command);
         }
