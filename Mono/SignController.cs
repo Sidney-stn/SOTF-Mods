@@ -56,10 +56,10 @@ namespace Signs.Mono
 
         public void SetAllText(string line1, string line2, string line3, string line4)
         {
-            if (!string.IsNullOrEmpty(line1)) { SetLineText(1, ClipString(line1)); }
-            if (!string.IsNullOrEmpty(line2)) { SetLineText(2, ClipString(line2)); }
-            if (!string.IsNullOrEmpty(line3)) { SetLineText(3, ClipString(line3)); }
-            if (!string.IsNullOrEmpty(line4)) { SetLineText(4, ClipString(line4)); }
+            if (line1 != null) { SetLineText(1, ClipString(line1)); }
+            if (line2 != null) { SetLineText(2, ClipString(line2)); }
+            if (line3 != null) { SetLineText(3, ClipString(line3)); }
+            if (line4 != null) { SetLineText(4, ClipString(line4)); }
 
             if (UI.Setup.messageText != null) { UI.Setup.messageText.text = $"Text Updated"; DoSomethingAfterDelay().RunCoro(); }
         }
