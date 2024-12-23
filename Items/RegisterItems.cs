@@ -68,7 +68,10 @@ namespace Signs.Items
                 bool Item(InventoryLayoutItem item) => item.ItemInstance._itemID == SignItemId && item.IsHighlighted;
                 if (!group.LayoutItems.Exists((Il2CppSystem.Predicate<InventoryLayoutItem>)Item)) { group._itemData = null; return; }
 
-                Misc.Msg("click performed");
+                if (Assets.SignObj != null)
+                {
+                    Items.ItemPlacement.StartPlaceMentMode(Assets.SignObj);
+                }
 
                 group._itemData = null;
             }

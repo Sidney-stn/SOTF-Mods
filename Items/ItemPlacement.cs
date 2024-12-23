@@ -16,10 +16,28 @@ namespace Signs.Items
             Pickup
         }
 
-        public static GameObject PlaceObjectOnGround(GameObject itemToPlaceOnGround, Vector3 position, Quaternion rotation, int itemId, int itemQuantity, bool shouldRemoveFromInventory = true)
+        public static GameObject PlaceSignOnGround(Vector3 position, Quaternion rotation, int itemId, int itemQuantity, bool shouldRemoveFromInventory = true)
         {
-            // This is a placeholder for the actual implementation
-            return null;
+            GameObject sign = null;
+            int amountOfItem = LocalPlayer.Inventory.AmountOf(7511);
+            if (shouldRemoveFromInventory)
+            {
+                if (amountOfItem < itemQuantity)
+                {
+                    Misc.Msg($"[ItemPlacement] [PlaceSignOnGround] ItemPlacement.PlaceSignOnGround: Not enough items in inventory to place sign. Required: {itemQuantity}, Available: {amountOfItem}");
+                    return null;
+                }
+                LocalPlayer.Inventory.RemoveItem(7511, amountOfItem);
+            }
+            if (Misc.hostMode == Misc.SimpleSaveGameType.SinglePlayer)
+            {
+                sign = Prefab.SignPrefab.spawnSignSingePlayer(position, rotation);
+            }
+            else if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
+            {
+                sign = Prefab.SignPrefab.spawnSignMultiplayer(position, rotation, raiseCreateEvent: true);
+            }
+            return sign;
         }
 
         public static void StartPlaceMentMode(GameObject itemToPlace)  // Only Needs Input GameObject
@@ -54,6 +72,7 @@ namespace Signs.Items
             {
                 ItemPlacer itemPlacer = LocalPlayer.GameObject.AddComponent<ItemPlacer>();
                 itemPlacer.itemToPlace = itemToPlace;
+  
             }
             else
             {
@@ -88,7 +107,57 @@ namespace Signs.Items
             }
             private void Update()
             {
+                if (_copiedItem != null)
+                {
+                    // Update position to hover in front of player
+                    Vector3 playerPosition = LocalPlayer.Transform.position;
+                    Vector3 playerForward = LocalPlayer.Transform.forward;
+                    float hoverDistance = 2f; // Adjust this value to change how far in front it hovers
 
+                    // Calculate new position in front of player
+                    Vector3 targetPosition = playerPosition + (playerForward * hoverDistance);
+                    _copiedItem.transform.position = targetPosition;
+
+                    // Handle rotation with Q and E
+                    if (Input.GetKey(KeyCode.Q))
+                    {
+                        _copiedItem.transform.Rotate(Vector3.up, -90f * Time.deltaTime); // Rotate left
+                    }
+                    else if (Input.GetKey(KeyCode.E))
+                    {
+                        _copiedItem.transform.Rotate(Vector3.up, 90f * Time.deltaTime); // Rotate right
+                    }
+
+                    // Handle placement with left click
+                    if (Input.GetMouseButtonDown(0)) // Left click
+                    {
+                        // Place the object and clean up
+                        PlaceItem();
+                    }
+                }
+            }
+
+            private void PlaceItem()
+            {
+                if (_copiedItem != null)
+                {
+                    // Get the current position and rotation of the preview item
+                    Vector3 finalPosition = _copiedItem.transform.position;
+                    Quaternion finalRotation = _copiedItem.transform.rotation;
+
+                    // Close the UI first
+                    UI.SetupSignPlace.CloseUI();
+
+                    // Place the actual object using the static method
+                    PlaceSignOnGround(finalPosition, finalRotation, 7511, 1); // Adjust itemId and quantity as needed
+
+                    // Clean up
+                    Destroy(_copiedItem);
+                    _copiedItem = null;
+
+                    // Self destruct the MonoBehaviour
+                    SelfDestruct();
+                }
             }
 
             private void OnDestroy()
@@ -113,6 +182,11 @@ namespace Signs.Items
                 if (itemToPlace != null)
                 {
                     _copiedItem = Instantiate(itemToPlace);  // Creates Copy Of Item
+                    if (_copiedItem == null)
+                    {
+                        Misc.Msg($"[ItemPlacement] [StartPlaceItem] ItemPlacement.StartPlaceItem: Could not instantiate item with id {itemToPlace}");
+                        return;
+                    }
                     _copiedItem.transform.position = LocalPlayer.Transform.position + LocalPlayer.Transform.forward;  // Places Item In Front Of Player
                     _copiedItem.transform.rotation = LocalPlayer.Transform.rotation;  // Rotates Item To Face Player
 
