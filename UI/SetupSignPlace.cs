@@ -29,7 +29,6 @@ namespace Signs.UI
         {
             if (AddUI != null)
             {
-                PauseMenu._instance.Open();
                 if (!AddUI.active) { AddUI.SetActive(true); }
             }
         }

@@ -16,6 +16,8 @@ namespace Signs.Mono
         private Text _line3;
         private Text _line4;
 
+        private bool isCoroutineRunning = false;
+
         private void Awake()
         {
             if (_line1 == null) { _line1 = gameObject.transform.FindChild("UI").FindChild("Canvas").FindChild("Line1").GetComponent<Text>(); }
@@ -122,6 +124,8 @@ namespace Signs.Mono
 
         private IEnumerator DoSomethingAfterDelay()
         {
+            if (isCoroutineRunning) { yield break; }
+            isCoroutineRunning = true;
             Misc.Msg("Coroutine started");
 
             // Wait for 3 seconds
@@ -132,6 +136,7 @@ namespace Signs.Mono
 
             // Coroutine will automatically exit after this point
             if (UI.Setup.messageText != null) { UI.Setup.messageText.text = ""; }
+            isCoroutineRunning = false;
         }
     }
 }

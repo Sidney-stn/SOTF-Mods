@@ -46,6 +46,7 @@ namespace Signs.Items
             {
                 ItemPlacer itemPlacer = LocalPlayer.GameObject.AddComponent<ItemPlacer>();
                 itemPlacer.itemToPlace = itemToPlace;
+                itemPlacer.StartPlaceItem();
             }
             else
             {
@@ -72,7 +73,8 @@ namespace Signs.Items
             {
                 ItemPlacer itemPlacer = LocalPlayer.GameObject.AddComponent<ItemPlacer>();
                 itemPlacer.itemToPlace = itemToPlace;
-  
+                itemPlacer.StartPlaceItem();
+
             }
             else
             {
@@ -109,16 +111,36 @@ namespace Signs.Items
             {
                 if (_copiedItem != null)
                 {
-                    // Update position to hover in front of player
-                    Vector3 playerPosition = LocalPlayer.Transform.position;
-                    Vector3 playerForward = LocalPlayer.Transform.forward;
-                    float hoverDistance = 2f; // Adjust this value to change how far in front it hovers
+                    if (LocalPlayer.IsInInventory || LocalPlayer.IsInMidAction || !LocalPlayer.IsInWorld)
+                    {
+                        return;
+                    }
+                    // Get camera transform for raycasting
+                    Transform transform = LocalPlayer._instance._mainCam.transform;
+                    RaycastHit raycastHit;
 
-                    // Calculate new position in front of player
-                    Vector3 targetPosition = playerPosition + (playerForward * hoverDistance);
-                    _copiedItem.transform.position = targetPosition;
+                    // Perform raycast
+                    bool didHit = Physics.Raycast(
+                        transform.position,
+                        transform.forward,
+                        out raycastHit,
+                        5f,
+                        LayerMask.GetMask(new string[] { "Terrain", "Default", "Prop" })
+                    );
 
-                    // Handle rotation with Q and E
+                    // Update position based on raycast
+                    if (didHit)
+                    {
+                        _copiedItem.transform.position = raycastHit.point;
+                    }
+                    else
+                    {
+                        // Fallback position if no hit detected
+                        float fallbackDistance = 2f;
+                        _copiedItem.transform.position = transform.position + (transform.forward * fallbackDistance);
+                    }
+
+                    // Handle rotation with Q and E (keeping the existing rotation logic)
                     if (Input.GetKey(KeyCode.Q))
                     {
                         _copiedItem.transform.Rotate(Vector3.up, -90f * Time.deltaTime); // Rotate left
@@ -131,8 +153,15 @@ namespace Signs.Items
                     // Handle placement with left click
                     if (Input.GetMouseButtonDown(0)) // Left click
                     {
-                        // Place the object and clean up
                         PlaceItem();
+                    }
+                    if (Input.GetMouseButtonDown(1)) // Right click
+                    {
+                        CancelPlaceItem();
+                    }
+                    else if (Input.GetKey(KeyCode.Escape))  // Escape Click
+                    {
+                        CancelPlaceItem();
                     }
                 }
             }
@@ -174,13 +203,16 @@ namespace Signs.Items
                 {
                     Instance = null;
                 }
-                Destroy(gameObject);
+                Destroy(this);
             }
 
             public void StartPlaceItem()
             {
                 if (itemToPlace != null)
                 {
+                    LocalPlayer.Inventory.Close();
+                    LocalPlayer.Inventory.StashHeldItems(false, true);
+
                     _copiedItem = Instantiate(itemToPlace);  // Creates Copy Of Item
                     if (_copiedItem == null)
                     {
@@ -191,6 +223,17 @@ namespace Signs.Items
                     _copiedItem.transform.rotation = LocalPlayer.Transform.rotation;  // Rotates Item To Face Player
 
                     UI.SetupSignPlace.OpenUI();
+                }
+            }
+
+            private void CancelPlaceItem()
+            {
+                if (_copiedItem != null)
+                {
+                    Destroy(_copiedItem);
+                    _copiedItem = null;
+                    UI.SetupSignPlace.CloseUI();
+                    SelfDestruct();
                 }
             }
         }
