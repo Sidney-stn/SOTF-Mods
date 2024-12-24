@@ -137,4 +137,12 @@ public class Warps : SonsMod
             }
         }
     }
+    [DebugCommand("testwarps")]
+    private void TestWarp(string args)
+    {
+        for (int i = 0; i < 9; i++)
+        {
+            Saving.LoadedWarps.loadedWarps.Add($"TestWarp{i}", LocalPlayer.Transform.position);
+        }
+    }
 }

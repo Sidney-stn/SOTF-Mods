@@ -145,7 +145,10 @@ namespace Warps.UI
             }
             GameObject warpTemplate = templateTransform.gameObject;
 
-            int index = 0;
+            int currentIndex = 0;  // Track overall position
+            int column1Index = 0;  // For first 9 items
+            int column2Index = 0;  // For next 9 items
+            int column3Index = 0;  // For last 9 items
             foreach (var warp in Saving.LoadedWarps.loadedWarps)
             {
                 if (string.IsNullOrEmpty(warp.Key)) { continue; }
@@ -160,7 +163,31 @@ namespace Warps.UI
 
                 newWarp.SetActive(true);
 
-                newWarp.GetComponent<RectTransform>().anchoredPosition -= new Vector2(0, 68f * index);
+                // Check which column this item belongs in based on its position
+                if (currentIndex < 9)
+                {
+                    newWarp.GetComponent<RectTransform>().anchoredPosition -= new Vector2(0, 68f * column1Index);
+                    column1Index++;
+                }
+                else if (currentIndex < 18)
+                {
+                    newWarp.GetComponent<RectTransform>().anchoredPosition -= new Vector2(468, 68f * column2Index);
+                    column2Index++;
+                }
+                else if (currentIndex < 27)
+                {
+                    newWarp.GetComponent<RectTransform>().anchoredPosition -= new Vector2(-468, 68f * column3Index);
+                    column3Index++;
+                }
+                else
+                {
+                    Misc.Msg("Warp Cap Reached");
+                    SonsTools.ShowMessage("Warp Cap Reached");
+                    continue;
+                }
+
+                currentIndex++;  // Increment overall position counter
+
 
                 var textComponent = newWarp.transform.FindChild("Text");
                 if (textComponent == null)
@@ -197,7 +224,6 @@ namespace Warps.UI
                     };
                     deleteBtn.onClick.AddListener(deleteUiAction);
                 }
-                index++;
             }
         }
 
