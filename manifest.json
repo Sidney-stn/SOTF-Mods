@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToniMacaroni/RedLoader/main/MetadataSchema.json",
+  "id": "Warps",
+  "author": "SmokyAce",
+  "version": "1.0.0",
+  "description": "Add Warps",
+  "gameVersion": "1.0.0",
+  "type": "Mod",
+  "url": "..."
+}
