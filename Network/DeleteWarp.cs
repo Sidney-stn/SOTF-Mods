@@ -7,7 +7,6 @@ namespace Warps.Network
     {
         public string WarpName { get; set; }
 
-
         public override void OnReceived()
         {
             Misc.Msg("Recived Network Remove Warp Event");

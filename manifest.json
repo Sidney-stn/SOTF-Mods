@@ -6,5 +6,6 @@
   "description": "Add Warps",
   "gameVersion": "1.0.0",
   "type": "Mod",
+  "dependencies": [ "SimpleNetworkEvents" ],
   "url": "..."
 }
