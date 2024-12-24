@@ -1,4 +1,5 @@
 using RedLoader;
+using Sons.Gui;
 using SonsSdk;
 
 namespace Warps;
@@ -22,7 +23,18 @@ public static class Config
         ToggleMenuKey.DefaultValue = "numpad1";
         ToggleMenuKey.Notify(() =>
         {
-            UI.Setup.TryOpenUi();
+            if (!UI.Setup.IsUiOpen())
+            {
+                UI.Setup.TryOpenUi();
+            } else
+            {
+                UI.Setup.CloseUI();
+                if (PauseMenu._instance != null)
+                {
+                    PauseMenu._instance.Close();
+                }
+            }
+            
         });
 
         ExitMenuKey = IngameWarpsCategory.CreateKeybindEntry(

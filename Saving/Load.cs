@@ -5,7 +5,7 @@ namespace Warps.Saving
 {
     internal class Load
     {
-        public static Dictionary<string, Vector3> Warps = new Dictionary<string, Vector3>();
+        //public static Dictionary<string, Vector3> Warps = new Dictionary<string, Vector3>();
         internal static Queue<Saving.Manager.WarpsManager> deferredLoadQueue = new Queue<Saving.Manager.WarpsManager>();
 
         internal static void ProcessLoadData(Saving.Manager.WarpsManager obj)
@@ -15,7 +15,9 @@ namespace Warps.Saving
                 Misc.Msg("[Loading] Skipped Loading Warps On Multiplayer Client");
                 return;
             }
-            Warps.Clear();
+            //Warps.Clear();
+
+            Saving.LoadedWarps.loadedWarps.Clear();
 
             Misc.Msg($"[Loading] Warp's From Save: {obj.Warps.Count.ToString()}");
             foreach (var warpData in obj.Warps)

@@ -14,7 +14,7 @@ namespace Warps.Network
             if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer)
             {
                 Misc.Msg("[JoinedServer] Player Joined, Sending Get All Warps Event");
-                if (Saving.Load.Warps.Count > 0)
+                if (Saving.LoadedWarps.loadedWarps.Count > 0)
                 {
                     (ulong steamId, string stringSteamId) = Misc.MySteamId();
                     if (SenderId != stringSteamId)

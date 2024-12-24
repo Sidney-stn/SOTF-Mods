@@ -21,9 +21,9 @@ namespace Warps.Saving
             var saveData = new WarpsManager();
 
             // Warps
-            if (Saving.Load.Warps.Count != 0 || Saving.Load.Warps != null)
+            if (Saving.LoadedWarps.loadedWarps.Count != 0 || Saving.LoadedWarps.loadedWarps != null)
             {
-                foreach (var signsGameObject in Saving.Load.Warps)
+                foreach (var signsGameObject in Saving.LoadedWarps.loadedWarps)
                 {
                     if (signsGameObject.Key == null || signsGameObject.Value == Vector3.zero) { continue; }  // Skip Invalid Warps
 
@@ -34,10 +34,10 @@ namespace Warps.Saving
                     };
 
                     saveData.Warps.Add(WarpsModData);
-                    Misc.Msg("[Saving] Added Sign To Save List");
+                    Misc.Msg("[Saving] Added Warp To Save List");
                 }
             }
-            else { Misc.Msg("[Saving] No Sign found in LST, skipped saving"); }
+            else { Misc.Msg("[Saving] No Warp found in LST, skipped saving"); }
 
             return saveData;
         }
