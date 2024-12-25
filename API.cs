@@ -250,5 +250,13 @@ namespace Currency
             }
             return null;
         }
+
+        public static Dictionary<string, int> GetAllCash()  // Gets Cash For All Players. <StringId, CashAmount>
+        {
+            if (Misc.hostMode == Misc.SimpleSaveGameType.SinglePlayer || Misc.hostMode == Misc.SimpleSaveGameType.NotIngame) { return null; }
+            Misc.Msg($"[API] [GetAllCash] Getting Cash For All Players");
+
+            return LiveData.Players.GetPlayersCurrency();
+        }
     }
 }
