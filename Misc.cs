@@ -93,6 +93,9 @@ namespace Currency
             AddOnQuitWorld();
             Network.Manager.RegisterEvents();
             LiveData.Host.AddHostPlayerToSystem();
+
+            // Trigger Event For Host Mode Gotten
+            API.SubscribableEvents.TriggerOnJoinWorld();
         }
 
         public static GameObject FindObjectInSpecificScene(string sceneName = "SonsMain", string objectName = "ModalDialogManager") // ModalDialogManager as Standard

@@ -21,6 +21,9 @@ namespace Currency.Network
                 LiveData.Players.AddPlayer(SenderId, SenderName, Currency);
                 Misc.Msg($"[JoinedServer] Added Player: {SenderId} - {SenderName}");
             }
+
+            // Trigger Event
+            API.SubscribableEvents.TriggerOnPlayerJoin();
         }
     }
 }

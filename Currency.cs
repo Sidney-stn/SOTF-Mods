@@ -57,6 +57,9 @@ public class Currency : SonsMod
         // Unregistering Network Events
         Network.Manager.UnregisterEvents();
         LiveData.Players.CleanUp();
+
+        // Trigger Event
+        API.SubscribableEvents.TriggerOnLeaveWorld();
     }
 
     [DebugCommand("getcurrency")]

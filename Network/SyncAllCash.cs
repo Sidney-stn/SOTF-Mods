@@ -92,6 +92,8 @@ namespace Currency.Network
                     PlayersCurrency = LiveData.Players.GetPlayersCurrency(),
                     ToPlayerId = "None"
                 });
+
+                API.SubscribableEvents.TriggerOnCashChange();
             }
         }
     }

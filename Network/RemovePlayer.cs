@@ -20,6 +20,9 @@ namespace Currency.Network
                 LiveData.Players.RemovePlayer(SenderId);
                 Misc.Msg($"[RemovePlayer] Removed Player: {SenderId} - {SenderName}");
             }
+
+            // Trigger Event
+            API.SubscribableEvents.TriggerOnPlayerJoin();
         }
     }
 }

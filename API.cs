@@ -259,5 +259,53 @@ namespace Currency
             // Returns Dictonary of <StringId, CashAmount>
             return LiveData.Players.GetPlayersCurrency();
         }
+
+        public static string GetLocalPlayerName()  // Gets Local Player Name
+        {
+            return Misc.GetLocalPlayerUsername();
+        }
+
+        public static string GetLocalPlayerId()  // Gets Local Player SteamID
+        {
+            return Misc.MySteamId().Item2;
+        }
+
+        public static class SubscribableEvents
+        {
+            public static event Action OnPlayerJoin;
+
+            public static event Action OnPlayerLeave;
+
+            public static event Action OnCashChange;
+
+            public static event Action OnLeaveWorld;
+
+            public static event Action OnJoinWorld;  // When Player Joins World Or More Important: When LocalPlayer Host Mode Is Gotten Correctly
+
+            internal static void TriggerOnPlayerJoin()
+            {
+                OnPlayerJoin?.Invoke();
+            }
+
+            internal static void TriggerOnPlayerLeave()
+            {
+                OnPlayerLeave?.Invoke();
+            }
+
+            internal static void TriggerOnCashChange()
+            {
+                OnCashChange?.Invoke();
+            }
+
+            internal static void TriggerOnLeaveWorld()
+            {
+                OnLeaveWorld?.Invoke();
+            }
+
+            internal static void TriggerOnJoinWorld()
+            {
+                OnJoinWorld?.Invoke();
+            }
+        }
     }
 }
