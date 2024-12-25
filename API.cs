@@ -256,6 +256,7 @@ namespace Currency
             if (Misc.hostMode == Misc.SimpleSaveGameType.SinglePlayer || Misc.hostMode == Misc.SimpleSaveGameType.NotIngame) { return null; }
             Misc.Msg($"[API] [GetAllCash] Getting Cash For All Players");
 
+            // Returns Dictonary of <StringId, CashAmount>
             return LiveData.Players.GetPlayersCurrency();
         }
     }
