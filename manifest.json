@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToniMacaroni/RedLoader/main/MetadataSchema.json",
+  "id": "Banking",
+  "author": "SmokyAce",
+  "version": "1.0.0",
+  "description": "Adds a ATM and cash system",
+  "gameVersion": "1.0.0",
+  "type": "Mod",
+  "dependencies": [ "SimpleNetworkEvents" ],
+  "platform": "Universal",
+  "url": "..."
+}
