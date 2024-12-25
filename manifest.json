@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToniMacaroni/RedLoader/main/MetadataSchema.json",
+  "id": "Currency",
+  "author": "SmokyAce",
+  "version": "1.0.0",
+  "description": "Currency System Over Network",
+  "gameVersion": "1.0.0",
+  "type": "Mod",
+  "url": "..."
+}
