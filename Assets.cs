@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Banking
 {
     [AssetBundle("banking")]
-    public static class Assets
+    public static partial class Assets
     {
         [AssetReference("BankingUI")]
         public static GameObject BankingUI { get; set; }

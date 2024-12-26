@@ -13,6 +13,8 @@ namespace Banking.UI
         internal static Button withdrawBtn = null;
         internal static InputField depositInput = null;
         internal static InputField withdrawInput = null;
+        internal static Text cashText = null;
+        internal static Text playerName = null;
 
         internal static void SetupUI()
         {
@@ -29,6 +31,10 @@ namespace Banking.UI
                 Action closeUiAction = () =>
                 {
                     CloseUI();
+                    if (PauseMenu._instance != null)
+                    {
+                        PauseMenu._instance.Close();
+                    }
                 };
                 closeBtn.onClick.AddListener(closeUiAction);
             }
@@ -53,6 +59,9 @@ namespace Banking.UI
             }
             if (depositInput == null) { depositInput = AddUI.transform.FindDeepChild("DepositAmount").GetComponent<InputField>(); }  // Deposit Input
             if (withdrawInput == null) { withdrawInput = AddUI.transform.FindDeepChild("WithdrawAmount").GetComponent<InputField>(); }  // Withdraw Input
+
+            if (cashText == null) { cashText = AddUI.transform.FindDeepChild("Balance").GetComponent<Text>(); }  // Cash Text
+            if (playerName == null) { playerName = AddUI.transform.FindDeepChild("PlayerName").GetComponent<Text>(); }  // Player Name
         }
 
         public static void ToggleUi()  // Not In Use
@@ -71,9 +80,21 @@ namespace Banking.UI
                 PauseMenu._instance.Open();
                 if (!AddUI.active) { AddUI.SetActive(true); }
             }
+            if (cashText != null)
+            {
+                cashText.text = $"{LiveData.Players.GetPlayerCurrency(LiveData.Players.GetCurrencyType.SteamID, Misc.MySteamId().Item2)}";
+            }
             if (messageText != null)
             {
                 messageText.text = "";
+            }
+            if (playerName != null)
+            {
+                if (!string.IsNullOrEmpty(Misc.GetLocalPlayerUsername()))
+                {
+                    playerName.text = $"{Misc.GetLocalPlayerUsername()}";
+                }
+               
             }
         }
         public static void CloseUI()
@@ -89,9 +110,26 @@ namespace Banking.UI
             }
         }
 
+        public static bool IsUiOpen()
+        {
+            if (AddUI != null)
+            {
+                return AddUI.active;
+            }
+            return false;
+        }
+
         internal static void UpdateUiIfOpen()
         {
-
+            if (!IsUiOpen())
+            {
+                return;
+            }
+            // Update Cash Text
+            if (cashText != null)
+            {
+                cashText.text = $"{LiveData.Players.GetPlayerCurrency(LiveData.Players.GetCurrencyType.SteamID, Misc.MySteamId().Item2)}";
+            }
         }
     }
 }

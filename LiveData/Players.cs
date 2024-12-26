@@ -18,7 +18,7 @@ namespace Banking.LiveData
             {
                 _players.Add(steamId, playerName);
                 _playersCurrency.Add(steamId, 0);
-                Misc.Msg($"[JoinedServer] Added New Player: {playerName}");
+                Misc.Msg($"[AddPlayer] Added New Player: {playerName}");
             }
         }
 
@@ -78,7 +78,7 @@ namespace Banking.LiveData
         internal static void AddCashToPlayer(GetCurrencyType type, string steamIdOrPlayerName, int amount)
         {
             if (Misc.hostMode != Misc.SimpleSaveGameType.Multiplayer) { Misc.Msg("[Players] [AddCashToPlayer] Only Host Can Add Cash To Player"); return; }
-            if (!string.IsNullOrEmpty(steamIdOrPlayerName)) { Misc.Msg("[Players] [AddCashToPlayer] Invalid Steam Id Or Username"); return; }
+            if (string.IsNullOrEmpty(steamIdOrPlayerName)) { Misc.Msg("[Players] [AddCashToPlayer] Invalid Steam Id Or Username"); return; }
             if (amount < 0) { Misc.Msg("[Players] [AddCashToPlayer] Invalid Amount"); return; }
             if (type == GetCurrencyType.SteamID)
             {

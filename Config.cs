@@ -1,4 +1,5 @@
 using RedLoader;
+using Sons.Gui;
 using SonsSdk;
 
 namespace Banking;
@@ -34,7 +35,18 @@ public static class Config
         ToggleMenuKey.DefaultValue = "e";
         ToggleMenuKey.Notify(() =>
         {
-            UI.FunctionsFromUI.TryOpenUi();
+            if (!UI.Setup.IsUiOpen())
+            {
+                UI.FunctionsFromUI.TryOpenUi();
+            }
+            else
+            {
+                UI.Setup.CloseUI();
+                if (PauseMenu._instance != null)
+                {
+                    PauseMenu._instance.Close();
+                }
+            }
         });
 
         ExitMenuKey = IngameBankingCategory.CreateKeybindEntry(

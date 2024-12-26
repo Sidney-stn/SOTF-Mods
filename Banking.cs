@@ -1,6 +1,7 @@
 ﻿using SonsSdk;
 using SonsSdk.Attributes;
 using SUI;
+using TheForest.Utils;
 using UnityEngine;
 
 namespace Banking;
@@ -234,5 +235,23 @@ public class Banking : SonsMod
             return;
         }
 
+    }
+
+    [DebugCommand("spawnatm")]
+    private void SpawnAtm(string args)
+    {
+        Misc.Msg("Sign Command");
+        Transform transform = LocalPlayer._instance._mainCam.transform;
+        RaycastHit raycastHit;
+        Physics.Raycast(transform.position, transform.forward, out raycastHit, 25f, LayerMask.GetMask(new string[]
+        {
+            "Terrain",
+            "Default"
+        }));
+        if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
+        {
+            Misc.Msg("[SignCmd] [Multiplayer] Trying To Spawn Sign Multiplayer");
+            Prefab.ActiveATM.SpawnATM(raycastHit.point + Vector3.up * 0.1f, LocalPlayer.Transform.rotation);
+        }
     }
 }

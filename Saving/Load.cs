@@ -22,7 +22,7 @@ namespace Banking.Saving
                 Misc.Msg("[Loading] Creating New Atms");
                 if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
                 {
-                    Prefab.ActiveATM.SpawnATM(atmData.Position, atmData.Rotation);
+                    Prefab.ActiveATM.SpawnATM(atmData.Position, atmData.Rotation, atmData.UniqueId);
                 }
             }
         }

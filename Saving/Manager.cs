@@ -40,14 +40,14 @@ namespace Banking.Saving
                             Misc.Msg("[Saving] UniqueId == 0. Skipping Saving Of Sign");
                             continue;
                         }
-                        var SignsModData = new BankingManager.SignsModData
+                        var atmModData = new BankingManager.ATMModData
                         {
                             UniqueId = current_obj_controller.UniqueId,
                             Position = current_obj_controller.GetPos(),
                             Rotation = current_obj_controller.GetCurrentRotation(),
                         };
 
-                        saveData.Atms.Add(SignsModData);
+                        saveData.Atms.Add(atmModData);
                         Misc.Msg("[Saving] Added Sign To Save List");
                     }
                 }
@@ -74,9 +74,9 @@ namespace Banking.Saving
 
         public class BankingManager
         {
-            public List<SignsModData> Atms = new List<SignsModData>();
+            public List<ATMModData> Atms = new List<ATMModData>();
 
-            public class SignsModData
+            public class ATMModData
             {
                 public string UniqueId;
                 public Vector3 Position;

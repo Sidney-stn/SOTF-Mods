@@ -94,6 +94,13 @@ namespace Banking
             Network.Manager.RegisterEvents();
             LiveData.Host.AddHostPlayerToSystem();
 
+            // Process all deferred load data
+            while (Saving.Load.deferredLoadQueue.Count > 0)
+            {
+                var obj = Saving.Load.deferredLoadQueue.Dequeue();
+                Saving.Load.ProcessLoadData(obj);
+            }
+
             // Trigger Event For Host Mode Gotten
             API.SubscribableEvents.TriggerOnJoinWorld();
         }
