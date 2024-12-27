@@ -70,5 +70,14 @@ namespace Banking.Mono
                 yield return new WaitForSeconds(1f); // Check every 1 seconds
             }
         }
+        
+        public void DestroyATM()
+        {
+            SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.RemoveATM
+            {
+                UniqueId = UniqueId
+            });
+            Destroy(gameObject);
+        }
     }
 }

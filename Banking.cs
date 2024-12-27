@@ -240,7 +240,7 @@ public class Banking : SonsMod
     [DebugCommand("spawnatm")]
     private void SpawnAtm(string args)
     {
-        Misc.Msg("Sign Command");
+        Misc.Msg("[SpawnAtm] Command");
         Transform transform = LocalPlayer._instance._mainCam.transform;
         RaycastHit raycastHit;
         Physics.Raycast(transform.position, transform.forward, out raycastHit, 25f, LayerMask.GetMask(new string[]
@@ -248,10 +248,31 @@ public class Banking : SonsMod
             "Terrain",
             "Default"
         }));
-        if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
+        // Check If Raycast Hit Something
+        if (raycastHit.collider == null)
         {
-            Misc.Msg("[SignCmd] [Multiplayer] Trying To Spawn Sign Multiplayer");
-            Prefab.ActiveATM.SpawnATM(raycastHit.point + Vector3.up * 0.1f, LocalPlayer.Transform.rotation);
+            Misc.Msg("[SpawnAtm] Raycast Hit Nothing");
+            SonsTools.ShowMessage("Raycast Hit Nothing", 5);
+            return;
+        }
+        switch (Misc.hostMode)
+        {
+            case Misc.SimpleSaveGameType.SinglePlayer:
+                Misc.Msg("[SpawnAtm] [SinglePlayer] ATM Can't Be Spawned In SinglePlayer");
+                SonsTools.ShowMessage("ATM Can't Be Spawned In SinglePlayer", 5);
+                break;
+            case Misc.SimpleSaveGameType.Multiplayer:
+                Misc.Msg("[SpawnAtm] [Multiplayer] Trying To Spawn Sign Multiplayer");
+                Prefab.ActiveATM.SpawnATM(raycastHit.point + Vector3.up * 0.1f, LocalPlayer.Transform.rotation);
+                SonsTools.ShowMessage("ATM Spawned", 5);
+                break;
+            case Misc.SimpleSaveGameType.MultiplayerClient:
+                Misc.Msg("[SpawnAtm] [MultiplayerClient] ATM Can't Be Spawned As Client For Free");
+                SonsTools.ShowMessage("ATM Can't Be Spawned As Client For Free", 5);
+                break;
+            default:
+                Misc.Msg("[SpawnAtm] [Default] Invalid HostMode");
+                break;
         }
     }
 }

@@ -30,6 +30,8 @@
    - Note: This command can be used by **all players**.
 - `synccurrency` - Syncs all players cash with the host -> then host sends updated cash value to all clients.
    - Note: This command can be used by **all players**.
+- `spawnatm` - Spawns an ATM at the player's looking location (Max Distance 25f).
+   - Note: This command can be used by the **host**.
 
 #### How to use the Banking Mod in your mod:
 1. Add the Banking Mod as a reference in your mod.
@@ -63,9 +65,14 @@ Banking.API.RemoveCash(Banking.API.GetCurrencyType.PlayerName, SteamName, amount
 // Note: SteamName needs to be the full steam name of the player. (Case sensitive)
 // Note: SteamName and PlayerName are both strings
 ```
-- How To Force Sync Cash Between all players: (Note: This is done automatically when a player joins or leaves)
+- How To Force Sync Cash: (Note: This is done automatically when a player joins or leaves)
 ```csharp
-Banking.API.ForceSyncCash();
+
+// This will force sync all players cash with the host -> then host sends updated cash value to all clients.
+Banking.API.ForceSyncCash(Banking.API.SyncType.All);
+
+// This will force sync the local player's cash with the host -> then host sends updated cash value to all clients.
+Banking.API.ForceSyncCash(Banking.API.SyncType.Me);
 ```
 - How To Force Sync Cash Of Spesific Player:
 ```csharp
@@ -110,18 +117,64 @@ string localPlayerID = Banking.API.GetLocalPlayerID();
 // This will return the ID of the local player. (The PlayerID Of The Player Thats Running This Mod)
 // Note: localPlayerID is a string
 ```
+- How To Spawn ATM:
+```csharp
+Vector3 atmPosition = new Vector3(10, 10, 10);
+Quaternion atmRotation = new Quaternion(0, 0, 0, 0);
+
+GameObject newAtm = Banking.API.SpawnNewAtm(atmPosition, atmRotation);
+
+// This will spawn a new ATM at the specified position and rotation.
+// Note: atmPosition is a Vector3, atmRotation is a Quaternion
+// Note: newAtm is the GameObject of the ATM that was spawned.
+// Note: If the ATM is spawned successfully, it will return the GameObject of the ATM, else it will return null.
+```
+- How To Delete ATM:
+```csharp
+// Two Ways to delete an ATM
+
+// 1. Using ATM GameObject
+bool isDeleted = Banking.API.DeleteATM(GameObject atm);
+
+// 2. Using ATM UniqueId
+bool isDeleted = Banking.API.DeleteATM("UniqueId");
+
+// Note: isDeleted is a bool, it will return true if the ATM was deleted successfully, else it will return false.
+```
+- How To Get All Spawned ATMs GameObjects:
+```csharp
+List<GameObject> listOfATMGo = Banking.API.GetAllSpawnedATMs();
+// List Of ATM GameObjects
+```
+- How To Get All Spawned ATMs GameObjects Along With Unique Id's:
+```csharp
+Dictionary<string, GameObject> atmGo = Banking.API.GetAllSpawnedATMsWithUniqueId();
+// Dictionary<UniqueId, GameObject>
+
+// This will return a dictionary with the key being the unique id of the atm and the value being the GameObject of the atm.
+```
+- How To Get ATM GameObject From UniqueId:
+```csharp
+GameObject atmIfFound = Banking.API.GetATMFromUniqueId("UniqueId");
+
+// This will return the ATM GameObject if found, else it will return null.
+```
+- How To Get ATM UniqueId From GameObject:
+```csharp
+string atmUniqueId = Banking.API.GetUniqueIdFromATM(GameObject atm);
+
+// This will return the UniqueId of the ATM if found, else it will return null.
+```
 - Subscriable Events:
 ```csharp
 // Subscribe To Event
 Banking.API.SubscribableEvents.OnPlayerJoin += OnPlayerJoin;  // When a player joins the game in MP
-Banking.API.SubscribableEvents.OnPlayerLeave += OnPlayerLeave;  // When a player leaves the game in MP
 Banking.API.SubscribableEvents.OnCashChange += OnCashChange;  // When a player's cash changes on the network
 Banking.API.SubscribableEvents.OnLeaveWorld += OnLeaveWorld;  // When a THE LOCALPLAYER leaves the world
 Banking.API.SubscribableEvents.OnJoinWorld += OnJoinWorld;  // When a THE LOCALPLAYER joins the world
 
 // Unsubscribe To Event
 Banking.API.SubscribableEvents.OnPlayerJoin -= OnPlayerJoin;
-Banking.API.SubscribableEvents.OnPlayerLeave -= OnPlayerLeave;
 Banking.API.SubscribableEvents.OnCashChange -= OnCashChange;
 Banking.API.SubscribableEvents.OnLeaveWorld -= OnLeaveWorld;
 Banking.API.SubscribableEvents.OnJoinWorld -= OnJoinWorld;
@@ -130,11 +183,6 @@ Banking.API.SubscribableEvents.OnJoinWorld -= OnJoinWorld;
 public void OnPlayerJoin()
 {
     // This is called when a player joins the server or host.
-    // Add Your Code Here
-}
-public void OnPlayerLeave()
-{
-    // This is called when a player leaves the server or host.
     // Add Your Code Here
 }
 public void OnCashChange()

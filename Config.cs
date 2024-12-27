@@ -4,7 +4,7 @@ using SonsSdk;
 
 namespace Banking;
 
-public static class Config
+internal static class Config
 {
     internal static ConfigCategory IngameBankingCategory { get; private set; }
     public static ConfigEntry<bool> DebugLoggingIngameBanking { get; private set; }
@@ -12,7 +12,7 @@ public static class Config
     public static KeybindConfigEntry ToggleMenuKey { get; private set; }
     public static KeybindConfigEntry ExitMenuKey { get; private set; }
 
-    public static void Init()
+    internal static void Init()
     {
         IngameBankingCategory = ConfigSystem.CreateCategory("ingameBanking", "IngameBanking");
 
@@ -62,7 +62,7 @@ public static class Config
     }
 
     // Same as the callback in "CreateSettings". Called when the settings ui is closed.
-    public static void OnSettingsUiClosed()
+    internal static void OnSettingsUiClosed()
     {
     }
 }

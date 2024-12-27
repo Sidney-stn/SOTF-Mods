@@ -2,7 +2,7 @@
 
 namespace Banking.Network
 {
-    public class Manager
+    internal class Manager
     {
         public static void RegisterEvents()
         {

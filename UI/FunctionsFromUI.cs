@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Banking.UI
 {
-    public class FunctionsFromUI
+    internal class FunctionsFromUI
     {
         internal static void DepositCashFromUi()
         {
@@ -118,7 +118,7 @@ namespace Banking.UI
             if (UI.Setup.messageText != null) { UI.Setup.messageText.text = "Withdrew Cash"; }
         }
 
-        public static void TryOpenUi()
+        internal static void TryOpenUi()
         {
             if (!LocalPlayer.IsInWorld || LocalPlayer.IsInInventory || PauseMenu.IsActive) { return; }
             Transform transform = LocalPlayer._instance._mainCam.transform;

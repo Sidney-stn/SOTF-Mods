@@ -7,10 +7,10 @@ namespace Banking.Prefab
     {
         internal static GameObject activeAtm = null;  // For Using ATM In World. Checks If ATM Is Close And If Looking At And Such
 
-        public static GameObject atmWithComps;
-        public static Dictionary<string, GameObject> spawnedAtms = new Dictionary<string, GameObject>();
+        internal static GameObject atmWithComps;
+        internal static Dictionary<string, GameObject> spawnedAtms = new Dictionary<string, GameObject>();
 
-        public static void SetupAtmPrefab()
+        internal static void SetupAtmPrefab()
         {
             if (atmWithComps == null)
             {
@@ -78,6 +78,54 @@ namespace Banking.Prefab
 
             }
             return newAtm;
+        }
+
+        internal static bool DeleteATM(Mono.ATMController atmController)  // Return String Is Success
+        {
+            if (atmController == null)
+            {
+                Misc.Msg("ATMController Is Null");
+                return false;
+            }
+            atmController.DestroyATM();
+            return true;
+        }
+
+        internal static bool DeleteATM(GameObject atm)  // Return String Is Success
+        {
+            if (atm == null)
+            {
+                Misc.Msg("ATM GameObject Is Null");
+                return false;
+            }
+            Mono.ATMController atmController = atm.GetComponent<Mono.ATMController>();
+            if (atmController == null)
+            {
+                Misc.Msg("ATMController Is Null");
+                return false;
+            }
+            atmController.DestroyATM();
+            return true;
+        }
+
+        internal static bool DeleteATM(string uniqueId)  // Return String Is Success
+        {
+            if (spawnedAtms.TryGetValue(uniqueId, out GameObject atm))
+            {
+                Mono.ATMController atmController = atm.GetComponent<Mono.ATMController>();
+                if (atmController == null)
+                {
+                    Misc.Msg("ATMController Is Null");
+                    return false;
+                }
+                atmController.DestroyATM();
+                return true;
+            }
+            else
+            {
+                Misc.Msg("ATM with unique ID not found");
+                return false;
+            }
         }
 
         internal static GameObject FindShopByUniqueId(string uniqueId)
