@@ -262,7 +262,7 @@ public class Banking : SonsMod
                 SonsTools.ShowMessage("ATM Can't Be Spawned In SinglePlayer", 5);
                 break;
             case Misc.SimpleSaveGameType.Multiplayer:
-                Misc.Msg("[SpawnAtm] [Multiplayer] Trying To Spawn Sign Multiplayer");
+                Misc.Msg("[SpawnAtm] [Multiplayer] Trying To Spawn Atm Multiplayer");
                 Prefab.ActiveATM.SpawnATM(raycastHit.point + Vector3.up * 0.1f, LocalPlayer.Transform.rotation);
                 SonsTools.ShowMessage("ATM Spawned", 5);
                 break;
@@ -272,6 +272,78 @@ public class Banking : SonsMod
                 break;
             default:
                 Misc.Msg("[SpawnAtm] [Default] Invalid HostMode");
+                break;
+        }
+    }
+
+    [DebugCommand("deleteatm")]
+    private void DeleteAtm(string args)
+    {
+        Misc.Msg("[DeleteAtm] Command");
+        Transform transform = LocalPlayer._instance._mainCam.transform;
+        RaycastHit raycastHit;
+        Physics.Raycast(transform.position, transform.forward, out raycastHit, 25f, LayerMask.GetMask(new string[]
+        {
+            "Terrain",
+            "Default"
+        }));
+        // Check If Raycast Hit Something
+        if (raycastHit.collider == null)
+        {
+            Misc.Msg("[DeleteAtm] Raycast Hit Nothing");
+            SonsTools.ShowMessage("Raycast Hit Nothing", 5);
+            return;
+        }
+        switch (Misc.hostMode)
+        {
+            case Misc.SimpleSaveGameType.SinglePlayer:
+                Misc.Msg("[DeleteAtm] [SinglePlayer] ATM Can't Be Spawned In SinglePlayer");
+                SonsTools.ShowMessage("ATM Can't Be Delete In SinglePlayer", 5);
+                break;
+            case Misc.SimpleSaveGameType.Multiplayer:
+                Misc.Msg("[DeleteAtm] [Multiplayer] Trying To Delete Atm Multiplayer");
+                // Get Hit Object Root GameObject
+                GameObject atm = raycastHit.collider.transform.root.gameObject;
+                if (atm.name.Contains("ATM"))
+                {
+                    if (Prefab.ActiveATM.spawnedAtms.ContainsValue(atm))
+                    {
+                        string uniqueId = atm.GetComponent<Mono.ATMController>().UniqueId;
+                        if (string.IsNullOrEmpty(uniqueId))
+                        {
+                            Misc.Msg("[DeleteAtm] UniqueId Is Null Or Empty");
+                            SonsTools.ShowMessage("UniqueId Is Null Or Empty", 5);
+                            return;
+                        }
+                        Prefab.ActiveATM.spawnedAtms.Remove(uniqueId);
+                        Saving.Load.ModdedAtms.Remove(atm);
+                        GameObject.Destroy(atm);
+
+                        // Raise Network Event
+                        SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.RemoveATM
+                        {
+                            UniqueId = uniqueId
+                        });
+                    }
+                    else
+                    {
+                        Misc.Msg("[DeleteAtm] ATM Not Found");
+                        SonsTools.ShowMessage("ATM Not Found", 5);
+                    }
+                }
+                else
+                {
+                    Misc.Msg("[DeleteAtm] Hit Object Is Not ATM");
+                    SonsTools.ShowMessage("Hit Object Is Not ATM", 5);
+                }
+                SonsTools.ShowMessage("Deleted ATM", 5);
+                break;
+            case Misc.SimpleSaveGameType.MultiplayerClient:
+                Misc.Msg("[DeleteAtm] [MultiplayerClient] ATM Can't Be Deleted As Client For Free");
+                SonsTools.ShowMessage("ATM Can't Be Deleted As Client", 5);
+                break;
+            default:
+                Misc.Msg("[DeleteAtm] [Default] Invalid HostMode");
                 break;
         }
     }

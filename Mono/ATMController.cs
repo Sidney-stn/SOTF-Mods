@@ -77,6 +77,9 @@ namespace Banking.Mono
             {
                 UniqueId = UniqueId
             });
+            // Remove From Lists
+            Prefab.ActiveATM.spawnedAtms.Remove(UniqueId);
+            Saving.Load.ModdedAtms.Remove(gameObject);
             Destroy(gameObject);
         }
     }

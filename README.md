@@ -32,6 +32,8 @@
    - Note: This command can be used by **all players**.
 - `spawnatm` - Spawns an ATM at the player's looking location (Max Distance 25f).
    - Note: This command can be used by the **host**.
+- `deleteatm` - Deletes the ATM the player is looking at.
+   - Note: This command can be used by the **host**.
 
 #### How to use the Banking Mod in your mod:
 1. Add the Banking Mod as a reference in your mod.
