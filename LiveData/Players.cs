@@ -10,6 +10,8 @@ namespace Banking.LiveData
 
         internal static void AddPlayer(string steamId, string playerName)
         {
+            if (string.IsNullOrEmpty(steamId)) { Misc.Msg("[AddPlayer] Invalid Steam Id"); return; }
+            if (string.IsNullOrEmpty(playerName)) { Misc.Msg("[AddPlayer] Invalid Player Name"); return; }
             if (_players.ContainsKey(steamId))
             {
                 _players[steamId] = playerName;
@@ -107,16 +109,15 @@ namespace Banking.LiveData
         internal static void RemoveCashFromPlayer(GetCurrencyType type, string steamIdOrPlayerName, int amount)
         {
             if (Misc.hostMode != Misc.SimpleSaveGameType.Multiplayer) { Misc.Msg("[Players] [RemoveCashFromPlayer] Only Host Can Remove Cash From Player"); return; }
-            if (!string.IsNullOrEmpty(steamIdOrPlayerName)) { Misc.Msg("[Players] [RemoveCashFromPlayer] Invalid Steam Id Or Username"); return; }
+            if (string.IsNullOrEmpty(steamIdOrPlayerName)) { Misc.Msg("[Players] [RemoveCashFromPlayer] Invalid Steam Id Or Username"); return; }
             if (amount < 0) { Misc.Msg("[Players] [RemoveCashFromPlayer] Invalid Amount"); return; }
             if (type == GetCurrencyType.SteamID)
             {
-                bool found = false;
                 if (_playersCurrency.ContainsKey(steamIdOrPlayerName))
                 {
                     _playersCurrency[steamIdOrPlayerName] -= amount;
                 }
-                if (!found) { Misc.Msg("[Players] [RemoveCashFromPlayer] Player Not Found"); }
+                else { Misc.Msg("[Players] [RemoveCashFromPlayer] Player Not Found"); }
             }
             else if (type == GetCurrencyType.PlayerName)
             {

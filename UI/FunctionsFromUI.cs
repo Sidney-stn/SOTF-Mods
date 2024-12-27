@@ -33,6 +33,11 @@ namespace Banking.UI
             }
             else
             {
+                if (depositAmount <= 0) { 
+                    Misc.Msg("[FunctionsFromUI] [DepositCashFromUi] INVALID Deposit Amount Is Less Than 0 or = 0");
+                    if (UI.Setup.messageText != null) { UI.Setup.messageText.text = "Only Positive Accepted!"; }
+                    return;
+                }
                 Misc.Msg($"[FunctionsFromUI] [DepositCashFromUi] Deposit Amount: {depositAmount}");
 
                 // Check If Player Has Enough Cash
@@ -88,6 +93,12 @@ namespace Banking.UI
             }
             else
             {
+                if (withdrawAmount <= 0)
+                {
+                    Misc.Msg("[FunctionsFromUI] [DepositCashFromUi] INVALID Deposit Amount Is Less Than or = 0");
+                    if (UI.Setup.messageText != null) { UI.Setup.messageText.text = "Only Positive Accepted!"; }
+                    return;
+                }
                 Misc.Msg($"[FunctionsFromUI] [WithdrawCashFromUi] Withdraw Amount: {withdrawAmount}");
 
                 // Add Cash To Player Via Network

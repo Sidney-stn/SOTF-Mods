@@ -16,7 +16,7 @@ namespace Banking.Saving
             if (Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
             {
                 Misc.Msg("[Saving] Only Host Saves");
-                return null;
+                return new BankingManager();
             }
             var saveData = new BankingManager();
 
@@ -54,6 +54,9 @@ namespace Banking.Saving
             }
             else { Misc.Msg("[Saving] No Sign found in LST, skipped saving"); }
 
+            saveData.SavedPlayers = LiveData.Players.GetPlayers();
+            saveData.SavedPlayersCurrency = LiveData.Players.GetPlayersCurrency();
+
             return saveData;
         }
 
@@ -74,6 +77,9 @@ namespace Banking.Saving
 
         public class BankingManager
         {
+            public Dictionary<string, string> SavedPlayers = new Dictionary<string, string>();  // PlayerSteamID, PlayerName
+            public Dictionary<string, int> SavedPlayersCurrency = new Dictionary<string, int>();  // PlayerSteamID, PlayerCash
+
             public List<ATMModData> Atms = new List<ATMModData>();
 
             public class ATMModData

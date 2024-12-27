@@ -83,19 +83,21 @@ namespace Banking.UI
             if (cashText != null)
             {
                 cashText.text = $"{LiveData.Players.GetPlayerCurrency(LiveData.Players.GetCurrencyType.SteamID, Misc.MySteamId().Item2)}";
-            }
+            } else { Misc.Msg("[UI.Setup] [OpenUI] Cash Text Is Null"); }
             if (messageText != null)
             {
                 messageText.text = "";
             }
+            else { Misc.Msg("[UI.Setup] [OpenUI] Message Text Is Null"); }
             if (playerName != null)
             {
                 if (!string.IsNullOrEmpty(Misc.GetLocalPlayerUsername()))
                 {
                     playerName.text = $"{Misc.GetLocalPlayerUsername()}";
                 }
-               
-            }
+                else { Misc.Msg("[UI.Setup] [OpenUI] GetLocalPlayerUsername() == null"); }
+
+            } else { Misc.Msg("[UI.Setup] [OpenUI] Player Name Is Null"); }
         }
         public static void CloseUI()
         {

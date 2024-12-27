@@ -22,20 +22,20 @@ namespace Banking.Network
             }
             if (Assets.ATM == null)
             {
-                Misc.Msg("[SpawnATM] [OnReceived()] Sign Prefab has not been created yet, skipped");
+                Misc.Msg("[SpawnATM] [OnReceived()] Atm Prefab has not been created yet, skipped");
                 return;
             }
             (ulong uSteamId, string sSteamId) = Misc.MySteamId();
             if (string.IsNullOrEmpty(sSteamId))
             {
-                Misc.Msg("[SpawnATM] [OnReceived()] Could Not Get My SteamId, Cant Be Sure Who Has The Sign, Skipped");
+                Misc.Msg("[SpawnATM] [OnReceived()] Could Not Get My SteamId, Cant Be Sure Who Has The Atm, Skipped");
                 return;
             }
             else
             {
                 if (Sender == sSteamId)
                 {
-                    Misc.Msg("[SpawnATM] [OnReceived()] Not Creating Sign Over Network When Its From My SteamID, skipped");
+                    Misc.Msg("[SpawnATM] [OnReceived()] Not Creating Atm Over Network When Its From My SteamID, skipped");
                     return;
                 }
             }
@@ -43,7 +43,7 @@ namespace Banking.Network
             {
                 if (ToSteamId != sSteamId.ToString())
                 {
-                    Misc.Msg("[SpawnATM] [OnReceived()] Not Creating Sign Over Network When Its Not For Me, skipped");
+                    Misc.Msg("[SpawnATM] [OnReceived()] Not Creating Atm Over Network When Its Not For Me, skipped");
                     return;
                 }
 

@@ -25,6 +25,12 @@ namespace Banking.Saving
                     Prefab.ActiveATM.SpawnATM(atmData.Position, atmData.Rotation, atmData.UniqueId);
                 }
             }
+
+            // Update Players And Players Currency
+            LiveData.Players.UpdatePlayersAndCash(obj.SavedPlayers, obj.SavedPlayersCurrency);
+
+            // Add Host Player To System
+            LiveData.Host.AddHostPlayerToSystem();
         }
     }
 }

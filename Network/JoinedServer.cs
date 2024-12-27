@@ -28,14 +28,19 @@ namespace Banking.Network
                 });
 
                 // Player Joined, Sending ATM Spawn CMD
-                foreach (var sign in Saving.Load.ModdedAtms)
+                Misc.Msg($"[Joined Server] [OnReceived] Amount Of ATMS In World: {Saving.Load.ModdedAtms.Count}");  // Logging
+                int index = 0;
+                foreach (var atm in Saving.Load.ModdedAtms)
                 {
-                    Mono.ATMController atmController = sign.GetComponent<Mono.ATMController>();
-                    if (atmController == null) { continue; }
+                    Mono.ATMController atmController = atm.GetComponent<Mono.ATMController>();
+                    if (atmController == null) { Misc.Msg("[JoinedServer] [OnReceived] ATMController Is Null When Trying To Send SpawnATM Event To Joined Player"); continue; }
 
-                    string uniqueId = atmController.UniqueId.ToString();
+                    string uniqueId = atmController.UniqueId;
+                    if (string.IsNullOrEmpty(uniqueId)) { Misc.Msg("[JoinedServer] [OnReceived] UniqueId Is Null Or Empty When Trying To Send SpawnATM Event To Joined Player"); continue; }
                     string vector3Position = Network.CustomSerializable.Vector3ToString((Vector3)atmController.GetPos());
+                    if (string.IsNullOrEmpty(vector3Position)) { Misc.Msg("[JoinedServer] [OnReceived] Vector3Position Is Null Or Empty When Trying To Send SpawnATM Event To Joined Player"); continue; }
                     string rotation = Network.CustomSerializable.QuaternionToString((Quaternion)atmController.GetCurrentRotation());
+                    if (string.IsNullOrEmpty(rotation)) { Misc.Msg("[JoinedServer] [OnReceived] Rotation Is Null Or Empty When Trying To Send SpawnATM Event To Joined Player"); continue; }
 
                     SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.SpawnATM
                     {
@@ -46,8 +51,9 @@ namespace Banking.Network
                         SenderName = Misc.GetLocalPlayerUsername(),
                         ToSteamId = SenderId
                     });
+                    index++;
                 }
-                    
+                Misc.Msg($"[JoinedServer] [OnReceived] Sent {index} ATM Spawn Commands");
             }
 
             // Trigger Event

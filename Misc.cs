@@ -92,7 +92,6 @@ namespace Banking
             }
             AddOnQuitWorld();
             Network.Manager.RegisterEvents();
-            LiveData.Host.AddHostPlayerToSystem();
 
             // Process all deferred load data
             while (Saving.Load.deferredLoadQueue.Count > 0)
@@ -100,6 +99,9 @@ namespace Banking
                 var obj = Saving.Load.deferredLoadQueue.Dequeue();
                 Saving.Load.ProcessLoadData(obj);
             }
+
+            // Add Host Player To System
+            LiveData.Host.AddHostPlayerToSystem();
 
             // Trigger Event For Host Mode Gotten
             API.SubscribableEvents.TriggerOnJoinWorld();

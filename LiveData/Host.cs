@@ -13,6 +13,7 @@ namespace Banking.LiveData
                 return;
             }
             LiveData.Players.AddPlayer(Misc.MySteamId().Item2, Misc.GetLocalPlayerUsername());
+            Misc.Msg("[Host] [AddHostPlayerToSystem] Added HOST To Players List");
         }
     }
 }

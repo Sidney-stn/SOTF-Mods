@@ -52,6 +52,13 @@ namespace Banking.Prefab
                 Misc.Msg("Failed To Instantiate ATM Prefab");
                 return null;
             }
+            Mono.ATMController atmController = newAtm.GetComponent<Mono.ATMController>();
+            if (atmController == null)
+            {
+                Misc.Msg("ATMController Is Null");
+                return null;
+            }
+            atmController.UniqueId = setUniqueId;
 
             spawnedAtms.Add(setUniqueId, newAtm); // UniqueId, GameObject
             Saving.Load.ModdedAtms.Add(newAtm); // Add To Save List
