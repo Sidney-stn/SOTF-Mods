@@ -11,5 +11,8 @@ namespace Banking
 
         [AssetReference("ATM")]
         public static GameObject ATM { get; set; }
+
+        [AssetReference("ATMIcon")]
+        public static Texture2D ATMIcon { get; set; }
     }
 }

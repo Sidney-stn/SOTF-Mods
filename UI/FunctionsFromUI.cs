@@ -137,7 +137,7 @@ namespace Banking.UI
                 Mono.ATMController aTMController = openAtm.GetComponent<Mono.ATMController>();
                 if (aTMController != null)
                 {
-                    Misc.Msg("Opening Sign Ui");
+                    Misc.Msg("Opening ATM Ui");
                     aTMController.OpenATMUi();
                 }
                 else { Misc.Msg("ATMController is null!"); }

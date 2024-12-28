@@ -17,6 +17,7 @@ namespace Banking.Prefab
                 if (Assets.ATM == null) { Misc.Msg("Cant Setup ATM Prefab, ATM Asset is null!"); return; }
                 atmWithComps = GameObject.Instantiate(Assets.ATM);
                 Mono.ATMController atmController = atmWithComps.AddComponent<Mono.ATMController>();
+                atmController.isSetupPrefab = true;
                 Mono.DestroyOnC destroyOnC = atmWithComps.AddComponent<Mono.DestroyOnC>();
             }
         }
