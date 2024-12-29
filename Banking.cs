@@ -75,6 +75,9 @@ public class Banking : SonsMod
             GameObject.Destroy(atm);
         }
         Saving.Load.ModdedAtms.Clear();
+        Saving.Load.ModdedATMPlacers.Clear();
+
+        Prefab.ATMPlacer.spawnedATMPlacers.Clear();
     }
 
     [DebugCommand("getcurrency")]

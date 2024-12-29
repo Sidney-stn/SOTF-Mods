@@ -54,6 +54,9 @@ namespace Banking.Saving
             }
             else { Misc.Msg("[Saving] No Sign found in LST, skipped saving"); }
 
+            // ATM Placers
+
+
             saveData.SavedPlayers = LiveData.Players.GetPlayers();
             saveData.SavedPlayersCurrency = LiveData.Players.GetPlayersCurrency();
 
@@ -81,6 +84,7 @@ namespace Banking.Saving
             public Dictionary<string, int> SavedPlayersCurrency = new Dictionary<string, int>();  // PlayerSteamID, PlayerCash
 
             public List<ATMModData> Atms = new List<ATMModData>();
+            public List<ATMModData> ATMPlacers = new List<ATMModData>();
 
             public class ATMModData
             {

@@ -1,5 +1,4 @@
 ﻿
-
 namespace Banking.Network
 {
     internal class Manager
@@ -17,6 +16,8 @@ namespace Banking.Network
                 SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.RequestSyncCash>();
                 SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.RemoveATM>();
                 SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.SpawnATM>();
+                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.ATMPlacer.SpawnATMPlacer>();
+                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.ATMPlacer.RemoveATMPlacer>();
                 SendJoinedServerEvent();
             }
         }
@@ -33,6 +34,8 @@ namespace Banking.Network
                 SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.RequestSyncCash>();
                 SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.RemoveATM>();
                 SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.SpawnATM>();
+                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.ATMPlacer.SpawnATMPlacer>();
+                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.ATMPlacer.RemoveATMPlacer>();
             }
         }
 
