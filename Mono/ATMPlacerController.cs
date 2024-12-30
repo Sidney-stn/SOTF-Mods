@@ -22,7 +22,17 @@ namespace Banking.Mono
 
         private bool isCoroutineRunning = false;  // For Coroutine. Check If Coroutine Is Running
 
-        private Text frontTextToCoutdown = null;
+        private Text frontTextToCoutdown = null;  // For Countdown Text And Front Text
+
+        // For Networking
+        public bool spawnedOverNetwork = false;
+
+        // For Networking And Countdown
+        public float countdown = 600f; // For Setting Coutdown Time
+
+        // For Networking And Countdown Over Network
+        public float remainingTime = 0f;  // For Remaining Time
+
 
         private void Start()
         {
@@ -37,24 +47,22 @@ namespace Banking.Mono
                 craftingChilds = gameObject.transform.FindChild("Crafting").GetChildren();
             }
 
-            if (placeItem == null)
+            if (placeItem == null && !spawnedOverNetwork)
             {
                 GameObject uiPlacement = gameObject.transform.FindChild("UI").gameObject;
-                if (uiPlacement == null)
+                if (uiPlacement != null)
                 {
-                    Misc.Msg("UI Placement Not Found");
-                    return;
+                    placeItem = CreateLinkUi(uiPlacement, 2f, null, Assets.ATMIcon, null);
                 }
-                placeItem = CreateLinkUi(uiPlacement, 2f, null, Assets.ATMIcon, null);
             }
 
             if (frontTextToCoutdown == null)
             {
-                frontTextToCoutdown = gameObject.transform.FindChild("FrontText").GetComponent<Text>();
+                frontTextToCoutdown = gameObject.transform.FindDeepChild("Line1").GetComponent<Text>();
                 frontTextToCoutdown.text = "";
             }
 
-            if (itemController == null) { itemController = LocalPlayer.Transform.GetComponentInChildren<HeldOnlyItemController>(); }
+            if (itemController == null && !spawnedOverNetwork) { itemController = LocalPlayer.Transform.GetComponentInChildren<HeldOnlyItemController>(); }
 
             GetUnplacedItems();
             UpdateUiIcon();
@@ -64,7 +72,7 @@ namespace Banking.Mono
         {
             if (craftingChilds == null)
             {
-                Misc.Msg("[ATMPlacerController] [GetUnplacedItems] Crafting Childs Is Null");
+                Misc.Msg("[ATMPlacerController] [GetUnplacedItems] Crafting Childs Is Null Or SpawnedOverNetwork True");
                 return;
             }
             foreach (var child in craftingChilds)
@@ -89,6 +97,7 @@ namespace Banking.Mono
 
         private void UpdateUiIcon()
         {
+            if (spawnedOverNetwork) { return; }
             if (placeItem != null)
             {
                 int firstElementId = unplacedItems.Keys.First();
@@ -104,6 +113,7 @@ namespace Banking.Mono
 
         public void OnTryPlaceItem()  // Try To Add Item
         {
+            if (spawnedOverNetwork) { return; }
             var firstItemId = unplacedItems.Keys.First();  // Get first itemId
             var gameObjectsList = unplacedItems[firstItemId];  // Get list of GameObjects for this id
             var showItemOnAdded = gameObjectsList[0];  // Get first GameObject from list
@@ -154,12 +164,14 @@ namespace Banking.Mono
                 return;
             }
 
+            OnItemSuccessAdded();
+
             UpdateUiIcon();
         }
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.E))
+            if (Input.GetKeyDown(KeyCode.E) && !spawnedOverNetwork)
             {
                 if (placeItem != null)  // Check If LinkUi Still Exists
                 {
@@ -174,30 +186,67 @@ namespace Banking.Mono
 
         private void StartBuilding() // Start Building
         {
-            if (isCoroutineRunning) { return; }
+            if (isCoroutineRunning || spawnedOverNetwork) { return; }
             BuildATM().RunCoro();
         }
 
-        
-        private IEnumerator BuildATM() // Coroutine To Wait For A Delay
+
+        private IEnumerator BuildATM()
         {
             isCoroutineRunning = true;
-
             Misc.Msg("[ATMPlacerController] [BuildATM] Coroutine Started");
-            frontTextToCoutdown.text = "Building ATM...";
 
-            yield return new WaitForSeconds(6f);
+            remainingTime = countdown;
+
+            while (remainingTime > 0)
+            {
+                // Update the text with the remaining time (rounded to integers)
+                frontTextToCoutdown.text = $"Building ATM... {Mathf.Ceil(remainingTime)}s";
+
+                // Wait for one second
+                yield return new WaitForSeconds(1f);
+
+                // Decrease the remaining time
+                remainingTime -= 1f;
+            }
+
+            frontTextToCoutdown.text = "Building ATM... Done!";
             Misc.Msg("[ATMPlacerController] [BuildATM] Coroutine Finished");
 
             // Build ATM On Same Position
             Prefab.ActiveATM.SpawnATM(gameObject.transform.position, gameObject.transform.rotation);
-
             isCoroutineRunning = false;
             SonsTools.ShowMessage("ATM Built!", 5);
 
             // Remove ATM Placer
             DestroyATM();
+        }
 
+        public void StartNetworkCountdown(float duration)
+        {
+            if (isCoroutineRunning) { return; }
+            ShowNetworkCountdown(duration).RunCoro();
+        }
+
+        private IEnumerator ShowNetworkCountdown(float duration)
+        {
+            isCoroutineRunning = true;
+            Misc.Msg("[ATMPlacerController] [ShowNetworkCountdown] Coroutine Started");
+
+            float remainingTime = duration;
+
+            while (remainingTime > 0)
+            {
+                // Update the text with the remaining time
+                frontTextToCoutdown.text = $"Processing... {Mathf.Ceil(remainingTime)}s";
+
+                yield return new WaitForSeconds(1f);
+                remainingTime -= 1f;
+            }
+
+            frontTextToCoutdown.text = "Processing... Complete!";
+            Misc.Msg("[ATMPlacerController] [ShowNetworkCountdown] Coroutine Finished");
+            isCoroutineRunning = false;
         }
 
         public void DestroyATM()
@@ -234,6 +283,65 @@ namespace Banking.Mono
             linkUiAdd.enabled = false;
             linkUiAdd.enabled = true;
             return linkUiAdd;
+        }
+
+        public void SetFrontText(string text)
+        {
+            if (frontTextToCoutdown != null)
+            {
+                frontTextToCoutdown.text = text;
+            }
+        }
+
+        public Dictionary<int, int> GetAddedObjects()  // Get Added Objects <ItemId, Quanity>
+        {
+            Dictionary<int, int> addedObjects = new Dictionary<int, int>();
+            foreach (var item in unplacedItems)
+            {
+                addedObjects.Add(item.Key, item.Value.Count);
+            }
+            return addedObjects;
+        }
+
+        public void SetAddedObjects(Dictionary<int, int> addedObjects)  // Set Added Objects <ItemId, Quanity>
+        {
+            foreach (var item in addedObjects)  // Loop Through Added Objects
+            {
+                int itemId = item.Key;
+                int quanity = item.Value;
+                foreach (var item2 in unplacedItems)
+                {
+                    if (item2.Key == itemId)  // Check If ItemId Matches Any ItemId In UnplacedItems
+                    {
+                        List<GameObject> undAddedGameObjects = item2.Value;
+                        undAddedGameObjects.First().SetActive(true);  // Set Active
+                        undAddedGameObjects.Remove(undAddedGameObjects.First());  // Remove From List
+                    }
+                }
+            }
+        }
+
+        private void OnItemSuccessAdded()  // Send Network Event
+        {
+            SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.ATMPlacer.UpdateATMPlacer
+            {
+                UniqueId = UniqueId,
+                RecivedAddedItems = GetAddedObjects(),
+                RemainingTime = remainingTime,
+                Sender = Misc.MySteamId().Item2,
+                SenderName = Misc.GetLocalPlayerUsername(),
+                ToSteamId = "None"
+            });
+        }
+
+        public Vector3 GetPos()
+        {
+            return gameObject.transform.position;
+        }
+
+        public Quaternion GetCurrentRotation()
+        {
+            return gameObject.transform.rotation;
         }
     }
 }

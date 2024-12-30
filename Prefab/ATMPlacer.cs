@@ -30,16 +30,18 @@ namespace Banking.Prefab
                 {
                     child.gameObject.SetActive(false);
                 }
-                
+
+                atmPlacerWithComps.SetActive(false);  // Deactive ATMPlacer Prefab
             }
         }
-        internal static GameObject PlacePrefab(Vector3 pos, Quaternion rot, bool raiseCreateEvent = false, string uniqueId = null)
+        internal static GameObject PlacePrefab(Vector3 pos, Quaternion rot, bool raiseCreateEvent = false, string uniqueId = null, bool fromNetwork = false)
         {
             if (atmPlacerWithComps == null) { Misc.Msg("[ATMPlacer] [PlacePrefab] Cant Place ATM Prefab, ATM Prefab is null!"); return null; }
             if (Misc.hostMode != Misc.SimpleSaveGameType.Multiplayer && Misc.hostMode != Misc.SimpleSaveGameType.MultiplayerClient) { Misc.Msg("[ATMPlacer] [PlacePrefab] Can't Place ATM Placer"); return null; }
 
             GameObject atmPlacer = GameObject.Instantiate(atmPlacerWithComps, pos, rot);
             if (atmPlacer == null) { Misc.Msg("[ATMPlacer] [PlacePrefab] Failed To Instantiate ATM Placer Prefab"); return null; }
+            atmPlacer.SetActive(true);  // Active ATMPlacer
 
             // Dobule Deactive Crafting
             List<Transform> craftingChilds = atmPlacer.transform.FindChild("Crafting").GetChildren();
@@ -50,6 +52,7 @@ namespace Banking.Prefab
 
             Mono.ATMPlacerController controller = atmPlacer.GetComponent<Mono.ATMPlacerController>();  // Get ATMPlacerController
             controller.isSetupPrefab = false;  // Set isSetupPrefab To False
+            controller.spawnedOverNetwork = fromNetwork;  // Set spawnedOverNetwork
 
             if (uniqueId == null) { controller.UniqueId = Guid.NewGuid().ToString(); }  // Add UniqueId
             else { controller.UniqueId = uniqueId; }  // Use UniqueId If Gotten

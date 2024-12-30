@@ -18,6 +18,7 @@ namespace Banking.Network
                 SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.SpawnATM>();
                 SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.ATMPlacer.SpawnATMPlacer>();
                 SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.ATMPlacer.RemoveATMPlacer>();
+                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.ATMPlacer.UpdateATMPlacer>();
                 SendJoinedServerEvent();
             }
         }
@@ -36,6 +37,7 @@ namespace Banking.Network
                 SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.SpawnATM>();
                 SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.ATMPlacer.SpawnATMPlacer>();
                 SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.ATMPlacer.RemoveATMPlacer>();
+                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.ATMPlacer.UpdateATMPlacer>();
             }
         }
 
