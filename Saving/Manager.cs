@@ -21,23 +21,23 @@ namespace Banking.Saving
             var saveData = new BankingManager();
 
             // Atms
-            if (Saving.Load.ModdedAtms.Count != 0 || Saving.Load.ModdedAtms != null)
+            if (Saving.Load.ModdedAtms != null && Saving.Load.ModdedAtms.Count != 0)
             {
-                foreach (var signsGameObject in Saving.Load.ModdedAtms)
+                foreach (var atmGameObject in Saving.Load.ModdedAtms)
                 {
-                    if (signsGameObject == null) { continue; }
-                    Mono.ATMController current_obj_controller = signsGameObject.GetComponent<Mono.ATMController>();
+                    if (atmGameObject == null) { continue; }
+                    Mono.ATMController current_obj_controller = atmGameObject.GetComponent<Mono.ATMController>();
                     if (current_obj_controller != null)
                     {
                         if (current_obj_controller.UniqueId.IsNullOrWhitespace() || current_obj_controller.UniqueId == null)
                         {
                             // Generate New Id
-                            Misc.Msg("[Saving] Generated New Id For Sign");
+                            Misc.Msg("[Saving] Generated New Id For ATM");
                             current_obj_controller.UniqueId = Guid.NewGuid().ToString();
                         }
                         if (current_obj_controller.UniqueId == "0")
                         {
-                            Misc.Msg("[Saving] UniqueId == 0. Skipping Saving Of Sign");
+                            Misc.Msg("[Saving] UniqueId == 0. Skipping Saving Of ATM");
                             continue;
                         }
                         var atmModData = new BankingManager.ATMModData
@@ -48,13 +48,46 @@ namespace Banking.Saving
                         };
 
                         saveData.Atms.Add(atmModData);
-                        Misc.Msg("[Saving] Added Sign To Save List");
+                        Misc.Msg("[Saving] Added ATM To Save List");
                     }
                 }
             }
-            else { Misc.Msg("[Saving] No Sign found in LST, skipped saving"); }
+            else { Misc.Msg("[Saving] No ATM found in LST, skipped saving"); }
 
             // ATM Placers
+            if (Saving.Load.ModdedATMPlacers != null && Saving.Load.ModdedATMPlacers.Count != 0)
+            {
+                foreach (var atmPlacerGameObject in Saving.Load.ModdedATMPlacers)
+                {
+                    if (atmPlacerGameObject == null) { continue; }
+                    Mono.ATMPlacerController current_obj_controller = atmPlacerGameObject.GetComponent<Mono.ATMPlacerController>();
+                    if (current_obj_controller != null)
+                    {
+                        if (current_obj_controller.UniqueId.IsNullOrWhitespace() || current_obj_controller.UniqueId == null)
+                        {
+                            // Generate New Id
+                            Misc.Msg("[Saving] Generated New Id For ATM Placer");
+                            current_obj_controller.UniqueId = Guid.NewGuid().ToString();
+                        }
+                        if (current_obj_controller.UniqueId == "0")
+                        {
+                            Misc.Msg("[Saving] UniqueId == 0. Skipping Saving Of ATM Placer");
+                            continue;
+                        }
+                        var atmPlacerModData = new BankingManager.ATMPlacerModData
+                        {
+                            UniqueId = current_obj_controller.UniqueId,
+                            Position = current_obj_controller.GetPos(),
+                            Rotation = current_obj_controller.GetCurrentRotation(),
+                            ATMPlacerData = current_obj_controller.GetAddedObjects()
+                        };
+
+                        saveData.ATMPlacers.Add(atmPlacerModData);
+                        Misc.Msg("[Saving] Added ATM Placer To Save List");
+                    }
+                }
+            }
+            else { Misc.Msg("[Saving] No ATM Placer found in LST, skipped saving"); }
 
 
             saveData.SavedPlayers = LiveData.Players.GetPlayers();
@@ -84,7 +117,7 @@ namespace Banking.Saving
             public Dictionary<string, int> SavedPlayersCurrency = new Dictionary<string, int>();  // PlayerSteamID, PlayerCash
 
             public List<ATMModData> Atms = new List<ATMModData>();
-            public List<ATMModData> ATMPlacers = new List<ATMModData>();
+            public List<ATMPlacerModData> ATMPlacers = new List<ATMPlacerModData>();
 
             public class ATMModData
             {
@@ -93,6 +126,13 @@ namespace Banking.Saving
                 public Quaternion Rotation;
             }
 
+            public class ATMPlacerModData
+            {
+                public string UniqueId;
+                public Vector3 Position;
+                public Quaternion Rotation;
+                public Dictionary<int, int> ATMPlacerData;
+            }
         }
     }
 }

@@ -36,7 +36,12 @@ namespace Banking.Saving
                 Misc.Msg("[Loading] Creating New ATMPlacers");
                 if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
                 {
-                    Prefab.ATMPlacer.PlacePrefab(atmData.Position, atmData.Rotation, false, atmData.UniqueId);
+                    GameObject atmPlacer = Prefab.ATMPlacer.PlacePrefab(atmData.Position, atmData.Rotation, false, atmData.UniqueId);
+                    Mono.ATMPlacerController controller = atmPlacer.GetComponent<Mono.ATMPlacerController>();
+                    if (controller != null)
+                    {
+                        controller.SetAddedObjects(atmData.ATMPlacerData);
+                    }
                 }
             }
 

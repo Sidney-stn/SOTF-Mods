@@ -21,6 +21,7 @@ namespace Banking.Mono
         private bool isAllItemsAdded = false;
 
         private bool isCoroutineRunning = false;  // For Coroutine. Check If Coroutine Is Running
+        private bool isCoroutineRunningForAddedObjectsFunction = false;  // For Coroutine. Check If Coroutine Is Running
 
         private Text frontTextToCoutdown = null;  // For Countdown Text And Front Text
 
@@ -30,6 +31,9 @@ namespace Banking.Mono
 
         // For Networking And Countdown
         public float countdown = 600f; // For Setting Coutdown Time
+
+        // For Saving Updating After Start Has Run So [unplacedItems] doesn't get overwritten
+        public bool hasLoaded = false;
 
         private void Start()
         {
@@ -63,6 +67,7 @@ namespace Banking.Mono
 
             GetUnplacedItems();
             UpdateUiIcon();
+            hasLoaded = true;
         }
 
         private void GetUnplacedItems()
@@ -280,8 +285,41 @@ namespace Banking.Mono
             return addedObjects;
         }
 
+        private IEnumerator CheckIfLoadedBeforeUpdatingSetAddedObjects(Dictionary<int, int> addedObjects)
+        {
+            if (hasLoaded) { yield break; }
+            if (isCoroutineRunningForAddedObjectsFunction) { yield break; }
+            if (addedObjects == null) { yield break; }
+
+            isCoroutineRunningForAddedObjectsFunction = true;
+            Misc.Msg("[ATMPlacerController] [CheckIfLoadedBeforeUpdatingSetAddedObjects] Coroutine Started");
+
+            while (!hasLoaded)
+            {
+                // Wait for one second
+                yield return new WaitForSeconds(1f);
+            }
+
+            // Update Added Objects
+            SetAddedObjects(addedObjects);
+            Misc.Msg("[ATMPlacerController] [CheckIfLoadedBeforeUpdatingSetAddedObjects] AddedObjects Updated");
+
+            // Complete Coroutine
+            isCoroutineRunningForAddedObjectsFunction = false;
+
+            yield break;
+
+        }
+
         public void SetAddedObjects(Dictionary<int, int> addedObjects)  // Set Added Objects <ItemId, Quantity>
         {
+            if (addedObjects == null) { return; }
+            if (!hasLoaded)
+            {
+                Misc.Msg("[ATMPlacerController] [SetAddedObjects] Has Not Loaded Yet");
+                CheckIfLoadedBeforeUpdatingSetAddedObjects(addedObjects).RunCoro();
+                return;
+            }
             foreach (var item in addedObjects)  // Loop Through Added Objects
             {
                 int itemId = item.Key;
