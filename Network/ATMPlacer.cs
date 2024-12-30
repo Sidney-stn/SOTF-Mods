@@ -10,6 +10,7 @@ namespace Banking.Network
             public string Vector3Position { get; set; }
             public string QuaternionRotation { get; set; }
             public string UniqueId { get; set; }
+            public bool HasAddedItems { get; set; }
             public string Sender { get; set; }
             public string SenderName { get; set; }
             public string ToSteamId { get; set; }
@@ -62,6 +63,15 @@ namespace Banking.Network
 
                 Prefab.ATMPlacer.PlacePrefab(pos, rot, false, UniqueId, true);
 
+                if (HasAddedItems)  // Request RequstUpdateATMPlacer
+                {
+                    SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.ATMPlacer.RequestUpdateATMPlacer
+                    {
+                        UniqueId = UniqueId,
+                        Sender = Misc.MySteamId().Item2,
+                        SenderName = Misc.GetLocalPlayerUsername()
+                    });
+                }
             }
         }
 
@@ -85,7 +95,7 @@ namespace Banking.Network
 
                 if (Config.NetworkDebugIngameBanking.Value) { Misc.Msg($"[RemoveATMPlacer] [OnReceived()] Removing Prefab From Network Event"); }
 
-                if (Prefab.ActiveATM.DoesShopWithUniqueIdExist(UniqueId))
+                if (Prefab.ATMPlacer.DoesWithUniqueIdExist(UniqueId))
                 {
                     GameObject atm = Prefab.ATMPlacer.FindByUniqueId(UniqueId);
                     if (atm != null)
@@ -111,7 +121,6 @@ namespace Banking.Network
         {
             public string UniqueId { get; set; }
             public Dictionary<int, int> RecivedAddedItems { get; set; }
-            public float RemainingTime { get; set; }
             public string Sender { get; set; }
             public string SenderName { get; set; }
             public string ToSteamId { get; set; }
@@ -167,14 +176,60 @@ namespace Banking.Network
                     if (atmController == null) { Misc.Msg("[UpdateATMPlacer] [OnReceived] ATMPlacerController Is Null When Trying To UpdateATMPlacer Event"); return; }
                     // Update Items From Network
                     atmController.SetAddedObjects(RecivedAddedItems);
-
-                    // Update Remaining Time
-                    atmController.StartNetworkCountdown(RemainingTime);
                 }
                 else
                 {
                     Misc.Msg($"[UpdateATMPlacer] [OnReceived()] ATMPlacer With UniqueId: {UniqueId} Does Not Exist, Cant Update");
                 }
+            }
+        }
+
+        internal class RequestUpdateATMPlacer : SimpleEvent<RequestUpdateATMPlacer>
+        {
+            public string UniqueId { get; set; }
+            public string Sender { get; set; }
+            public string SenderName { get; set; }
+
+            public override void OnReceived()
+            {
+                Misc.Msg("Recived Network RequestUpdate ATMPlacer Event");
+                if (Misc.hostMode != Misc.SimpleSaveGameType.Multiplayer)
+                {
+                    Misc.Msg("[RequestUpdateATMPlacer] [OnReceived()] I am not host, not answering RequestUpdateATMPlacer Event");
+                    return;
+                }
+
+                if (Config.NetworkDebugIngameBanking.Value) { Misc.Msg($"[RequestUpdateATMPlacer] [OnReceived()] Removing Prefab From Network Event"); }
+
+                if (Prefab.ATMPlacer.DoesWithUniqueIdExist(UniqueId))
+                {
+                    GameObject atm = Prefab.ATMPlacer.FindByUniqueId(UniqueId);
+                    if (atm != null)
+                    {
+                        // Get Componet And Items
+                        Mono.ATMPlacerController atmController = atm.GetComponent<Mono.ATMPlacerController>();
+                        if (atmController == null) { Misc.Msg("[RequestUpdateATMPlacer] [OnReceived] ATMPlacerController Is Null When Trying To Send RequestUpdateATMPlacer/UpdateATMPlacer Event To Joined Player"); return; }
+                        Dictionary<int, int> addedItems = atmController.GetAddedObjects();
+
+                        SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.ATMPlacer.UpdateATMPlacer
+                        {
+                            UniqueId = UniqueId,
+                            RecivedAddedItems = addedItems,
+                            Sender = Misc.MySteamId().Item2,
+                            SenderName = Misc.GetLocalPlayerUsername(),
+                            ToSteamId = Sender
+                        });
+                    }
+                    else
+                    {
+                        Misc.Msg($"[RequestUpdateATMPlacer] [OnReceived()] ATMPlacer With UniqueId: {UniqueId} Does Not Exist, Cant Remove");
+                    }
+                }
+                else
+                {
+                    Misc.Msg($"[RequestUpdateATMPlacer] [OnReceived()] ATMPlacer With UniqueId: {UniqueId} Does Not Exist, Cant Remove");
+                }
+
             }
         }
     }

@@ -72,6 +72,7 @@ namespace Banking.Network
                     {
                         Vector3Position = vector3Position,
                         QuaternionRotation = rotation,
+                        HasAddedItems = atmPlacerController.hasAddeItem,
                         UniqueId = uniqueId,
                         Sender = Misc.MySteamId().Item2,
                         SenderName = Misc.GetLocalPlayerUsername(),

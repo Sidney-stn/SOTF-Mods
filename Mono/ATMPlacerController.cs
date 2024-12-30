@@ -26,13 +26,10 @@ namespace Banking.Mono
 
         // For Networking
         public bool spawnedOverNetwork = false;
+        public bool hasAddeItem = false;  // Check If Any Amount Of Items Is Added
 
         // For Networking And Countdown
         public float countdown = 600f; // For Setting Coutdown Time
-
-        // For Networking And Countdown Over Network
-        public float remainingTime = 0f;  // For Remaining Time
-
 
         private void Start()
         {
@@ -155,6 +152,8 @@ namespace Banking.Mono
                 unplacedItems.Remove(firstItemId);
             }
 
+            hasAddeItem = true;  // Set hasAddeItem To True (For Networking on JoinedServer)
+
             // Check If Dictionary Is Empty
             if (unplacedItems.Count == 0)
             {
@@ -196,7 +195,7 @@ namespace Banking.Mono
             isCoroutineRunning = true;
             Misc.Msg("[ATMPlacerController] [BuildATM] Coroutine Started");
 
-            remainingTime = countdown;
+            float remainingTime = countdown;
 
             while (remainingTime > 0)
             {
@@ -222,31 +221,9 @@ namespace Banking.Mono
             DestroyATM();
         }
 
-        public void StartNetworkCountdown(float duration)
+        public void StartNetworkCountdown()
         {
-            if (isCoroutineRunning) { return; }
-            ShowNetworkCountdown(duration).RunCoro();
-        }
-
-        private IEnumerator ShowNetworkCountdown(float duration)
-        {
-            isCoroutineRunning = true;
-            Misc.Msg("[ATMPlacerController] [ShowNetworkCountdown] Coroutine Started");
-
-            float remainingTime = duration;
-
-            while (remainingTime > 0)
-            {
-                // Update the text with the remaining time
-                frontTextToCoutdown.text = $"Processing... {Mathf.Ceil(remainingTime)}s";
-
-                yield return new WaitForSeconds(1f);
-                remainingTime -= 1f;
-            }
-
-            frontTextToCoutdown.text = "Processing... Complete!";
-            Misc.Msg("[ATMPlacerController] [ShowNetworkCountdown] Coroutine Finished");
-            isCoroutineRunning = false;
+            if (frontTextToCoutdown != null) { frontTextToCoutdown.text = "Another Player Building"; }
         }
 
         public void DestroyATM()
@@ -303,19 +280,25 @@ namespace Banking.Mono
             return addedObjects;
         }
 
-        public void SetAddedObjects(Dictionary<int, int> addedObjects)  // Set Added Objects <ItemId, Quanity>
+        public void SetAddedObjects(Dictionary<int, int> addedObjects)  // Set Added Objects <ItemId, Quantity>
         {
             foreach (var item in addedObjects)  // Loop Through Added Objects
             {
                 int itemId = item.Key;
-                int quanity = item.Value;
-                foreach (var item2 in unplacedItems)
+                int unplacedQuantity = item.Value;  // This is how many should remain unplaced
+
+                Misc.Msg($"[ATMPlacerController] [SetAddedObjects] ItemId: {itemId}, Unplaced Quantity: {unplacedQuantity}");
+
+                if (unplacedItems.TryGetValue(itemId, out List<GameObject> undAddedGameObjects))
                 {
-                    if (item2.Key == itemId)  // Check If ItemId Matches Any ItemId In UnplacedItems
+                    Misc.Msg($"[ATMPlacerController] [SetAddedObjects] Found ItemId: {itemId} In UnplacedItems");
+
+                    // Set all objects active except for the unplaced quantity
+                    int numToActivate = undAddedGameObjects.Count - unplacedQuantity;
+                    for (int i = 0; i < numToActivate && undAddedGameObjects.Count > 0; i++)
                     {
-                        List<GameObject> undAddedGameObjects = item2.Value;
-                        undAddedGameObjects.First().SetActive(true);  // Set Active
-                        undAddedGameObjects.Remove(undAddedGameObjects.First());  // Remove From List
+                        undAddedGameObjects[0].SetActive(true);  // Set Active
+                        undAddedGameObjects.RemoveAt(0);  // Remove From List
                     }
                 }
             }
@@ -327,7 +310,6 @@ namespace Banking.Mono
             {
                 UniqueId = UniqueId,
                 RecivedAddedItems = GetAddedObjects(),
-                RemainingTime = remainingTime,
                 Sender = Misc.MySteamId().Item2,
                 SenderName = Misc.GetLocalPlayerUsername(),
                 ToSteamId = "None"

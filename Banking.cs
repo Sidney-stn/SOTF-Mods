@@ -69,15 +69,20 @@ public class Banking : SonsMod
         API.SubscribableEvents.TriggerOnLeaveWorld();
 
         GameObject.Destroy(Prefab.ActiveATM.atmWithComps);
-        Prefab.ActiveATM.spawnedAtms.Clear();
+        Prefab.ActiveATM.spawnedAtms.Clear();  // Clear Spawned ATMs
         foreach (var atm in Saving.Load.ModdedAtms)
         {
             GameObject.Destroy(atm);
         }
-        Saving.Load.ModdedAtms.Clear();
-        Saving.Load.ModdedATMPlacers.Clear();
+        Prefab.ATMPlacer.spawnedATMPlacers.Clear();  // Clear Spawned ATMPlacers
+        foreach (var atm in Saving.Load.ModdedATMPlacers)
+        {
+            GameObject.Destroy(atm);
+        }
+        Saving.Load.ModdedAtms.Clear();  // Remove Save Data
+        Saving.Load.ModdedATMPlacers.Clear();  // Remove Save Data
 
-        Prefab.ATMPlacer.spawnedATMPlacers.Clear();
+        
     }
 
     [DebugCommand("getcurrency")]

@@ -54,10 +54,14 @@ namespace Banking.Prefab
             controller.isSetupPrefab = false;  // Set isSetupPrefab To False
             controller.spawnedOverNetwork = fromNetwork;  // Set spawnedOverNetwork
 
-            if (uniqueId == null) { controller.UniqueId = Guid.NewGuid().ToString(); }  // Add UniqueId
-            else { controller.UniqueId = uniqueId; }  // Use UniqueId If Gotten
+            string useUniqueId = uniqueId;
+            if (useUniqueId == null) { useUniqueId = Guid.NewGuid().ToString(); }  // Add UniqueId
+            else { useUniqueId = uniqueId; }  // Use UniqueId If Gotten
 
-            spawnedATMPlacers.Add(controller.UniqueId, atmPlacer);  // Add To Spawned ATM Placers
+            controller.UniqueId = useUniqueId;
+
+            spawnedATMPlacers.Add(useUniqueId, atmPlacer);  // Add To Spawned ATM Placers
+            Saving.Load.ModdedATMPlacers.Add(atmPlacer);  // Add To Save List
 
             // Networking
             if (raiseCreateEvent)
@@ -67,7 +71,7 @@ namespace Banking.Prefab
                 {
                     Vector3Position = Network.CustomSerializable.Vector3ToString(pos),
                     QuaternionRotation = Network.CustomSerializable.QuaternionToString(rot),
-                    UniqueId = controller.UniqueId,
+                    UniqueId = useUniqueId,
                     Sender = Misc.MySteamId().Item2,
                     SenderName = Misc.GetLocalPlayerUsername(),
                     ToSteamId = "None"
@@ -86,7 +90,7 @@ namespace Banking.Prefab
             }
             else
             {
-                Misc.Msg($"Shop with unique ID {uniqueId} not found.");
+                Misc.Msg($"[FindByUniqueId] ATMPlacer with unique ID {uniqueId} not found.");
                 return null;
             }
         }
@@ -99,7 +103,7 @@ namespace Banking.Prefab
             }
             else
             {
-                Misc.Msg($"Shop with unique ID {uniqueId} not found.");
+                Misc.Msg($"[DoesWithUniqueIdExist] ATMPlacer with unique ID {uniqueId} not found.");
                 return false;
             }
         }
