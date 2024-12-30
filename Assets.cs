@@ -20,5 +20,7 @@ namespace Banking
 
         [AssetReference("ATMPlaceUI")]
         public static GameObject ATMPlaceUI { get; set; }
+        [AssetReference("ATMInventory")]
+        public static GameObject ATMInventory { get; set; }
     }
 }

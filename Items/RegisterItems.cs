@@ -10,7 +10,7 @@ namespace Banking.Items
     {
         internal const int AtmPlacerItemId = 7512;
         internal static GameObject atmPlacer;  // This Is The Placement GameObject. So Not All The Crafting Stuff Shows
-        internal static GameObject atmPlacerInventory;  // This Is The Inventory GameObject. So Not All The Crafting Stuff Shows
+        // Assets.ATMInventory Is The Inventory GameObject Shown In Inventory
 
         internal static void RegisterItem()
         {
@@ -25,23 +25,19 @@ namespace Banking.Items
             GameObject.DestroyImmediate(atmPlacer.transform.FindChild("UI").gameObject);
             if (atmPlacer == null) { Misc.Msg("[RegisterItems] ATMPlacer Is Null!"); return; }
 
-            atmPlacerInventory = GameObject.Instantiate(atmPlacer);
-            atmPlacerInventory.transform.localScale = new Vector3(0.3f, 1f, 0.3f);
-
-            if (atmPlacerInventory == null) { Misc.Msg("[RegisterItems] ATMPlacerInventory Is Null!"); return; }
-
             RegisterItemToSotf();
         }
 
         private static void RegisterItemToSotf()
         {
             if (Config.DebugLoggingIngameBanking.Value) { Misc.Msg("[RegisterItems] RegisterItem()"); }
-            ItemData itemData = ItemTools.CreateAndRegisterItem(AtmPlacerItemId, "ATMBuilder", 1, Assets.ATMIcon);
-            new ItemTools.ItemBuilder(atmPlacerInventory, itemData, false).AddInventoryItem(new Vector3[]
+            if (Assets.ATMInventory == null) { Misc.Msg("[RegisterItems] ATMInventory Is Null!"); return; }
+            ItemData itemData = ItemTools.CreateAndRegisterItem(AtmPlacerItemId, "ATMBuilder", 1, null);
+            new ItemTools.ItemBuilder(Assets.ATMInventory, itemData, false).AddInventoryItem(new Vector3[]
             {
-                new Vector3(0.21f, 0f, 1.55f),
-                new Vector3(0f, 0f, 0f),
-                new Vector3(0.5f, 1f, 0.5f)  // If this is for Scale use: 0,7 0,7 0,7 And 0,21 -0,1 1,55 for localPos
+                new Vector3(0.21f, -0.2f, 1.55f),
+                new Vector3(0f, 0f, 0.1f),
+                new Vector3(-0.1f, 0f, 0f)
 
             }).AddIngredientItem(new Vector3[]
             {
@@ -56,7 +52,7 @@ namespace Banking.Items
             }).Recipe.AddIngredient(392, 4, false).AddIngredient(403, 2, false).BuildAndAdd();
 
             ItemData itemData2 = ItemDatabaseManager.ItemById(AtmPlacerItemId);
-            if (itemData2 == null) { RLog.Error("CompactLogPickup RegisterItem: itemData2 == null"); return; }
+            if (itemData2 == null) { RLog.Error("[RegisterItems] itemData2 == null"); return; }
             itemData2.PickupPrefab = Prefab.ATMPlacer.atmPlacerWithComps.transform;
             itemData2.PickupBundlePrefab = Prefab.ATMPlacer.atmPlacerWithComps.transform;
             itemData2._pickupCanBeBundled = false;
