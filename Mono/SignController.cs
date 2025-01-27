@@ -1,5 +1,6 @@
 ﻿using RedLoader;
 using System.Collections;
+using TheForest.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -85,6 +86,7 @@ namespace Signs.Mono
 
             if (Prefab.ActiveSign.activeSign == null) { Misc.Msg("Active Sign is null after assigning, something is wrong"); if (UI.Setup.messageText != null) { UI.Setup.messageText.text = $"Update Failed"; DoSomethingAfterDelay().RunCoro(); } return; }
             UI.Setup.OpenUI();
+            CheckDistance().RunCoro();
         }
 
         public string GetLineText(int line)
@@ -137,6 +139,22 @@ namespace Signs.Mono
             // Coroutine will automatically exit after this point
             if (UI.Setup.messageText != null) { UI.Setup.messageText.text = ""; }
             isCoroutineRunning = false;
+        }
+
+        private IEnumerator CheckDistance()
+        {
+            while (true)
+            {
+                float distance = Vector3.Distance(LocalPlayer.Transform.position, transform.position);
+                //Misc.Msg($"Distance: {distance}");
+                if (distance > 5f)
+                {
+                    Prefab.ActiveSign.activeSign = null;
+                    UI.Setup.CloseUI(); // Assuming there's a CloseUI method
+                    yield break; // This will end the coroutine
+                }
+                yield return new WaitForSeconds(1f); // Check every 1 seconds
+            }
         }
     }
 }

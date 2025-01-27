@@ -1,6 +1,6 @@
 # SignsMod
 ## Showcase
-https://github.com/user-attachments/assets/aa0cb78a-f438-444f-b80b-cfbefcfba74d
+https://youtu.be/0ujMm2m9ocI
 #### Recipie:  
  - 12x Sticks - When Crafting In Inventory
 

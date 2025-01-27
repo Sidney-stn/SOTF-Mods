@@ -14,5 +14,8 @@ namespace Signs
 
         [AssetReference("SignPlaceUI")]
         public static GameObject SignPlaceUI { get; set; }
+
+        [AssetReference("SignIcon")]
+        public static Texture2D SignIcon { get; set; }
     }
 }

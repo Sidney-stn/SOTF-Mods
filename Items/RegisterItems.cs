@@ -9,9 +9,11 @@ namespace Signs.Items
     public class RegisterItems
     {
         public const int SignItemId = 7511;
+        private static bool _registered = false;
 
         public static void RegisterItem()
         {
+            if (_registered) { Misc.Msg("[RegisterItems] Item Already Registered"); return; }
             if (Config.DebugLoggingIngameSign.Value) { Misc.Msg("[RegisterItems] RegisterItem()"); }
             ItemData itemData = ItemTools.CreateAndRegisterItem(SignItemId, "Sign", 1, null);
             new ItemTools.ItemBuilder(Assets.SignObj, itemData, false).AddInventoryItem(new Vector3[]
@@ -50,11 +52,13 @@ namespace Signs.Items
             itemData2.MaxAmount = 1;
             itemData2.UiData._rightClick = ItemUiData.RightClickCommands.None;
             itemData2.UiData._leftClick = ItemUiData.LeftClickCommands.take;
-            //itemData2.UiData._icon = ICON
+            if (Assets.SignIcon != null) { itemData2.UiData._icon = Assets.SignIcon; }
 
             itemData.SetType(Sons.Items.Core.Types.UniqueItem);
 
             ItemTools.GetInventoryLayoutItemGroup(SignItemId).gameObject.AddComponent<MyCustomItemInteraction>();
+
+            _registered = true;
 
         }
 

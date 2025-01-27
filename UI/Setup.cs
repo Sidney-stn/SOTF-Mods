@@ -1,13 +1,9 @@
-﻿
-
-using Signs.Mono;
+﻿using Signs.Mono;
 using Sons.Gui;
-using Steamworks;
-using TheForest.Items.Special;
+using Sons.Input;
 using TheForest.Utils;
 using UnityEngine;
 using UnityEngine.UI;
-using static BoltConsole;
 
 namespace Signs.UI
 {
@@ -21,6 +17,8 @@ namespace Signs.UI
         public static Text messageText = null;
         public static Button updateBtn = null;
         public static Button closeBtn = null;
+        public static Sons.Input.InputCursorState inputCursorState = null;
+        public static Sons.Input.InputActionMapState inputActionMapState = null;
 
         public static void SetupUI()
         {
@@ -68,6 +66,19 @@ namespace Signs.UI
                 };
                 updateBtn.onClick.AddListener(updateUi);
             }
+            if (inputCursorState == null)
+            {
+                inputCursorState = AddUI.AddComponent<InputCursorState>();
+                inputCursorState._enabled = true;
+                inputCursorState._hardwareCursor = true;
+                inputCursorState._priority = 100;
+            }
+            if (inputActionMapState == null)
+            {
+                inputActionMapState = AddUI.AddComponent<InputActionMapState>();
+                inputActionMapState._applyState = InputState.Console;
+
+            }
         }
         public static void ToggleUi()  // Not In Use
         {
@@ -81,7 +92,7 @@ namespace Signs.UI
         {
             if (AddUI != null)
             {
-                PauseMenu._instance.Open();
+                if (Prefab.ActiveSign.activeSign == null) { return; }
                 if (!AddUI.active) { AddUI.SetActive(true); }
             }
             if (messageText != null)
