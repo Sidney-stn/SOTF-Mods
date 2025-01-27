@@ -40,6 +40,8 @@ public class Signs : SonsMod
         var manager = new Saving.Manager(); // Signs
         SonsSaveTools.Register(manager);
 
+        Structure.Setup.Crafting();
+
         UI.Setup.SetupUI();
         UI.SetupSignPlace.SetupUi();
     }

@@ -169,6 +169,7 @@ namespace Signs.UI
         public static void TryOpenUi()
         {
             if (!LocalPlayer.IsInWorld || LocalPlayer.IsInInventory || PauseMenu.IsActive) { return; }
+            if (AddUI.active) { return; }
             Transform transform = LocalPlayer._instance._mainCam.transform;
             RaycastHit raycastHit;
             Physics.Raycast(transform.position, transform.forward, out raycastHit, 5f, LayerMask.GetMask(new string[]
