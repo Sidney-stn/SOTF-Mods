@@ -33,7 +33,7 @@ namespace Signs.Prefab
 
                 SignController signController = signCopy.GetComponent<SignController>();
                 if (isNew) {
-                    signController.SetLineText(1, "Press E");
+                    signController.SetLineText(1, $"Press {Config.ToggleMenuKey.Value.ToUpper()}");
                     signController.SetLineText(2, "To Edit");
                     signController.SetLineText(3, "Sign");
                     signController.SetLineText(4, "");
@@ -71,13 +71,18 @@ namespace Signs.Prefab
                 signCopy.transform.rotation = rotation;  // Set New Rotation
 
                 SignController signController = signCopy.GetComponent<SignController>();
-                if (line1Text != null) { signController.SetLineText(1, line1Text); Misc.Msg($"[SignPrefab] [SpawnSignSingePlayer] Set Line1 Text To: {line1Text}"); }
-                if (line2Text != null) { signController.SetLineText(2, line2Text); Misc.Msg($"[SignPrefab] [SpawnSignSingePlayer] Set Line2 Text To: {line2Text}"); }
-                if (line3Text != null) { signController.SetLineText(3, line3Text); Misc.Msg($"[SignPrefab] [SpawnSignSingePlayer] Set Line3 Text To: {line3Text}"); }
-                if (line4Text != null) { signController.SetLineText(4, line4Text); Misc.Msg($"[SignPrefab] [SpawnSignSingePlayer] Set Line4 Text To: {line4Text}"); }
+                if (line1Text != null) { signController.SetLineText(1, line1Text); Misc.Msg($"[SignPrefab] [SpawnSignMultiplayer] Set Line1 Text To: {line1Text}"); }
+                if (line2Text != null) { signController.SetLineText(2, line2Text); Misc.Msg($"[SignPrefab] [SpawnSignMultiplayer] Set Line2 Text To: {line2Text}"); }
+                if (line3Text != null) { signController.SetLineText(3, line3Text); Misc.Msg($"[SignPrefab] [SpawnSignMultiplayer] Set Line3 Text To: {line3Text}"); }
+                if (line4Text != null) { signController.SetLineText(4, line4Text); Misc.Msg($"[SignPrefab] [SpawnSignMultiplayer] Set Line4 Text To: {line4Text}"); }
+
+                if (line1Text == null) { signController.SetLineText(1, $"Press {Config.ToggleMenuKey.Value.ToUpper()}"); Misc.Msg($"[SignPrefab] [SpawnSignMultiplayer] Set Line1 Text To: Press {Config.ToggleMenuKey.Value.ToUpper()}"); }
+                if (line2Text == null) { signController.SetLineText(2, "To Edit"); Misc.Msg($"[SignPrefab] [SpawnSignMultiplayer] Set Line2 Text To: To Edit"); }
+                if (line3Text == null) { signController.SetLineText(3, "Sign"); Misc.Msg($"[SignPrefab] [SpawnSignMultiplayer] Set Line3 Text To: Sign"); }
+                if (line4Text == null) { signController.SetLineText(4, ""); Misc.Msg($"[SignPrefab] [SpawnSignMultiplayer] Set Line4 Text To: ''"); }
 
                 if (uniqueId != null) { signController.UniqueId = uniqueId; }
-                else { Misc.Msg("[SignPrefab] [SpawnSignSingePlayer] Something Went Wrong Getting unique id!"); }
+                else { Misc.Msg("[SignPrefab] [SpawnSignMultiplayer] Something Went Wrong Getting unique id!"); }
 
                 Saving.Load.ModdedSigns.Add(signCopy);
                 spawnedSigns.Add(signController.UniqueId, signCopy);

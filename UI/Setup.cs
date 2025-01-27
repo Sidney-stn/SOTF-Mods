@@ -77,7 +77,27 @@ namespace Signs.UI
             {
                 inputActionMapState = AddUI.AddComponent<InputActionMapState>();
                 inputActionMapState._applyState = InputState.Console;
+            }
 
+            // Set Default Text On Sign
+            if (line1 != null && line2 != null && line3 != null && line4 != null && Config.ToggleMenuKey.Value != null && Config.ToggleMenuKey.Value != "")
+            {
+                line1.text = $"Press {Config.ToggleMenuKey.Value}";
+                line2.text = "To Edit";
+                line3.text = "Sign";
+                line4.text = "";
+            }
+        }
+        public static void UpdateUiOpenKey()
+        {
+            Misc.Msg("[UpdateUiOpenKey]");
+            // Set Default Text On Sign
+            if (line1 != null && line2 != null && line3 != null && line4 != null && Config.ToggleMenuKey.Value != null && Config.ToggleMenuKey.Value != "")
+            {
+                line1.text = $"Press {Config.ToggleMenuKey.Value.ToUpper()}";
+                line2.text = "To Edit";
+                line3.text = "Sign";
+                line4.text = "";
             }
         }
         public static void ToggleUi()  // Not In Use

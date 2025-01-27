@@ -16,6 +16,56 @@ namespace Signs.Items
             Pickup
         }
 
+        public static KeyCode rotateLeftKey = TryParseKeyCode(Config.RotateLeftKey.Value, KeyCode.Q);
+        public static KeyCode rotateRightKey = TryParseKeyCode(Config.RotateRightKey.Value, KeyCode.E);
+        public static KeyCode cancelPlacementKey = TryParseKeyCode(Config.ExitMenuKey.Value, KeyCode.Escape);
+
+
+        internal static KeyCode TryParseKeyCode(string value, KeyCode defaultValue)
+        {
+            try
+            {
+                
+                string formattedValue = value.ToLower();
+                if (string.IsNullOrEmpty(formattedValue)) { return defaultValue; }
+
+                // Handle numpad keys
+                if (formattedValue.StartsWith("numpad") || formattedValue.StartsWith("keypad"))
+                {
+                    string numPart = formattedValue.Replace("numpad", "").Replace("keypad", "");
+                    return (KeyCode)Enum.Parse(typeof(KeyCode), "Keypad" + numPart);
+                }
+
+                // Handle special cases
+                switch (formattedValue)
+                {
+                    case "escape":
+                        return KeyCode.Escape;
+                    case "space":
+                        return KeyCode.Space;
+                    case "return":
+                        return KeyCode.Return;
+                    case "backspace":
+                        return KeyCode.Backspace;
+                    case "delete":
+                        return KeyCode.Delete;
+                    case "tab":
+                        return KeyCode.Tab;
+                    case "capslock":
+                        return KeyCode.CapsLock;
+                    // Add any other special cases here
+                    default:
+                        // For single character keys, use uppercase
+                        return (KeyCode)Enum.Parse(typeof(KeyCode), value.ToUpper());
+                }
+            }
+            catch
+            {
+                Misc.Msg($"Failed to parse KeyCode '{value}', using default: {defaultValue}");
+                return defaultValue;
+            }
+        }
+
         public static GameObject PlaceSignOnGround(Vector3 position, Quaternion rotation, int itemId, int itemQuantity, bool shouldRemoveFromInventory = true)
         {
             GameObject sign = null;
@@ -158,11 +208,11 @@ namespace Signs.Items
                     _pivotObject.transform.position = targetPosition;
 
                     // Handle rotation with Q and E (now rotating the pivot object)
-                    if (Input.GetKey(KeyCode.Q))
+                    if (Input.GetKey(rotateRightKey))
                     {
                         _pivotObject.transform.Rotate(Vector3.up, -90f * Time.deltaTime);
                     }
-                    else if (Input.GetKey(KeyCode.E))
+                    else if (Input.GetKey(rotateLeftKey))
                     {
                         _pivotObject.transform.Rotate(Vector3.up, 90f * Time.deltaTime);
                     }
@@ -175,7 +225,7 @@ namespace Signs.Items
                     {
                         CancelPlaceItem();
                     }
-                    else if (Input.GetKey(KeyCode.Escape))
+                    else if (Input.GetKey(cancelPlacementKey))
                     {
                         CancelPlaceItem();
                     }

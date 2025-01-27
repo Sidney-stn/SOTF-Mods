@@ -1,5 +1,4 @@
-﻿using Sons.Gui;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Signs.UI
 {
@@ -15,6 +14,16 @@ namespace Signs.UI
                 AddUI = GameObject.Instantiate(Assets.SignPlaceUI);
                 AddUI.hideFlags = HideFlags.HideAndDontSave;
                 AddUI.SetActive(false);
+            }
+            if (AddUI != null)
+            {
+            }
+        }
+        internal static void UpdateKeysInUI(string rotateLeftKey, string rotateRightKey)
+        {
+            if (AddUI != null)
+            {
+                AddUI.transform.FindDeepChild("RotateText").GetComponent<UnityEngine.UI.Text>().text = $"{rotateLeftKey} / {rotateRightKey}";
             }
         }
         public static void ToggleUi()  // Not In Use
