@@ -12,6 +12,7 @@ public static class Config
     public static KeybindConfigEntry RotateLeftKey { get; private set; }
     public static KeybindConfigEntry RotateRightKey { get; private set; }
     public static ConfigEntry<bool> DebugLoggingIngameSign { get; private set; }
+    public static ConfigEntry<bool> ExtremeDebugLogging { get; private set; }
     public static ConfigEntry<bool> NetworkDebugIngameSign { get; private set; }
 
     public static void Init()
@@ -54,15 +55,20 @@ public static class Config
         RotateRightKey.DefaultValue = "e";
 
         DebugLoggingIngameSign = IngameSignCategory.CreateEntry(
-            "enable_logging_advanced_ingameshop",
+            "enable_logging_advanced_ingamesign",
             true,
             "Enable Debug Logs",
             "Enables SimpleNetworkEvents Debug Logs of the game to the console.");
         NetworkDebugIngameSign = IngameSignCategory.CreateEntry(
-            "enable_logging_advanced_network",
+            "enable_logging_advanced_network_ingamesign",
             true,
             "Enable Extra Network Debug Logs",
             "Enables Extra Network Debug Logs of the game to the console.");
+        ExtremeDebugLogging = IngameSignCategory.CreateEntry(
+            "enable_logging_extreme_advanced_ingamesign",
+            true,
+            "Enable Super Detailed Debug Logs",
+            "Enables Super Detailed Debug Logs of the game to the console.");
     }
 
     // Same as the callback in "CreateSettings". Called when the settings ui is closed.

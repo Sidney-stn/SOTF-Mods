@@ -9,7 +9,6 @@ namespace Signs.Structure
     internal class Setup
     {
         internal static GameObject signStructure;
-        internal static GameObject signStructurePrefab;
         internal const int signStructureId = 751100;
         internal static void Crafting()
         {
@@ -18,11 +17,6 @@ namespace Signs.Structure
 
             signStructure = GameObject.Instantiate(Assets.SignObj);
             signStructure.hideFlags = HideFlags.HideAndDontSave;
-
-            //Mono.SignController signMono = signStructure.AddComponent<Mono.SignController>();
-            //Mono.DestroyOnC destroyOnC = signStructure.AddComponent<Mono.DestroyOnC>();
-            //Mono.NewSign newSign = signStructure.AddComponent<Mono.NewSign>();
-            //newSign.IsPlaceHolder = true;
 
             if (signStructure == null) { Misc.Msg("[Setup] signStructure == null!"); return; }
 
@@ -44,16 +38,6 @@ namespace Signs.Structure
             CustomBlueprintManager.TryRegister(new ScrewStructureRegistration(signStructure, signStructureId, "SignRecipie"));
             CustomBlueprintManager.OnCraftingNodeCreated.Subscribe(OnCraftingNodeCreated);
 
-            // Setup The In World Built Prefab
-            PlacementPrefab();
-        }
-
-        private static void PlacementPrefab()
-        {
-            //signStructurePrefab = GameObject.Instantiate(Assets.SignObj);
-            //signStructurePrefab.hideFlags = HideFlags.HideAndDontSave;
-            //Mono.NewSign newSign = signStructurePrefab.AddComponent<Mono.NewSign>();
-            //newSign.IsPlaceHolder = true;
         }
 
         internal static void OnCraftingNodeCreated(StructureCraftingNode arg1)
@@ -99,13 +83,6 @@ namespace Signs.Structure
         {
             Misc.Msg($"OnStructureCompleted for GameObject: {gameObject.name}");
             // You can now access the GameObject and its components here
-
-            //BoltEntity boltEntity = gameObject.GetComponent<BoltEntity>();
-            //if (boltEntity != null) { 
-            //    Misc.Msg("[OnStructureCompleted] Unregistering BoltEntity");
-            //    EntityManager.UnregisterPrefab(boltEntity);
-            //}
-            
         }
 
 

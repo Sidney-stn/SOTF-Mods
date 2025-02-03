@@ -8,7 +8,6 @@ using Bolt;
 using Scene = UnityEngine.SceneManagement.Scene;
 using Steamworks;
 using Sons.Multiplayer;
-using static CoopPlayerUpgrades;
 
 namespace Signs
 {
@@ -20,7 +19,13 @@ namespace Signs
             {
                 RLog.Msg(msg);
             }
-
+        }
+        internal static void SuperLog(string msg)
+        {
+            if (Config.ExtremeDebugLogging.Value)
+            {
+                Msg($"[Signs Detailed] {msg}");
+            }
         }
 
 

@@ -16,15 +16,24 @@ namespace Signs.Mono
             Misc.Msg("[NewSign] Start");
             Misc.Msg("[NewSign] Deleting Bolt And ScrewStructure");
             ScrewStructure scewStructure = gameObject.GetComponent<ScrewStructure>();
-            if (scewStructure != null) { DestroyImmediate(scewStructure); }
+            if (scewStructure != null) { DestroyImmediate(scewStructure); Misc.SuperLog("[NewSign] [Start] ScrewStructure Deleted"); } else { Misc.SuperLog("[NewSign] [Start] ScrewStructure Not Found For Deletion!"); }
             BoltEntity bolt = gameObject.GetComponent<BoltEntity>();
-            if (bolt != null) { bolt.Entity.Detach(); DestroyImmediate(bolt); }
+            if (bolt != null) { 
+                if ( Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
+                {
+                    bolt.Entity.Detach();
+                }
+                DestroyImmediate(bolt); 
+                Misc.SuperLog("[NewSign] [Start] BoltEntity Deleted");
+            } else { Misc.SuperLog("[NewSign] [Start] BoltEntity Not Found For Deletion!"); }
 
             if (gameObject != null)
             {
                 Misc.Msg("[NewSign] Adding Components");
                 Mono.SignController signController = gameObject.AddComponent<Mono.SignController>();
+                Misc.SuperLog("[NewSign] [Start] SignController Added");
                 Mono.DestroyOnC destroyOnC = gameObject.AddComponent<Mono.DestroyOnC>();
+                Misc.SuperLog("[NewSign] [Start] DestroyOnC Added");
 
                 signController.SetLineText(1, $"Press {Config.ToggleMenuKey.Value.ToUpper()}");
                 signController.SetLineText(2, "To Edit");
@@ -57,8 +66,9 @@ namespace Signs.Mono
                     });
                 }
             }
-            else { Misc.Msg("[OnStructureCompleted] signChild == null"); }
+            else { Misc.Msg("[OnStructureCompleted] signChild == null"); Misc.SuperLog("[NewSign] [Start] GameObject That NewSign Is Attatched To Is Null!!!!"); }
 
+            Misc.SuperLog("[NewSign] [Start] Destroying NewSign Component");
             Destroy(this);
         }
     }
