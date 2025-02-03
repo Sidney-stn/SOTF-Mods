@@ -9,7 +9,6 @@ namespace Signs.Integrations
         {
             LoadHotKeyCommandsDllIfFound();
             AddUnityElement(UI.Setup.AddUI);
-            AddUnityElement(UI.SetupSignPlace.AddUI);
         }
 
         private static bool alreadyLoaded = false;

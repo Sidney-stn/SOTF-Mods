@@ -43,7 +43,6 @@ public class Signs : SonsMod
         Structure.Setup.Crafting();
 
         UI.Setup.SetupUI();
-        UI.SetupSignPlace.SetupUi();
     }
 
     protected override void OnGameStart()

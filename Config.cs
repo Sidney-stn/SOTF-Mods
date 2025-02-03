@@ -68,32 +68,12 @@ public static class Config
             "enable_logging_extreme_advanced_ingamesign",
             true,
             "Enable Super Detailed Debug Logs",
-            "Enables Super Detailed Debug Logs of the game to the console.");
+            "Enables Super Debug Logs of the game to the console.");
     }
 
     // Same as the callback in "CreateSettings". Called when the settings ui is closed.
     public static void OnSettingsUiClosed()
     {
         UI.Setup.UpdateUiOpenKey();
-
-        // Update Placement Keys
-        if (RotateLeftKey.Value != null && RotateRightKey.Value != null && ExitMenuKey.Value != null)
-        {
-            Misc.Msg("Update Placement Keys");
-            Items.ItemPlacement.rotateLeftKey = Items.ItemPlacement.TryParseKeyCode(RotateLeftKey.Value, KeyCode.Q);
-            Items.ItemPlacement.rotateRightKey = Items.ItemPlacement.TryParseKeyCode(RotateRightKey.Value, KeyCode.E);
-            Items.ItemPlacement.cancelPlacementKey = Items.ItemPlacement.TryParseKeyCode(ExitMenuKey.Value, KeyCode.Escape);
-            UI.SetupSignPlace.UpdateKeysInUI(RotateLeftKey.Value.ToUpper(), RotateRightKey.Value.ToUpper());
-        }
-        else
-        {
-            // Set Default Placement Keys
-            Misc.Msg("Set Default Placement Keys");
-            Items.ItemPlacement.rotateLeftKey = KeyCode.Q;
-            Items.ItemPlacement.rotateRightKey = KeyCode.E;
-            Items.ItemPlacement.cancelPlacementKey = KeyCode.Escape;
-            UI.SetupSignPlace.UpdateKeysInUI("Q", "E");
-        }
-
     }
 }

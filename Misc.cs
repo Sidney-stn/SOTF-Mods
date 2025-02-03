@@ -103,8 +103,6 @@ namespace Signs
 
             Misc.Msg("[Loading] Processing deferred load.");
 
-            Items.RegisterItems.RegisterItem(); // Register All Ingame Inventory Items
-
             // Process all deferred load data
             while (Saving.Load.deferredLoadQueue.Count > 0)
             {
