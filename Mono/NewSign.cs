@@ -11,14 +11,14 @@ namespace Signs.Mono
 
         private void Start()
         {
-            if (IsPlaceHolder) { return; }
+            if (IsPlaceHolder) { Misc.Msg("[NewSign] Returned, no signcontroller added"); return; }
             // This Only Gets Called When A New Completed Sign Has Been Created
             Misc.Msg("[NewSign] Start");
             Misc.Msg("[NewSign] Deleting Bolt And ScrewStructure");
             ScrewStructure scewStructure = gameObject.GetComponent<ScrewStructure>();
             if (scewStructure != null) { DestroyImmediate(scewStructure); }
             BoltEntity bolt = gameObject.GetComponent<BoltEntity>();
-            if (bolt != null) { DestroyImmediate(bolt); }
+            if (bolt != null) { bolt.Entity.Detach(); DestroyImmediate(bolt); }
 
             if (gameObject != null)
             {
@@ -58,6 +58,8 @@ namespace Signs.Mono
                 }
             }
             else { Misc.Msg("[OnStructureCompleted] signChild == null"); }
+
+            Destroy(this);
         }
     }
 }

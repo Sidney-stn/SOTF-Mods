@@ -17,5 +17,8 @@ namespace Signs
 
         [AssetReference("SignIcon")]
         public static Texture2D SignIcon { get; set; }
+
+        [AssetReference("BookPageSign")]
+        public static Texture2D BookPageSign { get; set; }
     }
 }
