@@ -103,9 +103,6 @@ namespace Banking
             // Add Host Player To System
             LiveData.Host.AddHostPlayerToSystem();
 
-            // Register Item
-            Items.RegisterItems.RegisterItem();
-
             // Trigger Event For Host Mode Gotten
             API.SubscribableEvents.TriggerOnJoinWorld();
         }

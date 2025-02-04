@@ -63,8 +63,6 @@ namespace Banking.UI
             if (cashText == null) { cashText = AddUI.transform.FindDeepChild("Balance").GetComponent<Text>(); }  // Cash Text
             if (playerName == null) { playerName = AddUI.transform.FindDeepChild("PlayerName").GetComponent<Text>(); }  // Player Name
 
-            // Setup ATM Place UI
-            SetupATMPlace.SetupUi();
         }
 
         public static void ToggleUi()  // Not In Use

@@ -20,7 +20,6 @@ namespace Banking.Prefab
                 atmController.isSetupPrefab = true;
                 Mono.DestroyOnC destroyOnC = atmWithComps.AddComponent<Mono.DestroyOnC>();
             }
-            ATMPlacer.SetupPrefab();  // Setup ATMPlacer
         }
 
         internal static GameObject SpawnATM(Vector3 pos, Quaternion rot, string uniqueId = null)

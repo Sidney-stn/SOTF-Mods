@@ -39,6 +39,8 @@ public class Banking : SonsMod
         // Adding Ingame CFG
         SettingsRegistry.CreateSettings(this, null, typeof(Config));
 
+        Structure.Setup.Crafting();
+
         UI.Setup.SetupUI();
     }
 
@@ -74,13 +76,7 @@ public class Banking : SonsMod
         {
             GameObject.Destroy(atm);
         }
-        Prefab.ATMPlacer.spawnedATMPlacers.Clear();  // Clear Spawned ATMPlacers
-        foreach (var atm in Saving.Load.ModdedATMPlacers)
-        {
-            GameObject.Destroy(atm);
-        }
         Saving.Load.ModdedAtms.Clear();  // Remove Save Data
-        Saving.Load.ModdedATMPlacers.Clear();  // Remove Save Data
 
         
     }

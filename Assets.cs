@@ -15,12 +15,7 @@ namespace Banking
         [AssetReference("ATMIcon")]
         public static Texture2D ATMIcon { get; set; }
 
-        [AssetReference("ATMPlacer")]
-        public static GameObject ATMPlacer { get; set; }
-
-        [AssetReference("ATMPlaceUI")]
-        public static GameObject ATMPlaceUI { get; set; }
-        [AssetReference("ATMInventory")]
-        public static GameObject ATMInventory { get; set; }
+        [AssetReference("BookPageATM")]
+        public static Texture2D ATMBookPage { get; set; }
     }
 }

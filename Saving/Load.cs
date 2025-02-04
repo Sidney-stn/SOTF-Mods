@@ -5,8 +5,7 @@ namespace Banking.Saving
     internal class Load
     {
         public static List<GameObject> ModdedAtms = new List<GameObject>();
-        public static List<GameObject> ModdedATMPlacers = new List<GameObject>();
-        
+
         internal static Queue<Saving.Manager.BankingManager> deferredLoadQueue = new Queue<Saving.Manager.BankingManager>();
 
         internal static void ProcessLoadData(Saving.Manager.BankingManager obj)
@@ -25,23 +24,6 @@ namespace Banking.Saving
                 if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
                 {
                     Prefab.ActiveATM.SpawnATM(atmData.Position, atmData.Rotation, atmData.UniqueId);
-                }
-            }
-
-            // ATMPlacers Prefab
-            ModdedATMPlacers.Clear();
-            Misc.Msg($"[Loading] ATMPlacers From Save: {obj.ATMPlacers.Count.ToString()}");
-            foreach (var atmData in obj.ATMPlacers)
-            {
-                Misc.Msg("[Loading] Creating New ATMPlacers");
-                if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
-                {
-                    GameObject atmPlacer = Prefab.ATMPlacer.PlacePrefab(atmData.Position, atmData.Rotation, false, atmData.UniqueId);
-                    Mono.ATMPlacerController controller = atmPlacer.GetComponent<Mono.ATMPlacerController>();
-                    if (controller != null)
-                    {
-                        controller.SetAddedObjects(atmData.ATMPlacerData);
-                    }
                 }
             }
 

@@ -125,6 +125,31 @@ namespace Banking
             return Misc.MySteamId().Item2;
         }
 
+        public static SimpleSaveGameType GetHostMode()  // Gets Host Mode
+        {
+            var hostMode = Misc.hostMode;
+            switch (hostMode) {
+                case Misc.SimpleSaveGameType.SinglePlayer:
+                    return SimpleSaveGameType.SinglePlayer;
+                case Misc.SimpleSaveGameType.Multiplayer:
+                    return SimpleSaveGameType.Multiplayer;
+                case Misc.SimpleSaveGameType.MultiplayerClient:
+                    return SimpleSaveGameType.MultiplayerClient;
+                case Misc.SimpleSaveGameType.NotIngame:
+                    return SimpleSaveGameType.NotIngame;
+                default:
+                    return SimpleSaveGameType.NotIngame;
+            }
+        }
+
+        public enum SimpleSaveGameType
+        {
+            SinglePlayer,
+            Multiplayer,
+            MultiplayerClient,
+            NotIngame,
+        }
+
         public static GameObject SpawnNewAtm(Vector3 position, Quaternion rotation)
         {
             if (Misc.hostMode == Misc.SimpleSaveGameType.SinglePlayer || Misc.hostMode == Misc.SimpleSaveGameType.NotIngame) { throw new Exception("SpawnNewAtm() Can't be called when in SinglePlayer Or NotIngame"); }
