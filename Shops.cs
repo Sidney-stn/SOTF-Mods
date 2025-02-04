@@ -98,6 +98,7 @@ public class Shops : SonsMod
                 mono.OwnerId = Banking.API.GetLocalPlayerId();
                 mono.OwnerName = Banking.API.GetLocalPlayerName();
                 mono.numberOfSellableItems = 1;
+                Misc.Msg($"Set OwnerId To: {mono.OwnerId}");
                 break;
             case "sync":
                 break;
