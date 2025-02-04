@@ -8,6 +8,8 @@ namespace Shops.Prefab
     internal class SingeShop
     {
         internal static GameObject gameObjectWithComps;
+        public static Dictionary<string, GameObject> spawnedShops = new Dictionary<string, GameObject>();
+
         internal static void SetupPrefab()
         {
             // Setup Prefab
@@ -46,6 +48,32 @@ namespace Shops.Prefab
                 if (controller != null)
                 {
                     controller.OnInteractButtonPressed();
+                }
+                else { Misc.Msg("Controller is null!"); }
+
+            }
+        }
+
+        internal static void PriceAdjust(bool increase)
+        {
+            if (!LocalPlayer.IsInWorld || LocalPlayer.IsInInventory || PauseMenu.IsActive) { return; }
+            Transform transform = LocalPlayer._instance._mainCam.transform;
+            RaycastHit raycastHit;
+            Physics.Raycast(transform.position, transform.forward, out raycastHit, 5f, LayerMask.GetMask(new string[]
+            {
+                "Default"
+            }));
+            if (raycastHit.collider == null) { return; }
+            if (raycastHit.collider.transform.root == null) { return; }
+            if (string.IsNullOrEmpty(raycastHit.collider.transform.root.name)) { return; }
+            //Misc.Msg($"Hit: {raycastHit.collider.transform.root.name}");
+            if (raycastHit.collider.transform.root.name.Contains("Shop"))
+            {
+                GameObject open = raycastHit.collider.transform.root.gameObject;
+                Shop controller = open.GetComponent<Shop>();
+                if (controller != null)
+                {
+                    controller.AdjustPriceKey(increase);
                 }
                 else { Misc.Msg("Controller is null!"); }
 

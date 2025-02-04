@@ -9,6 +9,8 @@ public static class Config
     public static ConfigEntry<bool> DebugLoggingIngameShops { get; private set; }
     public static ConfigEntry<bool> NetworkDebugIngameShops { get; private set; }
     public static KeybindConfigEntry ToggleMenuKey { get; private set; }
+    public static KeybindConfigEntry ScrollUpKey { get; private set; }
+    public static KeybindConfigEntry ScrollUpDownKey { get; private set; }
 
     internal static void Init()
     {
@@ -34,6 +36,30 @@ public static class Config
         ToggleMenuKey.Notify(() =>
         {
             Prefab.SingeShop.TryOpenUi();
+        });
+
+        ScrollUpKey = IngameShopsCategory.CreateKeybindEntry(
+            "scroll_up_key_shops",
+            "upArrow",
+            "Increase Price Key",
+            "The key that Interact with the shop (DEFAULT upArrow).");
+        ScrollUpKey.DefaultValue = "upArrow";
+        ScrollUpKey.Notify(() =>
+        {
+            //Misc.Msg($"Scroll Up, KeyBind: {ScrollUpKey.Value}");
+            Prefab.SingeShop.PriceAdjust(true);
+        });
+
+        ScrollUpDownKey = IngameShopsCategory.CreateKeybindEntry(
+            "scroll_down_key_shops",
+            "downArrow",
+            "Decrease Price Key",
+            "The key that Interact with the shop (DEFAULT downArrow).");
+        ScrollUpDownKey.DefaultValue = "downArrow";
+        ScrollUpDownKey.Notify(() =>
+        {
+            //Misc.Msg($"Scroll Down, KeyBind: {ScrollUpDownKey.Value}");
+            Prefab.SingeShop.PriceAdjust(false);
         });
 
     }

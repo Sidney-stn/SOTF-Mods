@@ -35,6 +35,10 @@ public class Shops : SonsMod
         // Adding Ingame CFG
         SettingsRegistry.CreateSettings(this, null, typeof(Config));
 
+        // Registering Save System
+        var manager = new Saving.Manager(); // Shops
+        SonsSaveTools.Register(manager);
+
         Structure.Setup.Crafting();
 
         // Subscribe To Event
@@ -53,11 +57,33 @@ public class Shops : SonsMod
     internal static void OnJoinedWorld()
     {
         // This is called when the player joins a world.
+
+        Network.Manager.RegisterEvents();
+
+
+        Misc.Msg("[Loading] Processing deferred load.");
+
+        // Process all deferred load data
+        while (Saving.Load.deferredLoadQueue.Count > 0)
+        {
+            var obj = Saving.Load.deferredLoadQueue.Dequeue();
+            Saving.Load.ProcessLoadData(obj);
+        }
     }
 
     internal static void OnLeaveWorld()
     {
         // This is called when the player leaves a world.
+        GameObject.Destroy(Prefab.SingeShop.gameObjectWithComps);
+        Prefab.SingeShop.spawnedShops.Clear();
+        foreach (var sign in Saving.Load.ModdedShops)
+        {
+            GameObject.Destroy(sign);
+        }
+        Saving.Load.ModdedShops.Clear();
+
+        Network.Manager.UnregisterEvents();
+
         // Unsubscribe To Event
         Banking.API.SubscribableEvents.OnPlayerJoin -= OnPlayerJoin;
         Banking.API.SubscribableEvents.OnCashChange -= OnCashChange;

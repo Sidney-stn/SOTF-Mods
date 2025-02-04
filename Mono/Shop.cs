@@ -54,7 +54,8 @@ namespace Shops.Mono
                 {
                     stations.Add(station);
                     Misc.Msg($"[Shop] Added station {i + 1}");
-                } else { Misc.Msg("[Shop] [Start()] Station Not Found"); return; }
+                }
+                else { Misc.Msg("[Shop] [Start()] Station Not Found"); return; }
 
             }
             Misc.Msg("[Shop] Starting station setup loop");
@@ -73,7 +74,8 @@ namespace Shops.Mono
                         return;
                     }
                     LinkUiElement buyUi = CreateLinkUi(uiPlacement, 1f, null, Assets.BuyIcon, new Vector3(0, 0, 0));
-                } else
+                }
+                else
                 {
                     // Creates Admin Adjust UI Element And Attaches It To The Station AdminLinkUI Place
                     GameObject uiPlacement = station.transform.FindChild("AdminLinkUI").gameObject;
@@ -121,9 +123,30 @@ namespace Shops.Mono
                 LinkUiElement addItemUi = CreateLinkUi(addItemPlacement, 1f, null, Assets.DepositIcon, null);
             }
 
-            //SetOwnerText("TestName");
-
             SetOwner(OwnerName, OwnerId);
+
+            // If Lists Are Empty, Add Empty Items To Them To Match The Amount Of numberOfSellableItems
+            if (StationPrices.Count == 0)
+            {
+                for (int i = 0; i < numberOfSellableItems; i++)
+                {
+                    StationPrices.Add(0);
+                }
+            }
+            if (StationItems.Count == 0)
+            {
+                for (int i = 0; i < numberOfSellableItems; i++)
+                {
+                    StationItems.Add(0);
+                }
+            }
+            if (StationQuantities.Count == 0)
+            {
+                for (int i = 0; i < numberOfSellableItems; i++)
+                {
+                    StationQuantities.Add(0);
+                }
+            }
 
         }
 
@@ -324,7 +347,7 @@ namespace Shops.Mono
                 }
                 newPreview.transform.localScale = scale;
 
-                
+
             }
             newPreview.SetActive(true);
             newPreview.SetName("PreviewItem");
@@ -420,6 +443,11 @@ namespace Shops.Mono
         private void RefreshStationQuantityUi(int stationIndex)
         {
             SetQuantityUi(stationIndex, StationQuantities[stationIndex - 1]);
+        }
+
+        private void RefreshStationPriceUi(int stationIndex)
+        {
+            SetPriceUi(stationIndex, StationPrices[stationIndex - 1]);
         }
 
         private int? GetActiveAdminLinkUi()  // int? = StationIndex
@@ -524,13 +552,15 @@ namespace Shops.Mono
                 Misc.Msg($"Active Link Ui: {activeLinkUi}");
             }
             int? stationNumberActive = null;
-            if (activeLinkUi.Contains(",")) {
+            if (activeLinkUi.Contains(","))
+            {
                 string[] activeLinkUiSplit = activeLinkUi.Split(',');
                 activeLinkUi = activeLinkUiSplit[0];
-                if (int.TryParse(activeLinkUiSplit[1], out int converted)) {
+                if (int.TryParse(activeLinkUiSplit[1], out int converted))
+                {
                     stationNumberActive = converted;
                 }
-                
+
             }
             switch (activeLinkUi)
             {
@@ -575,7 +605,7 @@ namespace Shops.Mono
                                             RefreshStationUi();
 
                                             return;
-                                        } 
+                                        }
                                         else
                                         {
                                             // Shop Is Full
@@ -638,7 +668,8 @@ namespace Shops.Mono
 
                             // Add Sync Network Event
 
-                        } else  // If no items are found
+                        }
+                        else  // If no items are found
                         {
                             // Check if the shop is full
                             if (StationItems.Count >= numberOfSellableItems)
@@ -648,7 +679,7 @@ namespace Shops.Mono
                                 {
                                     // Override itemid 0 to new item. (ItemId = 0 is no item added)
                                     StationItems[StationItems.IndexOf(0)] = heldItemId;  // Add item to the first empty slot
-                                                                                     // IndexOf 0 does not need to be in the same place here so we need to get the index of the item
+                                                                                         // IndexOf 0 does not need to be in the same place here so we need to get the index of the item
                                     int index = StationItems.IndexOf(heldItemId);  // Find the index of the item in the list
                                     StationQuantities[index] = 1;  // Add the quantity to the list
                                     StationPrices[index] = 0;  // Add the price to the list (Adjusted Later On Scrolling)
@@ -700,7 +731,8 @@ namespace Shops.Mono
                         return;
                     }
                     // Check If Item Is Inventory Item Or Held Item
-                    if (StationItems[stationListPlace] == 0) { 
+                    if (StationItems[stationListPlace] == 0)
+                    {
                         Misc.Msg("[Shop] No Item To Take");
                         SonsTools.ShowMessage("No item to take");
                     }
@@ -732,6 +764,9 @@ namespace Shops.Mono
                             // Set StationItem To itemId 0 so item will be removed on refresh of ui
                             StationItems[stationListPlace] = 0;
 
+                            // Set StationPrice To 0
+                            StationPrices[stationListPlace] = 0;
+
                             RefreshStationUi();  // Refresh the UI
                         }
                         else
@@ -760,13 +795,16 @@ namespace Shops.Mono
                                 heldController.Lift(StationItems[stationListPlace], null);  // Lift the item / Add it to the hand
                                 StationQuantities[stationListPlace] = (StationQuantities[stationListPlace] - 1);  // Remove 1 from the quantity
                                 RefreshStationQuantityUi((int)stationNumberActive);
-                            } else if (StationQuantities[stationListPlace] == 1)
+                            }
+                            else if (StationQuantities[stationListPlace] == 1)
                             {
                                 heldController.Lift(StationItems[stationListPlace], null);  // Lift the item / Add it to the hand
                                 StationQuantities[stationListPlace] = (StationQuantities[stationListPlace] - 1);  // Remove 1 from the quantity
 
                                 // Set StationItem To itemId 0 so item will be removed on refresh of ui
                                 StationItems[stationListPlace] = 0;
+                                // Set StationPrice To 0
+                                StationPrices[stationListPlace] = 0;
 
                                 RefreshStationUi();  // Refresh the UI
                             }
@@ -789,6 +827,127 @@ namespace Shops.Mono
 
                     break;
             }
+        }
+        public void AdjustPriceKey(bool increase)
+        {
+            Misc.Msg("[Shop] [AdjustPriceKey()] Adjust Price Pressed");
+            string activeLinkUi = FindActiveLinkUi();
+            if (string.IsNullOrEmpty(activeLinkUi))
+            {
+                Misc.Msg("[Shop] [AdjustPriceKey()] No Link Ui Active");
+                return;
+            }
+            else
+            {
+                Misc.Msg($"[Shop] [AdjustPriceKey()] Active Link Ui: {activeLinkUi}");
+            }
+            int? stationNumberActive = null;
+            if (activeLinkUi.Contains(","))
+            {
+                string[] activeLinkUiSplit = activeLinkUi.Split(',');
+                activeLinkUi = activeLinkUiSplit[0];
+                if (int.TryParse(activeLinkUiSplit[1], out int converted))
+                {
+                    stationNumberActive = converted;
+                }
+
+            }
+            if (activeLinkUi != "Admin")
+            {
+                Misc.Msg("[Shop] [AdjustPriceKey()] Not Admin LinkUI");
+                return;
+            }
+            Misc.Msg($"[Shop] [AdjustPriceKey()] Admin Item, StationNumber: {stationNumberActive}");
+            if (stationNumberActive == null || stationNumberActive == 0)
+            {
+                Misc.Msg("[Shop] [AdjustPriceKey()] StationNumberActive Is Null");
+                SonsTools.ShowMessage("Something went wrong, please try agian");
+                return;
+            }
+            int stationListPlace = (int)stationNumberActive - 1;
+
+            // Adjust price by +1 or -1
+            if (increase)
+            {
+                // First Check If StationItem Exists
+                if (stationListPlace >= StationItems.Count || stationListPlace < 0)
+                {
+                    Misc.Msg("[Shop] [AdjustPriceKey()] Invalid station index");
+                    SonsTools.ShowMessage("Something went wrong, please try again");
+                    return;
+                }
+                StationPrices[stationListPlace] = StationPrices[stationListPlace] + 1;
+            }
+            else
+            {
+                // First Check If StationItem Exists
+                if (stationListPlace >= StationItems.Count || stationListPlace < 0)
+                {
+                    Misc.Msg("[Shop] [AdjustPriceKey()] Invalid station index");
+                    SonsTools.ShowMessage("Something went wrong, please try again");
+                    return;
+                }
+                if (StationPrices[stationListPlace] > 0)
+                {
+                    StationPrices[stationListPlace] = StationPrices[stationListPlace] - 1;
+                }
+            }
+            RefreshStationPriceUi((int)stationNumberActive);
+
+            // Add Sync Network Event
+
+        }
+
+        public void UpdateStationPrices(List<int> prices)
+        {
+            StationPrices = prices;
+            RefreshStationUi();
+        }
+
+        public void UpdateStationQuantities(List<int> quantities)
+        {
+            StationQuantities = quantities;
+            RefreshStationUi();
+        }
+
+        public void UpdateStationItems(List<int> items)
+        {
+            StationItems = items;
+            RefreshStationUi();
+        }
+
+        public void UpdateAllLists(List<int> prices, List<int> items, List<int> quantities)
+        {
+            StationPrices = prices;
+            StationItems = items;
+            StationQuantities = quantities;
+            RefreshStationUi();
+        }
+
+        public void UpdateAll(List<int> prices, List<int> items, List<int> quantities, string ownerName, string ownerId)
+        {
+            StationPrices = prices;
+            StationItems = items;
+            StationQuantities = quantities;
+            SetOwner(ownerName, ownerId);
+            RefreshStationUi();
+        }
+
+        public void DestroyShop()
+        {
+            // Remove From Saving
+            // Delete Over Network
+            Destroy(gameObject);
+        }
+
+        public Vector3 GetPos()
+        {
+            return gameObject.transform.position;
+        }
+
+        public Quaternion GetCurrentRotation()
+        {
+            return gameObject.transform.rotation;
         }
     }
 }
