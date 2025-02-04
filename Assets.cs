@@ -14,6 +14,8 @@ namespace Shops
 
         [AssetReference("InsertWhite")]
         public static Texture2D DepositIcon { get; set; }
+        [AssetReference("TakeWhite")]
+        public static Texture2D AdminTakeIcon { get; set; }
 
         [AssetReference("BookPageShop")]
         public static Texture2D BookPage { get; set; }

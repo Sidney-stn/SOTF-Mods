@@ -65,13 +65,24 @@ namespace Shops.Mono
                 Misc.Msg($"[Shop] Processing station {stationIndex}");
                 if (OwnerId != Banking.API.GetLocalPlayerId())
                 {
+                    // Creates Buy Icon UI Element And Attaches It To The Station LinkUI Place
                     GameObject uiPlacement = station.transform.FindChild("LinkUI").gameObject;
                     if (uiPlacement == null)
                     {
                         Misc.Msg("[Shop] [Start()] UI Placement Not Found");
                         return;
                     }
-                    LinkUiElement buyUi = CreateLinkUi(uiPlacement, 2f, null, Assets.BuyIcon, null);
+                    LinkUiElement buyUi = CreateLinkUi(uiPlacement, 1f, null, Assets.BuyIcon, new Vector3(0, 0, 0));
+                } else
+                {
+                    // Creates Admin Adjust UI Element And Attaches It To The Station AdminLinkUI Place
+                    GameObject uiPlacement = station.transform.FindChild("AdminLinkUI").gameObject;
+                    if (uiPlacement == null)
+                    {
+                        Misc.Msg("[Shop] [Start()] AdminLinkUI Placement Not Found");
+                        return;
+                    }
+                    LinkUiElement buyUi = CreateLinkUi(uiPlacement, 1f, null, Assets.AdminTakeIcon, new Vector3(0, 0, 0));
                 }
                 // Check if the lists have enough elements before accessing them
                 try
@@ -405,6 +416,45 @@ namespace Shops.Mono
             }
         }
 
+        private (string, string) GetActiveAdminLinkUi()  // (string, string) = (StationNumber, Admin)
+        {
+            int stationIndex = 0;
+            foreach (var station in stations)  // Loops Thru Stations
+            {
+                stationIndex++;
+                GameObject uiPlacement = station.transform.FindChild("AdminLinkUI").gameObject;
+                if (uiPlacement != null)
+                {
+                    LinkUiElement linkUi = uiPlacement.GetComponent<LinkUiElement>();
+                    if (linkUi != null)
+                    {
+                        if (linkUi.IsActive)
+                        {
+                            return ($"{stationIndex}", "Admin");
+                        }
+                    }
+                }
+            }
+            return (null, null);
+        }
+
+        private bool IsAddItemUiActive()
+        {
+            GameObject addItemPlacement = gameObject.transform.FindChild("Admin").FindChild("Add").gameObject;
+            if (addItemPlacement != null)
+            {
+                LinkUiElement linkUi = addItemPlacement.GetComponent<LinkUiElement>();
+                if (linkUi != null)
+                {
+                    if (linkUi.IsActive)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         private string FindActiveLinkUi()
         {
             if (OwnerId == Banking.API.GetLocalPlayerId())  // If the player is the owner of the shop
@@ -426,6 +476,37 @@ namespace Shops.Mono
                         return null;
 
                     }
+                }
+                else // If Add Item Placement Not Found
+                {
+                    // Check If AdminLinkUI Is Active (For Setting Price/And Taking Back Item)
+                    // Find Witch Station is active
+                    int stationIndex = 0;
+                    bool found = false;
+                    int stationIndexFound = 0;
+                    foreach (var station in stations)
+                    {
+                        stationIndex++;
+                        GameObject uiPlacement = station.transform.FindChild("AdminLinkUI").gameObject;
+                        if (uiPlacement != null)
+                        {
+                            LinkUiElement linkUi = uiPlacement.GetComponent<LinkUiElement>();
+                            if (linkUi != null)
+                            {
+                                if (linkUi.IsActive)
+                                {
+                                    found = true;
+                                    stationIndexFound = stationIndex;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (!found)
+                    {
+                        return null;
+                    }
+                    return $"{stationIndexFound}";  // StationNumber, Admin
                 }
                 return null;
             }
