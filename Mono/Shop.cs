@@ -225,6 +225,7 @@ namespace Shops.Mono
 
             if (itemId == 0)
             {
+                Misc.Msg("[Shop] [SetStationItem()] Item ID Is 0, Cleared PreviewItem");
                 return;
             }
             string itemName = ItemDatabaseManager.ItemById(itemId).name;
@@ -289,7 +290,7 @@ namespace Shops.Mono
                             if (be != null) { be.Entity.Detach(); }
                         }
                         if (be != null) { DestroyImmediate(be); }
-                        RemoveChildren(previewItem, true);
+                        RemoveChildren(newPreview, true);
                         Misc.Msg("[Shop] [SetStationItem()] Log");
                         break;
                     case 395:  // Log Plank
@@ -299,7 +300,7 @@ namespace Shops.Mono
                         var rib = newPreview.GetComponent<Rigidbody>();
                         if (rib != null) { rib.useGravity = false; rib.isKinematic = true; }
 
-                        RemoveChildren(previewItem, false, true, "LogHalfAModel");
+                        RemoveChildren(newPreview, false, true, "LogHalfAModel");
                         Misc.Msg("[Shop] [SetStationItem()] Log Plank");
                         break;
                     case 640:  // Stone [ONLY IF STONE PICKUP PREFAB IS USED (SO ATM IT SHOULD NOT)]
@@ -416,7 +417,12 @@ namespace Shops.Mono
             }
         }
 
-        private (string, string) GetActiveAdminLinkUi()  // (string, string) = (StationNumber, Admin)
+        private void RefreshStationQuantityUi(int stationIndex)
+        {
+            SetQuantityUi(stationIndex, StationQuantities[stationIndex - 1]);
+        }
+
+        private int? GetActiveAdminLinkUi()  // int? = StationIndex
         {
             int stationIndex = 0;
             foreach (var station in stations)  // Loops Thru Stations
@@ -430,12 +436,34 @@ namespace Shops.Mono
                     {
                         if (linkUi.IsActive)
                         {
-                            return ($"{stationIndex}", "Admin");
+                            return stationIndex;
                         }
                     }
                 }
             }
-            return (null, null);
+            return null;
+        }
+
+        private int? GetActiveLinkUi()  // int? = StationIndex
+        {
+            int stationIndex = 0;
+            foreach (var station in stations)  // Loops Thru Stations
+            {
+                stationIndex++;
+                GameObject uiPlacement = station.transform.FindChild("LinkUI").gameObject;
+                if (uiPlacement != null)
+                {
+                    LinkUiElement linkUi = uiPlacement.GetComponent<LinkUiElement>();
+                    if (linkUi != null)
+                    {
+                        if (linkUi.IsActive)
+                        {
+                            return stationIndex;
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         private bool IsAddItemUiActive()
@@ -459,90 +487,30 @@ namespace Shops.Mono
         {
             if (OwnerId == Banking.API.GetLocalPlayerId())  // If the player is the owner of the shop
             {
-                // Only Option is to add an item
-                GameObject addItemPlacement = gameObject.transform.FindChild("Admin").FindChild("Add").gameObject;
-                if (addItemPlacement != null)
+                if (IsAddItemUiActive())  // If the Add Item UI is active
                 {
-                    LinkUiElement linkUi = addItemPlacement.GetComponent<LinkUiElement>();
-                    if (linkUi != null)
-                    {
-                        if (linkUi.IsActive)
-                        {
-                            return "AddItem";
-                        }
-                    }
-                    else
-                    {
-                        return null;
-
-                    }
+                    return "AddItem";
                 }
-                else // If Add Item Placement Not Found
+                // Check If AdminLinkUI Is Active (For Setting Price/And Taking Back Item)
+                int? activeAdminLinkUi = GetActiveAdminLinkUi();
+                if (activeAdminLinkUi != null)
                 {
-                    // Check If AdminLinkUI Is Active (For Setting Price/And Taking Back Item)
-                    // Find Witch Station is active
-                    int stationIndex = 0;
-                    bool found = false;
-                    int stationIndexFound = 0;
-                    foreach (var station in stations)
-                    {
-                        stationIndex++;
-                        GameObject uiPlacement = station.transform.FindChild("AdminLinkUI").gameObject;
-                        if (uiPlacement != null)
-                        {
-                            LinkUiElement linkUi = uiPlacement.GetComponent<LinkUiElement>();
-                            if (linkUi != null)
-                            {
-                                if (linkUi.IsActive)
-                                {
-                                    found = true;
-                                    stationIndexFound = stationIndex;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (!found)
-                    {
-                        return null;
-                    }
-                    return $"{stationIndexFound}";  // StationNumber, Admin
+                    return $"Admin,{activeAdminLinkUi}";
                 }
-                return null;
             }
             else
             {
-                // Find Witch Station is active
-                int stationIndex = 0;
-                bool found = false;
-                int stationIndexFound = 0;
-                foreach (var station in stations)
+                // Check If Buy LinkUI Is Active
+                int? activeLinkUi = GetActiveLinkUi();
+                if (activeLinkUi != null)
                 {
-                    stationIndex++;
-                    GameObject uiPlacement = station.transform.FindChild("LinkUI").gameObject;
-                    if (uiPlacement != null)
-                    {
-                        LinkUiElement linkUi = uiPlacement.GetComponent<LinkUiElement>();
-                        if (linkUi != null)
-                        {
-                            if (linkUi.IsActive)
-                            {
-                                found = true;
-                                stationIndexFound = stationIndex;
-                                break;
-                            }
-                        }
-                    }
+                    return $"Buy,{activeLinkUi}";
                 }
-                if (!found)
-                {
-                    return null;
-                }
-                return $"{stationIndexFound}";
             }
+            return null;
         }
 
-        public void OnInteractButtonPressed()
+        public void OnInteractButtonPressed()  // Called When Interection Button Is Pressed From Settings And Shop Component Is Found Via RayCast
         {
             Misc.Msg("Interact Button Pressed");
             string activeLinkUi = FindActiveLinkUi();
@@ -555,9 +523,18 @@ namespace Shops.Mono
             {
                 Misc.Msg($"Active Link Ui: {activeLinkUi}");
             }
-            switch (activeLinkUi.ToLower())
+            int? stationNumberActive = null;
+            if (activeLinkUi.Contains(",")) {
+                string[] activeLinkUiSplit = activeLinkUi.Split(',');
+                activeLinkUi = activeLinkUiSplit[0];
+                if (int.TryParse(activeLinkUiSplit[1], out int converted)) {
+                    stationNumberActive = converted;
+                }
+                
+            }
+            switch (activeLinkUi)
             {
-                case "additem":
+                case "AddItem":
                     Misc.Msg("Add Item");
                     if (LocalPlayer.Inventory.RightHandItem != null)  // If Normal Item In Hand e.g. Stick
                     {
@@ -585,9 +562,27 @@ namespace Shops.Mono
                                     // Check if the shop is full
                                     if (StationItems.Count >= numberOfSellableItems)
                                     {
-                                        Misc.Msg("[AddItemFromHand] Shop Is Full;");
-                                        SonsTools.ShowMessage("The shop is full, you can't add more items to it");
-                                        return;
+                                        // Check If Any StationItems has itemid 0, if no items are set to 0 then the shop is full
+                                        if (StationItems.Contains(0))
+                                        {
+                                            // Override itemid 0 to new item. (ItemId = 0 is no item added)
+                                            StationItems[StationItems.IndexOf(0)] = itemId;  // Add item to the first empty slot
+                                                                                             // IndexOf 0 does not need to be in the same place here so we need to get the index of the item
+                                            int index = StationItems.IndexOf(itemId);  // Find the index of the item in the list
+                                            StationQuantities[index] = 1;  // Add the quantity to the list
+                                            StationPrices[index] = 0;  // Add the price to the list (Adjusted Later On Scrolling)
+
+                                            RefreshStationUi();
+
+                                            return;
+                                        } 
+                                        else
+                                        {
+                                            // Shop Is Full
+                                            Misc.Msg("[AddItemFromHand] Shop Is Full;");
+                                            SonsTools.ShowMessage("The shop is full, you can't add more items to it");
+                                            return;
+                                        }
                                     }
                                     // Add the item to the shop
                                     StationItems.Add(itemId);  // Add the item to the list
@@ -648,9 +643,30 @@ namespace Shops.Mono
                             // Check if the shop is full
                             if (StationItems.Count >= numberOfSellableItems)
                             {
-                                Misc.Msg("[AddItemFromHand] Shop Is Full;");
-                                SonsTools.ShowMessage("The shop is full, you can't add more items to it");
-                                return;
+                                // Check If Any StationItems has itemid 0, if no items are set to 0 then the shop is full
+                                if (StationItems.Contains(0))
+                                {
+                                    // Override itemid 0 to new item. (ItemId = 0 is no item added)
+                                    StationItems[StationItems.IndexOf(0)] = heldItemId;  // Add item to the first empty slot
+                                                                                     // IndexOf 0 does not need to be in the same place here so we need to get the index of the item
+                                    int index = StationItems.IndexOf(heldItemId);  // Find the index of the item in the list
+                                    StationQuantities[index] = 1;  // Add the quantity to the list
+                                    StationPrices[index] = 0;  // Add the price to the list (Adjusted Later On Scrolling)
+
+                                    // Remove Item From Hand
+                                    heldItem.PutDown(false, false, false);
+
+                                    RefreshStationUi();
+
+                                    return;
+                                }
+                                else
+                                {
+                                    // Shop Is Full
+                                    Misc.Msg("[AddItemFromHand] Shop Is Full;");
+                                    SonsTools.ShowMessage("The shop is full, you can't add more items to it");
+                                    return;
+                                }
                             }
                             // Add the item to the shop
                             StationItems.Add(heldItemId);  // Add the item to the list
@@ -663,6 +679,114 @@ namespace Shops.Mono
                         }
 
                     }
+                    break;
+                case "Buy":
+                    Misc.Msg($"Buy Item, StationNumber: {stationNumberActive}");
+                    break;
+                case "Admin":
+                    Misc.Msg($"Admin Item, StationNumber: {stationNumberActive}");
+                    if (stationNumberActive == null || stationNumberActive == 0)
+                    {
+                        Misc.Msg("[Shop] [OnInteractButtonPressed()] StationNumberActive Is Null");
+                        SonsTools.ShowMessage("Something went wrong, please try agian");
+                        return;
+                    }
+                    int stationListPlace = (int)stationNumberActive - 1;
+                    // Check If there is any quantity of the item
+                    if (StationQuantities[stationListPlace] == 0)
+                    {
+                        Misc.Msg("[Shop] [OnInteractButtonPressed()] No Quantity Of The Item");
+                        SonsTools.ShowMessage("There is no item added to take");
+                        return;
+                    }
+                    // Check If Item Is Inventory Item Or Held Item
+                    if (StationItems[stationListPlace] == 0) { 
+                        Misc.Msg("[Shop] No Item To Take");
+                        SonsTools.ShowMessage("No item to take");
+                    }
+                    int maxAmountInventory = LocalPlayer.Inventory.GetMaxAmountOf(StationItems[stationListPlace]);
+                    if (maxAmountInventory > 0)
+                    {
+                        // Check If The Player Has Enough Space In Inventory
+                        int currentInventoryAmount = LocalPlayer.Inventory.AmountOf(StationItems[stationListPlace]);
+                        if (currentInventoryAmount >= maxAmountInventory)
+                        {
+                            Misc.Msg("[Shop] [OnInteractButtonPressed()] Inventory Full");
+                            SonsTools.ShowMessage("Your inventory is full, you can't take more of this item");
+                            return;
+                        }
+                        // Check IF Quantity Is More Than 1
+                        if (StationQuantities[stationListPlace] > 1)
+                        {
+                            // Add The Item To The Inventory And Remove It From The Shop
+                            LocalPlayer.Inventory.AddItem(StationItems[stationListPlace], 1, true);  // Add the item to the inventory
+                            StationQuantities[stationListPlace] = (StationQuantities[stationListPlace] - 1);  // Remove 1 from the quantity
+                            RefreshStationQuantityUi((int)stationNumberActive);
+                        }
+                        else if (StationQuantities[stationListPlace] == 1)
+                        {
+                            // In Case Of Last Item [We want to do extra stuff]
+                            LocalPlayer.Inventory.AddItem(StationItems[stationListPlace], 1, true);  // Add the item to the inventory
+                            StationQuantities[stationListPlace] = (StationQuantities[stationListPlace] - 1);  // Remove 1 from the quantity
+
+                            // Set StationItem To itemId 0 so item will be removed on refresh of ui
+                            StationItems[stationListPlace] = 0;
+
+                            RefreshStationUi();  // Refresh the UI
+                        }
+                        else
+                        {
+                            // In Case Quantity Is 0 or below
+                            Misc.Msg("[Shop] [OnInteractButtonPressed()] Quantity Is 0 or below");
+                            SonsTools.ShowMessage("There is no item to take");
+                            return;
+                        }
+
+                    }
+                    else
+                    {
+                        // In Case The Item Is Not An Inventory Item
+                        IHeldOnlyItemController heldController = LocalPlayer.Inventory.HeldOnlyItemController;
+                        if (heldController != null)
+                        {
+                            if (heldController.HasItem)
+                            {
+                                Misc.Msg("[Shop] [OnInteractButtonPressed()] HeldController Has Item");
+                                SonsTools.ShowMessage("You can't take this item, drop item in hand");
+                                return;
+                            }
+                            if (StationQuantities[stationListPlace] > 1)
+                            {
+                                heldController.Lift(StationItems[stationListPlace], null);  // Lift the item / Add it to the hand
+                                StationQuantities[stationListPlace] = (StationQuantities[stationListPlace] - 1);  // Remove 1 from the quantity
+                                RefreshStationQuantityUi((int)stationNumberActive);
+                            } else if (StationQuantities[stationListPlace] == 1)
+                            {
+                                heldController.Lift(StationItems[stationListPlace], null);  // Lift the item / Add it to the hand
+                                StationQuantities[stationListPlace] = (StationQuantities[stationListPlace] - 1);  // Remove 1 from the quantity
+
+                                // Set StationItem To itemId 0 so item will be removed on refresh of ui
+                                StationItems[stationListPlace] = 0;
+
+                                RefreshStationUi();  // Refresh the UI
+                            }
+                            else
+                            {
+                                // In Case Quantity Is 0 or below
+                                Misc.Msg("[Shop] [OnInteractButtonPressed()] Quantity Is 0 or below");
+                                SonsTools.ShowMessage("There is no item to take");
+                                return;
+                            }
+
+                        }
+                        else
+                        {
+                            Misc.Msg("[Shop] [OnInteractButtonPressed()] HeldController Is Null");
+                            SonsTools.ShowMessage("You can't take this item");
+                            return;
+                        }
+                    }
+
                     break;
             }
         }
