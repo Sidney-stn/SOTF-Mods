@@ -9,10 +9,12 @@ namespace Shops.Network
             if (Banking.API.GetHostMode() == Banking.API.SimpleSaveGameType.Multiplayer || Banking.API.GetHostMode() == Banking.API.SimpleSaveGameType.MultiplayerClient)
             {
                 Misc.Msg("Registerd Events");
-                //SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.JoinedServer>();
-                //SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.SpawnSingeSign>();
-                //SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.UpdateText>();
-                //SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.RemoveSign>();
+                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.JoinedServer>();
+                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.SpawnShop>();
+                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.RemoveShop>();
+                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.Sync.RequestSpawnShop>();
+                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.Sync.SyncShop>();
+                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.Sync.SyncShopList>();
                 SendJoinedServerEvent();
             }
         }
@@ -22,10 +24,12 @@ namespace Shops.Network
             if (Banking.API.GetHostMode() == Banking.API.SimpleSaveGameType.Multiplayer || Banking.API.GetHostMode() == Banking.API.SimpleSaveGameType.MultiplayerClient)
             {
                 Misc.Msg("Unregisterd Events");
-                //SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.JoinedServer>();
-                //SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.SpawnSingeSign>();
-                //SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.UpdateText>();
-                //SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.RemoveSign>();
+                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.JoinedServer>();
+                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.SpawnShop>();
+                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.RemoveShop>();
+                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.Sync.RequestSpawnShop>();
+                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.Sync.SyncShop>();
+                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.Sync.SyncShopList>();
             }
         }
 
@@ -34,12 +38,11 @@ namespace Shops.Network
             if (Banking.API.GetHostMode() == Banking.API.SimpleSaveGameType.MultiplayerClient)
             {
                 Misc.Msg("[Manager] I Joined Server, Sending JoinedServerEvent");
-                //SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.JoinedServer
-                //{
-                //    SenderName = Banking.API.GetLocalPlayerName(),
-                //    SenderId = Banking.API.GetLocalPlayerId(),
-
-                //});
+                SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.JoinedServer
+                {
+                    SenderName = Banking.API.GetLocalPlayerName(),
+                    SenderId = Banking.API.GetLocalPlayerId(),
+                });
             }
         }
     }

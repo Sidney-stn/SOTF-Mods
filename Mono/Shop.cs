@@ -583,6 +583,7 @@ namespace Shops.Mono
                                     StationQuantities[index] = (StationQuantities[index] + 1);  // Add 1 to the quantity
 
                                     // Add Sync Network Event
+                                    InvokeEvent(EventType.Item);
                                     RefreshStationUi();  // Refresh the UI
 
                                     return;
@@ -601,7 +602,7 @@ namespace Shops.Mono
                                             int index = StationItems.IndexOf(itemId);  // Find the index of the item in the list
                                             StationQuantities[index] = 1;  // Add the quantity to the list
                                             StationPrices[index] = 0;  // Add the price to the list (Adjusted Later On Scrolling)
-
+                                            InvokeEvent(EventType.Item);
                                             RefreshStationUi();
 
                                             return;
@@ -618,10 +619,8 @@ namespace Shops.Mono
                                     StationItems.Add(itemId);  // Add the item to the list
                                     StationQuantities.Add(1);  // Add the quantity to the list
                                     StationPrices.Add(0);  // Add the price to the list (Adjusted Later On Scrolling)
-
+                                    InvokeEvent(EventType.Item);
                                     RefreshStationUi();  // Refresh the UI
-
-                                    // Add Sync Network Event
 
                                     return;
                                 }
@@ -664,9 +663,9 @@ namespace Shops.Mono
 
                             StationQuantities[index] = StationQuantities[index] + 1;  // Add 1 to the quantity
 
-                            RefreshStationUi();  // Refresh the UI
+                            InvokeEvent(EventType.Item);
 
-                            // Add Sync Network Event
+                            RefreshStationUi();  // Refresh the UI
 
                         }
                         else  // If no items are found
@@ -704,9 +703,9 @@ namespace Shops.Mono
                             StationQuantities.Add(1);  // Add the quantity to the list
                             StationPrices.Add(0);  // Add the price to the list (Adjusted Later On Scrolling)
 
-                            RefreshStationUi();  // Refresh the UI
+                            InvokeEvent(EventType.Item);
 
-                            // Add Sync Network Event
+                            RefreshStationUi();  // Refresh the UI
                         }
 
                     }
@@ -747,74 +746,21 @@ namespace Shops.Mono
                         // Check IF Quantity Is More Than 1
                         if (StationQuantities[stationListPlacee] > 1)
                         {
-                            // Check If Player Has Enough Money
-                            int? myCash = Banking.API.GetCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId());  // Get the cash of the my player
-                            int price = StationPrices[stationListPlacee];  // Get the price of the item
-                            if (myCash != null)
+                            if (!CheckAndProcessPayment(stationListPlacee))
                             {
-                                if (myCash >= price)  // Check if the player has enough money
-                                {
-                                    if (price > 0)  // Check if the price is more than 0 / Free
-                                    {
-                                        // Remove The Money From The Player
-                                        Banking.API.RemoveCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId(), price);
-                                    }
-                                    else
-                                    {
-                                        // In Case Price Is 0 / Free
-                                        Misc.Msg("[Shop] [OnInteractButtonPressed()] Price Is 0");
-                                    }
-                                }
-                                else
-                                {
-                                    Misc.Msg("[Shop] [OnInteractButtonPressed()] Not Enough Money");
-                                    SonsTools.ShowMessage("You don't have enough money to buy this item, please deposit into an ATM");
-                                    return;
-                                }
-                            } 
-                            else
-                            {
-                                Misc.Msg("[Shop] [OnInteractButtonPressed()] MyCash Is Null");
-                                SonsTools.ShowMessage("Something went wrong, please try again");
                                 return;
                             }
 
                             // Add The Item To The Inventory And Remove It From The Shop
                             LocalPlayer.Inventory.AddItem(StationItems[stationListPlacee], 1, true);  // Add the item to the inventory
                             StationQuantities[stationListPlacee] = (StationQuantities[stationListPlacee] - 1);  // Remove 1 from the quantity
+                            InvokeEvent(EventType.Item);
                             RefreshStationQuantityUi((int)stationNumberActive);
                         }
                         else if (StationQuantities[stationListPlacee] == 1)
                         {
-                            // Check If Player Has Enough Money
-                            int? myCash = Banking.API.GetCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId());  // Get the cash of the my player
-                            int price = StationPrices[stationListPlacee];  // Get the price of the item
-                            if (myCash != null)
+                            if (!CheckAndProcessPayment(stationListPlacee))
                             {
-                                if (myCash >= price)  // Check if the player has enough money
-                                {
-                                    if (price > 0)  // Check if the price is more than 0 / Free
-                                    {
-                                        // Remove The Money From The Player
-                                        Banking.API.RemoveCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId(), price);
-                                    }
-                                    else
-                                    {
-                                        // In Case Price Is 0 / Free
-                                        Misc.Msg("[Shop] [OnInteractButtonPressed()] Price Is 0");
-                                    }
-                                }
-                                else
-                                {
-                                    Misc.Msg("[Shop] [OnInteractButtonPressed()] Not Enough Money");
-                                    SonsTools.ShowMessage("You don't have enough money to buy this item, please deposit into an ATM");
-                                    return;
-                                }
-                            }
-                            else
-                            {
-                                Misc.Msg("[Shop] [OnInteractButtonPressed()] MyCash Is Null");
-                                SonsTools.ShowMessage("Something went wrong, please try again");
                                 return;
                             }
 
@@ -827,6 +773,7 @@ namespace Shops.Mono
 
                             // Set StationPrice To 0
                             StationPrices[stationListPlacee] = 0;
+                            InvokeEvent(EventType.Item);
 
                             RefreshStationUi();  // Refresh the UI
                         }
@@ -853,72 +800,20 @@ namespace Shops.Mono
                             }
                             if (StationQuantities[stationListPlacee] > 1)
                             {
-                                // Check If Player Has Enough Money
-                                int? myCash = Banking.API.GetCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId());  // Get the cash of the my player
-                                int price = StationPrices[stationListPlacee];  // Get the price of the item
-                                if (myCash != null)
+                                if (!CheckAndProcessPayment(stationListPlacee))
                                 {
-                                    if (myCash >= price)  // Check if the player has enough money
-                                    {
-                                        if (price > 0)  // Check if the price is more than 0 / Free
-                                        {
-                                            // Remove The Money From The Player
-                                            Banking.API.RemoveCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId(), price);
-                                        }
-                                        else
-                                        {
-                                            // In Case Price Is 0 / Free
-                                            Misc.Msg("[Shop] [OnInteractButtonPressed()] Price Is 0");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Misc.Msg("[Shop] [OnInteractButtonPressed()] Not Enough Money");
-                                        SonsTools.ShowMessage("You don't have enough money to buy this item, please deposit into an ATM");
-                                        return;
-                                    }
-                                }
-                                else
-                                {
-                                    Misc.Msg("[Shop] [OnInteractButtonPressed()] MyCash Is Null");
-                                    SonsTools.ShowMessage("Something went wrong, please try again");
                                     return;
                                 }
+
                                 heldController.Lift(StationItems[stationListPlacee], null);  // Lift the item / Add it to the hand
                                 StationQuantities[stationListPlacee] = (StationQuantities[stationListPlacee] - 1);  // Remove 1 from the quantity
+                                InvokeEvent(EventType.Item);
                                 RefreshStationQuantityUi((int)stationNumberActive);
                             }
                             else if (StationQuantities[stationListPlacee] == 1)
                             {
-                                // Check If Player Has Enough Money
-                                int? myCash = Banking.API.GetCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId());  // Get the cash of the my player
-                                int price = StationPrices[stationListPlacee];  // Get the price of the item
-                                if (myCash != null)
+                                if (!CheckAndProcessPayment(stationListPlacee))
                                 {
-                                    if (myCash >= price)  // Check if the player has enough money
-                                    {
-                                        if (price > 0)  // Check if the price is more than 0 / Free
-                                        {
-                                            // Remove The Money From The Player
-                                            Banking.API.RemoveCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId(), price);
-                                        }
-                                        else
-                                        {
-                                            // In Case Price Is 0 / Free
-                                            Misc.Msg("[Shop] [OnInteractButtonPressed()] Price Is 0");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Misc.Msg("[Shop] [OnInteractButtonPressed()] Not Enough Money");
-                                        SonsTools.ShowMessage("You don't have enough money to buy this item, please deposit into an ATM");
-                                        return;
-                                    }
-                                }
-                                else
-                                {
-                                    Misc.Msg("[Shop] [OnInteractButtonPressed()] MyCash Is Null");
-                                    SonsTools.ShowMessage("Something went wrong, please try again");
                                     return;
                                 }
 
@@ -929,6 +824,7 @@ namespace Shops.Mono
                                 StationItems[stationListPlacee] = 0;
                                 // Set StationPrice To 0
                                 StationPrices[stationListPlacee] = 0;
+                                InvokeEvent(EventType.Item);
 
                                 RefreshStationUi();  // Refresh the UI
                             }
@@ -989,6 +885,7 @@ namespace Shops.Mono
                             // Add The Item To The Inventory And Remove It From The Shop
                             LocalPlayer.Inventory.AddItem(StationItems[stationListPlace], 1, true);  // Add the item to the inventory
                             StationQuantities[stationListPlace] = (StationQuantities[stationListPlace] - 1);  // Remove 1 from the quantity
+                            InvokeEvent(EventType.Item);
                             RefreshStationQuantityUi((int)stationNumberActive);
                         }
                         else if (StationQuantities[stationListPlace] == 1)
@@ -1002,7 +899,7 @@ namespace Shops.Mono
 
                             // Set StationPrice To 0
                             StationPrices[stationListPlace] = 0;
-
+                            InvokeEvent(EventType.Item);
                             RefreshStationUi();  // Refresh the UI
                         }
                         else
@@ -1030,6 +927,7 @@ namespace Shops.Mono
                             {
                                 heldController.Lift(StationItems[stationListPlace], null);  // Lift the item / Add it to the hand
                                 StationQuantities[stationListPlace] = (StationQuantities[stationListPlace] - 1);  // Remove 1 from the quantity
+                                InvokeEvent(EventType.Item);
                                 RefreshStationQuantityUi((int)stationNumberActive);
                             }
                             else if (StationQuantities[stationListPlace] == 1)
@@ -1041,7 +939,7 @@ namespace Shops.Mono
                                 StationItems[stationListPlace] = 0;
                                 // Set StationPrice To 0
                                 StationPrices[stationListPlace] = 0;
-
+                                InvokeEvent(EventType.Item);
                                 RefreshStationUi();  // Refresh the UI
                             }
                             else
@@ -1063,6 +961,41 @@ namespace Shops.Mono
 
                     break;
             }
+        }
+        private bool CheckAndProcessPayment(int stationIndex, string context = "OnInteractButtonPressed")
+        {
+            // Get the player's cash and price
+            int? myCash = Banking.API.GetCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId());
+            int price = StationPrices[stationIndex];
+
+            // Check if we got valid cash amount
+            if (myCash == null)
+            {
+                Misc.Msg($"[Shop] [{context}] MyCash Is Null");
+                SonsTools.ShowMessage("Something went wrong, please try again");
+                return false;
+            }
+
+            // Check if player has enough money
+            if (myCash < price)
+            {
+                Misc.Msg($"[Shop] [{context}] Not Enough Money");
+                SonsTools.ShowMessage("You don't have enough money to buy this item, please deposit into an ATM");
+                return false;
+            }
+
+            // Process payment if price is greater than 0
+            if (price > 0)
+            {
+                Banking.API.RemoveCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId(), price);  // Remove the price from the player (LocalPlayer)
+                Banking.API.AddCash(Banking.API.GetCurrencyType.SteamID, OwnerId, price);  // Add the price to the owner
+            }
+            else
+            {
+                Misc.Msg($"[Shop] [{context}] Price Is 0");
+            }
+
+            return true;
         }
         public void AdjustPriceKey(bool increase)
         {
@@ -1113,6 +1046,7 @@ namespace Shops.Mono
                     return;
                 }
                 StationPrices[stationListPlace] = StationPrices[stationListPlace] + 1;
+                InvokeEvent(EventType.AdjustPrice);
             }
             else
             {
@@ -1126,12 +1060,10 @@ namespace Shops.Mono
                 if (StationPrices[stationListPlace] > 0)
                 {
                     StationPrices[stationListPlace] = StationPrices[stationListPlace] - 1;
+                    InvokeEvent(EventType.AdjustPrice);
                 }
             }
             RefreshStationPriceUi((int)stationNumberActive);
-
-            // Add Sync Network Event
-
         }
 
         public void UpdateStationPrices(List<int> prices)
@@ -1184,6 +1116,78 @@ namespace Shops.Mono
         public Quaternion GetCurrentRotation()
         {
             return gameObject.transform.rotation;
+        }
+
+        private enum EventType
+        {
+            Item,
+            AdjustPrice,
+            All,
+            Sync
+        }
+
+        private void InvokeEvent(EventType eventType)
+        {
+            if (string.IsNullOrEmpty(UniqueId)) { Misc.NetLog("[Shop] [InvokeEvent] Failed, UniqueId Invalid"); return; }
+            if (string.IsNullOrEmpty(OwnerId)) { Misc.NetLog("[Shop] [InvokeEvent] Failed, OwnerId Invalid"); return; }
+            if (string.IsNullOrEmpty(OwnerName)) { Misc.NetLog("[Shop] [InvokeEvent] Failed, OwnerName Invalid"); return; }
+            if (StationPrices == null) { Misc.NetLog("[Shop] [InvokeEvent] Failed, StationPrices Invalid"); return; }
+            if (StationItems == null) { Misc.NetLog("[Shop] [InvokeEvent] Failed, StationItems Invalid"); return; }
+            if (StationQuantities == null) { Misc.NetLog("[Shop] [InvokeEvent] Failed, StationQuantities Invalid"); return; }
+            switch (eventType)
+            {
+                case EventType.Item:  // Syncs: Items, Quantities
+                    SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.Sync.SyncShopList
+                    {
+                        UniqueId = UniqueId,
+                        Sender = Banking.API.GetLocalPlayerId(),
+                        SenderName = Banking.API.GetLocalPlayerName(),
+                        StationPrices = null,
+                        StationItems = StationItems,
+                        StationQuantities = StationQuantities,
+                        ToSteamId = "None"
+                    });
+                    break;
+                case EventType.AdjustPrice:  // Syncs: Prices
+                    SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.Sync.SyncShopList
+                    {
+                        UniqueId = UniqueId,
+                        Sender = Banking.API.GetLocalPlayerId(),
+                        SenderName = Banking.API.GetLocalPlayerName(),
+                        StationPrices = StationPrices,
+                        StationItems = null,
+                        StationQuantities = null,
+                        ToSteamId = "None"
+                    });
+                    break;
+                case EventType.All:  // Syncs: Prices, Items, Quantities
+                    SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.Sync.SyncShopList
+                    {
+                        UniqueId = UniqueId,
+                        Sender = Banking.API.GetLocalPlayerId(),
+                        SenderName = Banking.API.GetLocalPlayerName(),
+                        StationPrices = StationPrices,
+                        StationItems = StationItems,
+                        StationQuantities = StationQuantities,
+                        ToSteamId = "None"
+                    });
+                    break;
+                case EventType.Sync:  // Syncs: Prices, Items, Quantities, OwnerName, OwnerId
+                    // Raise Event
+                    SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.Sync.SyncShop
+                    {
+                        UniqueId = UniqueId,
+                        Sender = Banking.API.GetLocalPlayerId(),
+                        SenderName = Banking.API.GetLocalPlayerName(),
+                        OwnerName = OwnerName,
+                        OwnerId = OwnerId,
+                        StationPrices = StationPrices,
+                        StationItems = StationItems,
+                        StationQuantities = StationQuantities,
+                        ToSteamId = "None"
+                    });
+                    break;
+            }
         }
     }
 }

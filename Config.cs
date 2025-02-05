@@ -8,6 +8,7 @@ public static class Config
     internal static ConfigCategory IngameShopsCategory { get; private set; }
     public static ConfigEntry<bool> DebugLoggingIngameShops { get; private set; }
     public static ConfigEntry<bool> NetworkDebugIngameShops { get; private set; }
+    public static ConfigEntry<bool> ExtremeDebugLogging { get; private set; }
     public static KeybindConfigEntry ToggleMenuKey { get; private set; }
     public static KeybindConfigEntry ScrollUpKey { get; private set; }
     public static KeybindConfigEntry ScrollUpDownKey { get; private set; }
@@ -35,7 +36,7 @@ public static class Config
         ToggleMenuKey.DefaultValue = "e";
         ToggleMenuKey.Notify(() =>
         {
-            Prefab.SingeShop.TryOpenUi();
+            Prefab.SingleShop.TryOpenUi();
         });
 
         ScrollUpKey = IngameShopsCategory.CreateKeybindEntry(
@@ -47,7 +48,7 @@ public static class Config
         ScrollUpKey.Notify(() =>
         {
             //Misc.Msg($"Scroll Up, KeyBind: {ScrollUpKey.Value}");
-            Prefab.SingeShop.PriceAdjust(true);
+            Prefab.SingleShop.PriceAdjust(true);
         });
 
         ScrollUpDownKey = IngameShopsCategory.CreateKeybindEntry(
@@ -59,8 +60,14 @@ public static class Config
         ScrollUpDownKey.Notify(() =>
         {
             //Misc.Msg($"Scroll Down, KeyBind: {ScrollUpDownKey.Value}");
-            Prefab.SingeShop.PriceAdjust(false);
+            Prefab.SingleShop.PriceAdjust(false);
         });
+
+        ExtremeDebugLogging = IngameShopsCategory.CreateEntry(
+            "enable_logging_extreme_advanced_ingamesign",
+            true,
+            "Enable Super Detailed Debug Logs",
+            "Enables Super Debug Logs of the game to the console.");
 
     }
 

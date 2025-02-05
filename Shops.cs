@@ -51,7 +51,7 @@ public class Shops : SonsMod
     protected override void OnGameStart()
     {
         // This is called once the player spawns in the world and gains control.
-        Prefab.SingeShop.SetupPrefab();
+        Prefab.SingleShop.SetupPrefab();
     }
 
     internal static void OnJoinedWorld()
@@ -74,8 +74,8 @@ public class Shops : SonsMod
     internal static void OnLeaveWorld()
     {
         // This is called when the player leaves a world.
-        GameObject.Destroy(Prefab.SingeShop.gameObjectWithComps);
-        Prefab.SingeShop.spawnedShops.Clear();
+        GameObject.Destroy(Prefab.SingleShop.gameObjectWithComps);
+        Prefab.SingleShop.spawnedShops.Clear();
         foreach (var sign in Saving.Load.ModdedShops)
         {
             GameObject.Destroy(sign);
@@ -116,7 +116,7 @@ public class Shops : SonsMod
         switch (args.ToLower())
         {
             case "spawn":
-                GameObject go = GameObject.Instantiate(Prefab.SingeShop.gameObjectWithComps);
+                GameObject go = GameObject.Instantiate(Prefab.SingleShop.gameObjectWithComps);
                 go.transform.position = raycastHit.point + Vector3.up * 0.1f;
                 go.transform.rotation = LocalPlayer.Transform.rotation;
                 Mono.Shop mono = go.GetComponent<Mono.Shop>();

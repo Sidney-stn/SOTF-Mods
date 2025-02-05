@@ -61,9 +61,9 @@ namespace Shops.Structure
                 //Misc.Msg("Adding OnStructureComplete Event");
                 //// Store the GameObject reference
                 //GameObject gameObject = arg1.gameObject;
-                //GameObject builtPrefab = arg1.Recipe._builtPrefab;
-                //Mono.NewATM NewATM = builtPrefab.AddComponent<Mono.NewATM>();
-                //NewATM.IsPlaceHolder = true;
+                GameObject builtPrefab = arg1.Recipe._builtPrefab;
+                Mono.NewShop newObj = builtPrefab.AddComponent<Mono.NewShop>();
+                newObj.IsPlaceHolder = true;
 
                 //arg1.StructureCraftingSystem.OnStructureComplete += DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(
                 //    new System.Action(() => OnStructureCompleted(gameObject, builtPrefab))

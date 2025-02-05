@@ -20,14 +20,16 @@ namespace Shops.Saving
             foreach (var modData in obj.Shops)
             {
                 Misc.Msg("[Loading] Creating New Shops");
-                //if (Misc.hostMode == Misc.SimpleSaveGameType.SinglePlayer)
-                //{
-                //    GameObject sign = Prefab.SignPrefab.spawnSignSingePlayer(modData.Position, modData.Rotation, false, modData.Line1Text, modData.Line2Text, modData.Line3Text, modData.Line4Text, modData.UniqueId);
-                //}
-                //else if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
-                //{
-                //    GameObject sign = Prefab.SignPrefab.spawnSignSingePlayer(modData.Position, modData.Rotation, false, modData.Line1Text, modData.Line2Text, modData.Line3Text, modData.Line4Text, modData.UniqueId);
-                //}
+                Prefab.SingleShop.Spawn(
+                    pos: modData.Position,
+                    rot: modData.Rotation,
+                    ownerName: modData.OwnerName,
+                    ownerId: modData.OwnerId,
+                    uniqueId: modData.UniqueId,
+                    StationPrices: modData.Prices,
+                    StationItems: modData.Items,
+                    StationQuantities: modData.Quanteties
+                    );
             }
         }
     }

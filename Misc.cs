@@ -12,5 +12,20 @@ namespace Shops
             }
 
         }
+
+        internal static void NetLog(string msg)
+        {
+            if (Config.NetworkDebugIngameShops.Value)
+            {
+                Msg($"[NetLog] {msg}");
+            }
+        }
+        internal static void SuperLog(string msg)
+        {
+            if (Config.ExtremeDebugLogging.Value)
+            {
+                Msg($"[SuperLog] {msg}");
+            }
+        }
     }
 }
