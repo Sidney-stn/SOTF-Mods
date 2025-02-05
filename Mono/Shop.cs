@@ -713,6 +713,242 @@ namespace Shops.Mono
                     break;
                 case "Buy":
                     Misc.Msg($"Buy Item, StationNumber: {stationNumberActive}");
+                    if (stationNumberActive == null || stationNumberActive == 0)
+                    {
+                        Misc.Msg("[Shop] [OnInteractButtonPressed()] StationNumberActive Is Null");
+                        SonsTools.ShowMessage("Something went wrong, please try agian");
+                        return;
+                    }
+                    int stationListPlacee = (int)stationNumberActive - 1;
+                    // Check If there is any quantity of the item
+                    if (StationQuantities[stationListPlacee] == 0)
+                    {
+                        Misc.Msg("[Shop] [OnInteractButtonPressed()] No Quantity Of The Item");
+                        SonsTools.ShowMessage("There is no item to buy");
+                        return;
+                    }
+                    // Check If Item Is Inventory Item Or Held Item
+                    if (StationItems[stationListPlacee] == 0)
+                    {
+                        Misc.Msg("[Shop] No Item To Buy");
+                        SonsTools.ShowMessage("No item to buy");
+                    }
+                    int maxAmountInventoryy = LocalPlayer.Inventory.GetMaxAmountOf(StationItems[stationListPlacee]);
+                    if (maxAmountInventoryy > 0)
+                    {
+                        // Check If The Player Has Enough Space In Inventory
+                        int currentInventoryAmount = LocalPlayer.Inventory.AmountOf(StationItems[stationListPlacee]);
+                        if (currentInventoryAmount >= maxAmountInventoryy)
+                        {
+                            Misc.Msg("[Shop] [OnInteractButtonPressed()] Inventory Full");
+                            SonsTools.ShowMessage("Your inventory is full, you can't buy more of this item");
+                            return;
+                        }
+                        // Check IF Quantity Is More Than 1
+                        if (StationQuantities[stationListPlacee] > 1)
+                        {
+                            // Check If Player Has Enough Money
+                            int? myCash = Banking.API.GetCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId());  // Get the cash of the my player
+                            int price = StationPrices[stationListPlacee];  // Get the price of the item
+                            if (myCash != null)
+                            {
+                                if (myCash >= price)  // Check if the player has enough money
+                                {
+                                    if (price > 0)  // Check if the price is more than 0 / Free
+                                    {
+                                        // Remove The Money From The Player
+                                        Banking.API.RemoveCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId(), price);
+                                    }
+                                    else
+                                    {
+                                        // In Case Price Is 0 / Free
+                                        Misc.Msg("[Shop] [OnInteractButtonPressed()] Price Is 0");
+                                    }
+                                }
+                                else
+                                {
+                                    Misc.Msg("[Shop] [OnInteractButtonPressed()] Not Enough Money");
+                                    SonsTools.ShowMessage("You don't have enough money to buy this item, please deposit into an ATM");
+                                    return;
+                                }
+                            } 
+                            else
+                            {
+                                Misc.Msg("[Shop] [OnInteractButtonPressed()] MyCash Is Null");
+                                SonsTools.ShowMessage("Something went wrong, please try again");
+                                return;
+                            }
+
+                            // Add The Item To The Inventory And Remove It From The Shop
+                            LocalPlayer.Inventory.AddItem(StationItems[stationListPlacee], 1, true);  // Add the item to the inventory
+                            StationQuantities[stationListPlacee] = (StationQuantities[stationListPlacee] - 1);  // Remove 1 from the quantity
+                            RefreshStationQuantityUi((int)stationNumberActive);
+                        }
+                        else if (StationQuantities[stationListPlacee] == 1)
+                        {
+                            // Check If Player Has Enough Money
+                            int? myCash = Banking.API.GetCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId());  // Get the cash of the my player
+                            int price = StationPrices[stationListPlacee];  // Get the price of the item
+                            if (myCash != null)
+                            {
+                                if (myCash >= price)  // Check if the player has enough money
+                                {
+                                    if (price > 0)  // Check if the price is more than 0 / Free
+                                    {
+                                        // Remove The Money From The Player
+                                        Banking.API.RemoveCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId(), price);
+                                    }
+                                    else
+                                    {
+                                        // In Case Price Is 0 / Free
+                                        Misc.Msg("[Shop] [OnInteractButtonPressed()] Price Is 0");
+                                    }
+                                }
+                                else
+                                {
+                                    Misc.Msg("[Shop] [OnInteractButtonPressed()] Not Enough Money");
+                                    SonsTools.ShowMessage("You don't have enough money to buy this item, please deposit into an ATM");
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                Misc.Msg("[Shop] [OnInteractButtonPressed()] MyCash Is Null");
+                                SonsTools.ShowMessage("Something went wrong, please try again");
+                                return;
+                            }
+
+                            // In Case Of Last Item [We want to do extra stuff]
+                            LocalPlayer.Inventory.AddItem(StationItems[stationListPlacee], 1, true);  // Add the item to the inventory
+                            StationQuantities[stationListPlacee] = (StationQuantities[stationListPlacee] - 1);  // Remove 1 from the quantity
+
+                            // Set StationItem To itemId 0 so item will be removed on refresh of ui
+                            StationItems[stationListPlacee] = 0;
+
+                            // Set StationPrice To 0
+                            StationPrices[stationListPlacee] = 0;
+
+                            RefreshStationUi();  // Refresh the UI
+                        }
+                        else
+                        {
+                            // In Case Quantity Is 0 or below
+                            Misc.Msg("[Shop] [OnInteractButtonPressed()] Quantity Is 0 or below");
+                            SonsTools.ShowMessage("There is no item to buy");
+                            return;
+                        }
+
+                    }
+                    else
+                    {
+                        // In Case The Item Is Not An Inventory Item
+                        IHeldOnlyItemController heldController = LocalPlayer.Inventory.HeldOnlyItemController;
+                        if (heldController != null)
+                        {
+                            if (heldController.HasItem)
+                            {
+                                Misc.Msg("[Shop] [OnInteractButtonPressed()] HeldController Has Item");
+                                SonsTools.ShowMessage("You can't take this item, drop item in hand");
+                                return;
+                            }
+                            if (StationQuantities[stationListPlacee] > 1)
+                            {
+                                // Check If Player Has Enough Money
+                                int? myCash = Banking.API.GetCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId());  // Get the cash of the my player
+                                int price = StationPrices[stationListPlacee];  // Get the price of the item
+                                if (myCash != null)
+                                {
+                                    if (myCash >= price)  // Check if the player has enough money
+                                    {
+                                        if (price > 0)  // Check if the price is more than 0 / Free
+                                        {
+                                            // Remove The Money From The Player
+                                            Banking.API.RemoveCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId(), price);
+                                        }
+                                        else
+                                        {
+                                            // In Case Price Is 0 / Free
+                                            Misc.Msg("[Shop] [OnInteractButtonPressed()] Price Is 0");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Misc.Msg("[Shop] [OnInteractButtonPressed()] Not Enough Money");
+                                        SonsTools.ShowMessage("You don't have enough money to buy this item, please deposit into an ATM");
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    Misc.Msg("[Shop] [OnInteractButtonPressed()] MyCash Is Null");
+                                    SonsTools.ShowMessage("Something went wrong, please try again");
+                                    return;
+                                }
+                                heldController.Lift(StationItems[stationListPlacee], null);  // Lift the item / Add it to the hand
+                                StationQuantities[stationListPlacee] = (StationQuantities[stationListPlacee] - 1);  // Remove 1 from the quantity
+                                RefreshStationQuantityUi((int)stationNumberActive);
+                            }
+                            else if (StationQuantities[stationListPlacee] == 1)
+                            {
+                                // Check If Player Has Enough Money
+                                int? myCash = Banking.API.GetCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId());  // Get the cash of the my player
+                                int price = StationPrices[stationListPlacee];  // Get the price of the item
+                                if (myCash != null)
+                                {
+                                    if (myCash >= price)  // Check if the player has enough money
+                                    {
+                                        if (price > 0)  // Check if the price is more than 0 / Free
+                                        {
+                                            // Remove The Money From The Player
+                                            Banking.API.RemoveCash(Banking.API.GetCurrencyType.SteamID, Banking.API.GetLocalPlayerId(), price);
+                                        }
+                                        else
+                                        {
+                                            // In Case Price Is 0 / Free
+                                            Misc.Msg("[Shop] [OnInteractButtonPressed()] Price Is 0");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Misc.Msg("[Shop] [OnInteractButtonPressed()] Not Enough Money");
+                                        SonsTools.ShowMessage("You don't have enough money to buy this item, please deposit into an ATM");
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    Misc.Msg("[Shop] [OnInteractButtonPressed()] MyCash Is Null");
+                                    SonsTools.ShowMessage("Something went wrong, please try again");
+                                    return;
+                                }
+
+                                heldController.Lift(StationItems[stationListPlacee], null);  // Lift the item / Add it to the hand
+                                StationQuantities[stationListPlacee] = (StationQuantities[stationListPlacee] - 1);  // Remove 1 from the quantity
+
+                                // Set StationItem To itemId 0 so item will be removed on refresh of ui
+                                StationItems[stationListPlacee] = 0;
+                                // Set StationPrice To 0
+                                StationPrices[stationListPlacee] = 0;
+
+                                RefreshStationUi();  // Refresh the UI
+                            }
+                            else
+                            {
+                                // In Case Quantity Is 0 or below
+                                Misc.Msg("[Shop] [OnInteractButtonPressed()] Quantity Is 0 or below");
+                                SonsTools.ShowMessage("There is no item to buy");
+                                return;
+                            }
+
+                        }
+                        else
+                        {
+                            Misc.Msg("[Shop] [OnInteractButtonPressed()] HeldController Is Null");
+                            SonsTools.ShowMessage("You can't buy this item");
+                            return;
+                        }
+                    }
+
                     break;
                 case "Admin":
                     Misc.Msg($"Admin Item, StationNumber: {stationNumberActive}");
