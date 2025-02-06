@@ -4,7 +4,6 @@ using Sons.Crafting.Structures;
 using SonsSdk;
 using SonsSdk.Building;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Banking.Structure
 {

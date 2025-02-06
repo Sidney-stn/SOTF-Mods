@@ -1,6 +1,8 @@
 ﻿using UnityEngine.UI;
 using UnityEngine;
 using Sons.Gui;
+using Sons.Input;
+using TheForest.Utils;
 
 namespace Banking.UI
 {
@@ -15,6 +17,8 @@ namespace Banking.UI
         internal static InputField withdrawInput = null;
         internal static Text cashText = null;
         internal static Text playerName = null;
+        public static Sons.Input.InputCursorState inputCursorState = null;
+        public static Sons.Input.InputActionMapState inputActionMapState = null;
 
         internal static void SetupUI()
         {
@@ -31,10 +35,7 @@ namespace Banking.UI
                 Action closeUiAction = () =>
                 {
                     CloseUI();
-                    if (PauseMenu._instance != null)
-                    {
-                        PauseMenu._instance.Close();
-                    }
+
                 };
                 closeBtn.onClick.AddListener(closeUiAction);
             }
@@ -57,6 +58,19 @@ namespace Banking.UI
                 };
                 withdrawBtn.onClick.AddListener(withdrawAction);
             }
+            if (inputCursorState == null)
+            {
+                inputCursorState = AddUI.AddComponent<InputCursorState>();
+                inputCursorState._enabled = true;
+                inputCursorState._hardwareCursor = true;
+                inputCursorState._priority = 100;
+            }
+            if (inputActionMapState == null)
+            {
+                inputActionMapState = AddUI.AddComponent<InputActionMapState>();
+                inputActionMapState._applyState = InputState.Console;
+            }
+
             if (depositInput == null) { depositInput = AddUI.transform.FindDeepChild("DepositAmount").GetComponent<InputField>(); }  // Deposit Input
             if (withdrawInput == null) { withdrawInput = AddUI.transform.FindDeepChild("WithdrawAmount").GetComponent<InputField>(); }  // Withdraw Input
 
@@ -78,7 +92,6 @@ namespace Banking.UI
             if (AddUI != null)
             {
                 if (Prefab.ActiveATM.activeAtm == null) { return; }
-                PauseMenu._instance.Open();
                 if (!AddUI.active) { AddUI.SetActive(true); }
             }
             if (cashText != null)
