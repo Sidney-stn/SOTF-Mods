@@ -120,7 +120,7 @@ namespace Shops.Mono
                     Misc.Msg("[Shop] [Start()] Add Item Placement Not Found");
                     return;
                 }
-                LinkUiElement addItemUi = CreateLinkUi(addItemPlacement, 1f, null, Assets.DepositIcon, null);
+                LinkUiElement addItemUi = CreateLinkUi(addItemPlacement, 1.5f, null, Assets.DepositIcon, null);
             }
 
             SetOwner(OwnerName, OwnerId);
@@ -298,31 +298,26 @@ namespace Shops.Mono
             }
             if (isPickup)
             {
+                // Destroy All Comonents
+                Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppArrayBase<Component> list = newPreview.GetComponents<Component>();
+                for (int i = 0; i < list.Length; i++)
+                {
+                    Component item = list[i];
+                    if (item.GetType() != typeof(Transform))
+                    {
+                        DestroyImmediate(item);
+                    }
+                }
                 Vector3 scale = Vector3.one;
                 switch (itemId)
                 {
                     case 78:  // Log
                         scale = new Vector3(0.2f, 0.2f, 0.2f);
-                        // Disable Physics and Gravity
-                        var rb = newPreview.GetComponent<Rigidbody>();
-                        if (rb != null) { rb.useGravity = false; rb.isKinematic = true; }
-                        // Remove BoltEntity
-                        var be = newPreview.GetComponent<BoltEntity>();
-                        if (Banking.API.GetHostMode() == Banking.API.SimpleSaveGameType.Multiplayer || Banking.API.GetHostMode() == Banking.API.SimpleSaveGameType.MultiplayerClient)
-                        {
-                            if (be != null) { be.Entity.Detach(); }
-                        }
-                        if (be != null) { DestroyImmediate(be); }
                         RemoveChildren(newPreview, true);
                         Misc.Msg("[Shop] [SetStationItem()] Log");
                         break;
                     case 395:  // Log Plank
                         scale = new Vector3(0.2f, 0.2f, 0.2f);
-
-                        // Disable Physics and Gravity
-                        var rib = newPreview.GetComponent<Rigidbody>();
-                        if (rib != null) { rib.useGravity = false; rib.isKinematic = true; }
-
                         RemoveChildren(newPreview, false, true, "LogHalfAModel");
                         Misc.Msg("[Shop] [SetStationItem()] Log Plank");
                         break;
@@ -332,17 +327,6 @@ namespace Shops.Mono
                         break;
                     default:
                         scale = new Vector3(0.5f, 0.5f, 0.5f);
-                        // Remove the bolt entity
-                        var bEntity = newPreview.GetComponent<BoltEntity>();
-                        if (Banking.API.GetHostMode() == Banking.API.SimpleSaveGameType.Multiplayer || Banking.API.GetHostMode() == Banking.API.SimpleSaveGameType.MultiplayerClient)
-                        {
-                            if (bEntity != null) { bEntity.Entity.Detach(); }
-                        }
-                        if (bEntity != null) { DestroyImmediate(bEntity); }
-
-                        // Disable Physics and Gravity
-                        var rbo = newPreview.GetComponent<Rigidbody>();
-                        if (rbo != null) { rbo.useGravity = false; rbo.isKinematic = true; }
                         break;
                 }
                 newPreview.transform.localScale = scale;
@@ -386,17 +370,21 @@ namespace Shops.Mono
 
         public void SetOwner(string ownerName, string ownerId)
         {
+            if (ownerShopText == null) { return; }
             OwnerName = ownerName;
             OwnerId = ownerId;
-            ownerShopText.text = $"{ownerName}\nShop";
+            string displayOwnerName = ownerName?.Length > 14 ? ownerName[..14] : ownerName;
+            ownerShopText.text = $"{displayOwnerName}\nShop";
         }
 
-        private void SetOwnerText(string ownerName)
+        public void SetOwnerText(string ownerName)
         {
-            ownerShopText.text = $"{ownerName}\nShop";
+            if (ownerShopText == null) { return; }
+            string displayOwnerName = ownerName?.Length > 14 ? ownerName[..14] : ownerName;
+            ownerShopText.text = $"{displayOwnerName}\nShop";
         }
 
-        private LinkUiElement CreateLinkUi(GameObject toAddLinkUiOn, float maxDistance, Texture? texture, Texture2D? texture2D, Vector3? worldSpaceOffset, string elementId = "screen.take")
+        internal LinkUiElement CreateLinkUi(GameObject toAddLinkUiOn, float maxDistance, Texture? texture, Texture2D? texture2D, Vector3? worldSpaceOffset, string elementId = "screen.take")
         {
             Vector3 _worldOffset = worldSpaceOffset ?? new Vector3(0, (float)0.2, 0);
             LinkUiElement linkUiAdd = toAddLinkUiOn.AddComponent<LinkUiElement>();

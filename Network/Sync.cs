@@ -245,27 +245,27 @@ namespace Shops.Network
 
             public override void OnReceived()
             {
-                Misc.NetLog("Recived Network SyncShop Event");
+                Misc.NetLog("Recived Network SyncShopList Event");
                 if (Banking.API.GetHostMode() == Banking.API.SimpleSaveGameType.SinglePlayer)
                 {
-                    Misc.NetLog("[SyncShop] [OnReceived()] Skipped Reciving Network Event On SinglePlayer");
+                    Misc.NetLog("[SyncShopList] [OnReceived()] Skipped Reciving Network Event On SinglePlayer");
                     return;
                 }
                 if (Prefab.SingleShop.gameObjectWithComps == null)
                 {
-                    Misc.NetLog("[SyncShop] [OnReceived()] Shop Prefab has not been created yet, skipped");
+                    Misc.NetLog("[SyncShopList] [OnReceived()] Shop Prefab has not been created yet, skipped");
                     return;
                 }
                 if (string.IsNullOrEmpty(Banking.API.GetLocalPlayerId()))
                 {
-                    Misc.NetLog("[SyncShop] [OnReceived()] Could Not Get My SteamId, Cant Be Sure Who Has The Shop, Skipped");
+                    Misc.NetLog("[SyncShopList] [OnReceived()] Could Not Get My SteamId, Cant Be Sure Who Has The Shop, Skipped");
                     return;
                 }
                 else
                 {
                     if (Sender == Banking.API.GetLocalPlayerId())
                     {
-                        Misc.NetLog("[SyncShop] [OnReceived()] Not Creating Shop Over Network When Its From My SteamID, skipped");
+                        Misc.NetLog("[SyncShopList] [OnReceived()] Not Creating Shop Over Network When Its From My SteamID, skipped");
                         return;
                     }
                 }
@@ -273,18 +273,18 @@ namespace Shops.Network
                 {
                     if (ToSteamId != Banking.API.GetLocalPlayerId())
                     {
-                        Misc.NetLog("[SyncShop] [OnReceived()] Not Creating Shop Over Network When Its Not For Me, skipped");
+                        Misc.NetLog("[SyncShopList] [OnReceived()] Not Creating Shop Over Network When Its Not For Me, skipped");
                         return;
                     }
                 }
                 // Extra Shop Sesific Checks
                 if (string.IsNullOrEmpty(UniqueId) || UniqueId == "0")
                 {
-                    Misc.NetLog("[SyncShop] [OnReceived()] UniqueId Is Null Or Empty, skipped");
+                    Misc.NetLog("[SyncShopList] [OnReceived()] UniqueId Is Null Or Empty, skipped");
                     return;
                 }
 
-                Misc.NetLog($"[SyncShop] [OnReceived()] Syncing Prefab From Network Event");
+                Misc.NetLog($"[SyncShopList] [OnReceived()] Syncing Prefab From Network Event");
                 // Check If Shop Exists
                 if (Prefab.SingleShop.DoesShopWithUniqueIdExist(UniqueId))
                 {
