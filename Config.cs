@@ -18,12 +18,12 @@ internal static class Config
 
         DebugLoggingIngameBanking = IngameBankingCategory.CreateEntry(
             "enable_logging_advanced_ingameBanking",
-            true,
+            false,
             "Enable Debug Logs",
             "Enables SimpleNetworkEvents Debug Logs of the game to the console.");
         NetworkDebugIngameBanking = IngameBankingCategory.CreateEntry(
             "enable_logging_advanced_network_ingameBanking",
-            true,
+            false,
             "Enable Extra Network Debug Logs",
             "Enables Extra Network Debug Logs of the game to the console.");
 

@@ -13,6 +13,8 @@
 #### Where does Banking Mod Work?
 - This mod works **only** in any sort of multiplayer game. It will **not** work in singleplayer.
 
+#### How to make ATM:
+- Open normal crafting book, find the ATM in the crafting book, and build it.
 
 ### For Modders:
 #### Commands: (Note: These are most for testing, or adding cash to player)
@@ -210,3 +212,7 @@ public void OnJoinWorld()
 // The built in OnGameStart method can cause issues with the mod, as it gets called before the player is ready.
 // So, if you have any code that needs to be run when the player joins the world, use the OnJoinWorld event.
 ```
+
+### ATM Images:
+![ATM2](https://github.com/user-attachments/assets/d4ad421f-176e-4bf4-a594-4abb6541d4a3)
+![Img](https://github.com/user-attachments/assets/9b597dca-d462-4eb8-ba9c-92d3b915e539)
