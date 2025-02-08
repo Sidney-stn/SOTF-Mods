@@ -19,12 +19,12 @@ public static class Config
 
         DebugLoggingIngameShops = IngameShopsCategory.CreateEntry(
             "enable_logging_advanced_ingameShops",
-            true,
+            false,
             "Enable Debug Logs",
             "Enables SimpleNetworkEvents Debug Logs of the game to the console.");
         NetworkDebugIngameShops = IngameShopsCategory.CreateEntry(
             "enable_logging_advanced_network_ingameShops",
-            true,
+            false,
             "Enable Extra Network Debug Logs",
             "Enables Extra Network Debug Logs of the game to the console.");
 
@@ -65,7 +65,7 @@ public static class Config
 
         ExtremeDebugLogging = IngameShopsCategory.CreateEntry(
             "enable_logging_extreme_advanced_ingamesign",
-            true,
+            false,
             "Enable Super Detailed Debug Logs",
             "Enables Super Debug Logs of the game to the console.");
 
