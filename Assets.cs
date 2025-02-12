@@ -1,0 +1,13 @@
+﻿using SonsSdk.Attributes;
+using UnityEngine;
+
+namespace WirelessSignals
+{
+    [AssetBundle("wireless")]
+    public static class Assets
+    {
+        [AssetReference("TransmitterSwitch")]
+        public static GameObject TransmitterSwitch { get; set; }
+
+    }
+}
