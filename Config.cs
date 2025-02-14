@@ -8,12 +8,19 @@ public static class Config
     public static ConfigCategory Category { get; private set; }
 
     public static ConfigEntry<bool> DebugLogging { get; private set; }
+    public static ConfigEntry<bool> VisualRayCast { get; private set; }
 
     public static KeybindConfigEntry InteractKey { get; private set; }
 
     public static void Init()
     {
         Category = ConfigSystem.CreateCategory("wirelessSignals", "WirelessSignals");
+
+        DebugLogging = Category.CreateEntry(
+            "enable_visual_raycast_wireless",
+            false,
+            "Enable Visual Raycast",
+            "Shows RayCast Lines");
 
         DebugLogging = Category.CreateEntry(
             "enable_logging_wireless",

@@ -34,26 +34,47 @@ namespace WirelessSignals.UI
         internal static void TryInteractWithUi()
         {
             if (!LocalPlayer.IsInWorld || LocalPlayer.IsInInventory || PauseMenu.IsActive) { return; }
-            Transform transform = LocalPlayer._instance._mainCam.transform;
-            RaycastHit raycastHit;
-            Physics.Raycast(transform.position, transform.forward, out raycastHit, 5f, LayerMask.GetMask(new string[]
-            {
-                "Default"
-            }));
-            if (raycastHit.collider == null) { return; }
-            if (raycastHit.collider.transform.root == null) { return; }
-            if (string.IsNullOrEmpty(raycastHit.collider.transform.root.name)) { return; }
-            //Misc.Msg($"Hit: {raycastHit.collider.transform.root.name}");
-            if (raycastHit.collider.transform.root.name.Contains("TransmitterSwitch"))
-            {
-                GameObject open = raycastHit.collider.transform.root.gameObject;
-                Mono.TransmitterSwitch controller = open.GetComponent<TransmitterSwitch>();
-                if (controller != null)
-                {
-                    controller.Toggle();
-                }
-                else { Misc.Msg("Controller is null!"); }
 
+            Transform transform = LocalPlayer._instance._mainCam.transform;
+            float range = 5f; // How far to check
+            float squareSize = 1f; // Size of the square to check
+            int gridDensity = 3; // Number of rays per side (3x3 grid)
+
+            for (int x = 0; x < gridDensity; x++)
+            {
+                for (int y = 0; y < gridDensity; y++)
+                {
+                    // Calculate offset from center
+                    float xOffset = (x - (gridDensity - 1) / 2f) * (squareSize / (gridDensity - 1));
+                    float yOffset = (y - (gridDensity - 1) / 2f) * (squareSize / (gridDensity - 1));
+
+                    // Calculate start position with offset
+                    Vector3 rayStart = transform.position +
+                                     transform.right * xOffset +
+                                     transform.up * yOffset;
+
+                    RaycastHit raycastHit;
+                    if (Physics.Raycast(rayStart, transform.forward, out raycastHit, range, LayerMask.GetMask("Default")))
+                    {
+                        if (raycastHit.collider != null &&
+                            raycastHit.collider.transform.root != null &&
+                            !string.IsNullOrEmpty(raycastHit.collider.transform.root.name) &&
+                            raycastHit.collider.transform.root.name.Contains("TransmitterSwitch"))
+                        {
+                            GameObject open = raycastHit.collider.transform.root.gameObject;
+                            Mono.TransmitterSwitch controller = open.GetComponent<TransmitterSwitch>();
+                            if (controller != null)
+                            {
+                                controller.Toggle();
+                                return; // Exit after first hit is found and toggled
+                            }
+                            else
+                            {
+                                Misc.Msg("Controller is null!");
+                            }
+                        }
+                    }
+                }
             }
         }
     }
