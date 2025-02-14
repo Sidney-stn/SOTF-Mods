@@ -5,6 +5,7 @@ using TheForest.Utils;
 using UnityEngine.UI;
 using UnityEngine;
 using WirelessSignals.Prefab;
+using SUI;
 
 namespace WirelessSignals;
 
@@ -35,13 +36,17 @@ public class WirelessSignals : SonsMod
         // This is for stuff like UI creation, event registration etc.
         WirelessSignalsUi.Create();
 
-        // Add in-game settings ui for your mod.
-        // SettingsRegistry.CreateSettings(this, null, typeof(Config));
+        // Adding Ingame CFG
+        SettingsRegistry.CreateSettings(this, null, typeof(Config));
     }
 
     protected override void OnGameStart()
     {
         // This is called once the player spawns in the world and gains control.
+
+        // Adding Quit Event / Get HostMode Events
+        SonsSdk.SdkEvents.OnInWorldUpdate.Subscribe(Misc.CheckHostModeOnWorldUpdate);
+        Misc.OnHostModeGotten += Misc.OnHostModeGottenCorrectly;
 
     }
 
@@ -51,6 +56,18 @@ public class WirelessSignals : SonsMod
         Misc.OnHostModeGotten -= Misc.OnHostModeGottenCorrectly;
         Misc.dialogManager.QuitGameConfirmDialog.remove_OnOption1Clicked((Il2CppSystem.Action)OnLeaveWorld);
     }
+
+    internal static void OnEnterWorld()
+    {
+        Misc.Msg("OnEnterWorld");
+        Misc.Msg("[OnEnterWorld] Creating WirelessTransmitterSwitch");
+        transmitterSwitch = new WirelessTransmitterSwitch();
+        transmitterSwitch.Setup();
+        Misc.Msg("[OnEnterWorld] Complete - Creating WirelessTransmitterSwitch");
+    }
+
+    internal static WirelessTransmitterSwitch transmitterSwitch;
+
 
     [DebugCommand("wireless")]
     private void WirelessCmd(string args)
@@ -70,6 +87,24 @@ public class WirelessSignals : SonsMod
             SonsTools.ShowMessage("Raycast Hit Nothing", 5);
             return;
         }
-        GameObject.Instantiate(Assets.TransmitterSwitch, raycastHit.point + Vector3.up * 0.1f, LocalPlayer.Transform.rotation);
+        switch (args)
+        {
+            case "spawn":
+                //GameObject.Instantiate(Assets.TransmitterSwitch, raycastHit.point + Vector3.up * 0.1f, LocalPlayer.Transform.rotation);
+                Misc.Msg("[WirelessCmd] Spawning - WirelessTransmitterSwitch");
+                var parameters = new Prefab.TransmitterSwitchSpawnParameters
+                {
+                    position = raycastHit.point + Vector3.up * 0.1f,
+                    rotation = LocalPlayer.Transform.rotation,
+                    uniqueId = null,
+                    channel = null,
+                    isOn = false
+                };
+                Misc.Msg("[WirelessCmd] Spawning - WirelessTransmitterSwitch Parameters Created");
+                transmitterSwitch.Spawn(parameters);
+                Misc.Msg("[WirelessCmd] Complete - Spawning WirelessTransmitterSwitch");
+                break;
+        }
+        
     }
 }

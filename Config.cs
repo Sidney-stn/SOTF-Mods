@@ -1,4 +1,5 @@
 using RedLoader;
+using SonsSdk;
 
 namespace WirelessSignals;
 
@@ -7,6 +8,8 @@ public static class Config
     public static ConfigCategory Category { get; private set; }
 
     public static ConfigEntry<bool> DebugLogging { get; private set; }
+
+    public static KeybindConfigEntry InteractKey { get; private set; }
 
     public static void Init()
     {
@@ -17,6 +20,17 @@ public static class Config
             false,
             "Enable Debug Logs",
             "Enables Debug Logs of the game to the console.");
+
+        InteractKey = Category.CreateKeybindEntry(
+            "menu_key_shops",
+            "e",
+            "Interact Key",
+            "Interact Key (DEFAULT E).");
+        InteractKey.DefaultValue = "e";
+        InteractKey.Notify(() =>
+        {
+            UI.LinkUi.TryInteractWithUi();
+        });
     }
 
     // Same as the callback in "CreateSettings". Called when the settings ui is closed.

@@ -1,15 +1,19 @@
-﻿using UnityEngine;
+﻿using SonsSdk;
+using UnityEngine;
 
 namespace WirelessSignals.Prefab
 {
     internal abstract class PrefabBase
     {
+        internal virtual GameObject gameObjectWithComps { get; set; }
+        public virtual Dictionary<string, GameObject> spawnedGameObjects { get; set; } = new Dictionary<string, GameObject>(); // UniqueId, GameObject
+
         internal virtual GameObject SetupPrefab(GameObject goToInstantiate, List<Il2CppSystem.Type> componentsToAdd, Action<GameObject> configureComponents = null)  // Returns Complete Prefab Thas Setup
         {
             if (goToInstantiate == null) { throw new ArgumentNullException("[SetupPrefab] goToInstantiate Is Null!"); }
 
-            GameObject gameObjectWithComps = GameObject.Instantiate(goToInstantiate);
-            gameObjectWithComps.hideFlags = HideFlags.HideAndDontSave;
+            gameObjectWithComps = GameObject.Instantiate(goToInstantiate);
+            gameObjectWithComps.HideAndDontSave().DontDestroyOnLoad();
 
             // Add components using IL2CPP types
             if (componentsToAdd != null)
@@ -23,15 +27,16 @@ namespace WirelessSignals.Prefab
             // Configure components if provided
             configureComponents?.Invoke(gameObjectWithComps);
 
+
             return gameObjectWithComps;
 
         }
 
         internal abstract void ConfigureComponents(GameObject obj);
 
-        internal abstract void Spawn(Vector3 pos, Quaternion rot);
+        internal abstract GameObject Spawn(SpawnParameters parameters);
 
-        internal virtual bool DoesUniqueIdExist(Dictionary<string, GameObject> spawnedGameObjects, string uniqueId)
+        internal virtual bool DoesUniqueIdExist(string uniqueId)
         {
             if (spawnedGameObjects.ContainsKey(uniqueId))
             {
@@ -44,7 +49,7 @@ namespace WirelessSignals.Prefab
             }
         }
 
-        internal virtual GameObject FindByUniqueId(Dictionary<string, GameObject> spawnedGameObjects, string uniqueId)
+        internal virtual GameObject FindByUniqueId(string uniqueId)
         {
             if (spawnedGameObjects.TryGetValue(uniqueId, out GameObject sign))
             {
@@ -56,5 +61,6 @@ namespace WirelessSignals.Prefab
                 return null;
             }
         }
+        internal abstract void Setup();
     }
 }

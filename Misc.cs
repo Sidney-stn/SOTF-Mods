@@ -17,7 +17,7 @@ namespace WirelessSignals
         {
             if (Config.DebugLogging.Value)
             {
-                RLog.Msg(msg);
+                RLog.Msg($"[WirelessSignals] {msg}");
             }
 
         }
@@ -91,6 +91,8 @@ namespace WirelessSignals
                 Misc.Msg("Dialog Manager is NOT Found!");
             }
             AddOnQuitWorld();
+
+            WirelessSignals.OnEnterWorld();
             //Network.Manager.RegisterEvents();
 
             //// Process all deferred load data

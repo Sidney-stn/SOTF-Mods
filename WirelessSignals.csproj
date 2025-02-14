@@ -83,6 +83,9 @@
     <Reference Include="com.rlabrecque.steamworks.net">
       <HintPath>$(GameDir)\_RedLoader\Game\com.rlabrecque.steamworks.net.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AnimationModule">
+      <HintPath>$(GameDir)\_RedLoader\Game\UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Update="manifest.json">
