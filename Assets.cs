@@ -9,5 +9,8 @@ namespace WirelessSignals
         [AssetReference("TransmitterSwitch")]
         public static GameObject TransmitterSwitch { get; set; }
 
+        [AssetReference("Reciver")]
+        public static GameObject Reciver { get; set; }
+        
     }
 }

@@ -22,7 +22,6 @@ namespace WirelessSignals.Prefab
         {
             var mainComponent = obj.GetComponent<Mono.TransmitterSwitch>();
             if (mainComponent == null) { throw new InvalidOperationException("[TransmitterSwitch] mainComponent Is Null!"); }
-            mainComponent.channel = null;
             mainComponent.isOn = null;
             mainComponent.uniqueId = null;
             mainComponent.isSetupPrefab = true;
@@ -80,7 +79,7 @@ namespace WirelessSignals.Prefab
     internal class TransmitterSwitchSpawnParameters : SpawnParameters
     {
         public bool raiseNetworkEvent = false;
-        public int? channel = null;
         public bool? isOn = null;
+        public HashSet<string> linkedUniqueIdsRecivers = null;
     }
 }

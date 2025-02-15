@@ -64,12 +64,19 @@ public class WirelessSignals : SonsMod
         transmitterSwitch = new WirelessTransmitterSwitch();
         transmitterSwitch.Setup();
         Misc.Msg("[OnEnterWorld] Complete - Creating WirelessTransmitterSwitch");
+        Misc.Msg("[OnEnterWorld] Creating Reciver");
+        reciver = new Reciver();
+        reciver.Setup();
+        Misc.Msg("[OnEnterWorld] Complete - Creating Reciver");
+
     }
 
     internal static WirelessTransmitterSwitch transmitterSwitch;
+    internal static Reciver reciver;
 
 
     [DebugCommand("wireless")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
     private void WirelessCmd(string args)
     {
         Misc.Msg("[WirelessCmd] Command");
@@ -90,7 +97,7 @@ public class WirelessSignals : SonsMod
         }
         switch (args)
         {
-            case "spawn":
+            case "spawn1":
                 //GameObject.Instantiate(Assets.TransmitterSwitch, raycastHit.point + Vector3.up * 0.1f, LocalPlayer.Transform.rotation);
                 Misc.Msg("[WirelessCmd] Spawning - WirelessTransmitterSwitch");
                 var parameters = new Prefab.TransmitterSwitchSpawnParameters
@@ -98,12 +105,24 @@ public class WirelessSignals : SonsMod
                     position = raycastHit.point + Vector3.up * 0.1f,
                     rotation = LocalPlayer.Transform.rotation,
                     uniqueId = null,
-                    channel = null,
                     isOn = false
                 };
                 Misc.Msg("[WirelessCmd] Spawning - WirelessTransmitterSwitch Parameters Created");
                 transmitterSwitch.Spawn(parameters);
                 Misc.Msg("[WirelessCmd] Complete - Spawning WirelessTransmitterSwitch");
+                break;
+            case "spawn2":
+                Misc.Msg("[WirelessCmd] Spawning - WirelessTransmitterSwitch");
+                var reciverParameters = new Prefab.ReciverSpawnParameters
+                {
+                    position = raycastHit.point + Vector3.up * 0.1f,
+                    rotation = LocalPlayer.Transform.rotation,
+                    uniqueId = null,
+                    isOn = false
+                };
+                Misc.Msg("[WirelessCmd] Spawning - Reciver Parameters Created");
+                reciver.Spawn(reciverParameters);
+                Misc.Msg("[WirelessCmd] Complete - Spawning Reciver");
                 break;
             case "rml":
                 Misc.Msg("[WirelessCmd] Removing RayCast Lines");

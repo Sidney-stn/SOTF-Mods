@@ -8,11 +8,11 @@ namespace WirelessSignals.Mono
     internal class TransmitterSwitch : MonoBehaviour
     {
         internal string uniqueId;
-        internal int? channel;
         internal bool? isOn = false;
         internal bool isSetupPrefab;
         private Animator _animController = null;
         private LinkUiElement _linkUi = null;
+        internal HashSet<string> linkedUniqueIdsRecivers = new HashSet<string>();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         private void Start()
@@ -93,13 +93,6 @@ namespace WirelessSignals.Mono
             }
         }
 
-        public void SetChannel(int? channel)
-        {
-            this.channel = channel;
-
-            // Raise Network Event
-        }
-
         public void Toggle()
         {
             Misc.Msg("[TransmitterSwitch] [Toggle] Toggling");
@@ -113,6 +106,7 @@ namespace WirelessSignals.Mono
                     if (_animController != null) { _animController.SetTrigger("TurnOff"); }
                     isOn = false;
                     Misc.Msg("[TransmitterSwitch] [Toggle] Turned Off");
+
                 }
                 else
                 {
@@ -120,6 +114,20 @@ namespace WirelessSignals.Mono
                     if (_animController != null) { _animController.SetTrigger("TurnOn"); }
                     isOn = true;
                     Misc.Msg("[TransmitterSwitch] [Toggle] Turned On");
+                }
+                // Update All Recivers Linked
+                foreach (var reciverUniqueId in linkedUniqueIdsRecivers)
+                {
+                    var reciver = WirelessSignals.reciver.FindByUniqueId(reciverUniqueId);
+                    if (reciver)
+                    {
+                        reciver.GetComponent<Reciver>().SetState((bool)isOn);  // Set Reciver State (bool) should always work since the state is set above and can never be null
+                        Misc.Msg("[TransmitterSwitch] [Toggle] Reciver Updated");
+                    }
+                    else
+                    {
+                        Misc.Msg("[TransmitterSwitch] [Toggle] Reciver Not Found");
+                    }
                 }
             }
         }

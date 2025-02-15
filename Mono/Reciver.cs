@@ -1,0 +1,92 @@
+﻿
+using RedLoader;
+using Sons.Gui.Input;
+using UnityEngine;
+using WirelessSignals.UI;
+
+namespace WirelessSignals.Mono
+{
+    [RegisterTypeInIl2Cpp]
+    internal class Reciver : MonoBehaviour
+    {
+        internal string uniqueId;
+        internal bool? isOn = false;
+        internal bool isSetupPrefab;
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
+        private void Start()
+        {
+            if (isSetupPrefab)
+            {
+                return;
+            }
+            if (uniqueId == null)
+            {
+                Misc.Msg("TransmitterSwitch: uniqueId is null! Shound Never be");
+            }
+
+            // Light
+            GameObject lights = transform.FindChild("Light").gameObject;
+
+            GameObject floorLight = lights.transform.FindChild("Floor").gameObject;
+            var floorLightInWorld = floorLight.GetComponentInChildren<Light>();
+            floorLightInWorld.intensity = 1000;
+            floorLightInWorld.range = 1;
+
+            GameObject bulbLight = lights.transform.FindChild("Bulb").gameObject;
+            var bulbLightInWorld = bulbLight.GetComponentInChildren<Light>();
+            bulbLightInWorld.intensity = 100000;
+            bulbLightInWorld.range = 0.1f;
+
+
+            if (isOn == true)
+            {
+                TurnOnLight();
+            }
+            else
+            {
+                TurnOffLight();
+            }
+
+
+        }
+
+        private void TurnOnLight()
+        {
+            GameObject lights = transform.FindChild("Light").gameObject;
+            if (lights != null)
+            {
+                lights.SetActive(true);
+            }
+            else
+            {
+                Misc.Msg("[TransmitterSwitch] [TurnOnLight] Can't Turn On Lights, Null!");
+            }
+        }
+        private void TurnOffLight()
+        {
+            GameObject lights = transform.FindChild("Light").gameObject;
+            if (lights != null)
+            {
+                lights.SetActive(false);
+            }
+            else
+            {
+                Misc.Msg("[TransmitterSwitch] [TurnOffLight] Can't Turn Off Lights, Null!");
+            }
+        }
+
+        public void SetState(bool state)
+        {
+            isOn = state;
+            if (state)
+            {
+                TurnOnLight();
+            }
+            else
+            {
+                TurnOffLight();
+            }
+        }
+    }
+}
