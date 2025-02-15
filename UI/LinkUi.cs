@@ -36,42 +36,96 @@ namespace WirelessSignals.UI
             if (!LocalPlayer.IsInWorld || LocalPlayer.IsInInventory || PauseMenu.IsActive) { return; }
 
             Transform transform = LocalPlayer._instance._mainCam.transform;
-            float range = 5f; // How far to check
-            float squareSize = 1f; // Size of the square to check
-            int gridDensity = 3; // Number of rays per side (3x3 grid)
+            float range = 5f;
+            float squareSize = 0.3f;
+            int gridDensity = 3;
 
+            Material blackMat = Assets.TransmitterSwitch.transform.GetChild(0).FindChild("Wire (418)").GetChild(0).GetComponent<MeshRenderer>().materials[0];
+            Material redMat = Assets.TransmitterSwitch.transform.GetChild(0).GetChild(16).GetChild(0).GetComponent<MeshRenderer>().materials[0];
+
+            // Create LineRenderers if visualization is enabled
+            List<LineRenderer> lineRenderers = new List<LineRenderer>();
+            if (Config.VisualRayCast.Value)
+            {
+                
+                GameObject lineContainer = new GameObject("RaycastLines");
+                Debug.RayCast.gameObjects.Add(lineContainer);
+
+                //lineContainer.transform.parent = transform;
+
+                // Create a LineRenderer for each ray
+                for (int i = 0; i < gridDensity * gridDensity; i++)
+                {
+                    GameObject lineObj = new GameObject($"RayLine_{i}");
+                    lineObj.transform.parent = lineContainer.transform;
+
+                    LineRenderer line = lineObj.AddComponent<LineRenderer>();
+                    line.material = redMat;
+                    line.startWidth = 0.01f;
+                    line.endWidth = 0.01f;
+                    line.positionCount = 2;
+
+                    lineRenderers.Add(line);
+                }
+            }
+
+            int lineIndex = 0;
             for (int x = 0; x < gridDensity; x++)
             {
                 for (int y = 0; y < gridDensity; y++)
                 {
-                    // Calculate offset from center
                     float xOffset = (x - (gridDensity - 1) / 2f) * (squareSize / (gridDensity - 1));
                     float yOffset = (y - (gridDensity - 1) / 2f) * (squareSize / (gridDensity - 1));
 
-                    // Calculate start position with offset
                     Vector3 rayStart = transform.position +
                                      transform.right * xOffset +
                                      transform.up * yOffset;
 
                     RaycastHit raycastHit;
-                    if (Physics.Raycast(rayStart, transform.forward, out raycastHit, range, LayerMask.GetMask("Default")))
+                    bool hitSomething = Physics.Raycast(rayStart, transform.forward, out raycastHit, range, LayerMask.GetMask("Default"));
+
+                    // Visualize raycast if enabled
+                    if (Config.VisualRayCast.Value)
                     {
-                        if (raycastHit.collider != null &&
-                            raycastHit.collider.transform.root != null &&
-                            !string.IsNullOrEmpty(raycastHit.collider.transform.root.name) &&
-                            raycastHit.collider.transform.root.name.Contains("TransmitterSwitch"))
+                        LineRenderer line = lineRenderers[lineIndex];
+                        line.SetPosition(0, rayStart);
+
+                        // Set end position based on whether we hit something
+                        if (hitSomething)
                         {
-                            GameObject open = raycastHit.collider.transform.root.gameObject;
-                            Mono.TransmitterSwitch controller = open.GetComponent<TransmitterSwitch>();
-                            if (controller != null)
-                            {
-                                controller.Toggle();
-                                return; // Exit after first hit is found and toggled
-                            }
-                            else
-                            {
-                                Misc.Msg("Controller is null!");
-                            }
+                            line.SetPosition(1, raycastHit.point);
+                            line.material = blackMat; // Green for hits
+                        }
+                        else
+                        {
+                            line.SetPosition(1, rayStart + transform.forward * range);
+                            line.material = redMat; // Red for misses
+                        }
+                        lineIndex++;
+                    }
+
+                    if (hitSomething &&
+                        raycastHit.collider != null &&
+                        raycastHit.collider.transform.root != null &&
+                        !string.IsNullOrEmpty(raycastHit.collider.transform.root.name) &&
+                        raycastHit.collider.transform.root.name.Contains("TransmitterSwitch"))
+                    {
+                        GameObject open = raycastHit.collider.transform.root.gameObject;
+                        Mono.TransmitterSwitch controller = open.GetComponent<TransmitterSwitch>();
+                        if (controller != null)
+                        {
+                            controller.Toggle();
+
+                            // Clean up line renderers before returning
+                            //if (Config.VisualRayCast.Value)
+                            //{
+                            //    GameObject.Destroy(lineRenderers[0].transform.parent.gameObject);
+                            //}
+                            return;
+                        }
+                        else
+                        {
+                            Misc.Msg("Controller is null!");
                         }
                     }
                 }

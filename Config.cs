@@ -16,11 +16,12 @@ public static class Config
     {
         Category = ConfigSystem.CreateCategory("wirelessSignals", "WirelessSignals");
 
-        DebugLogging = Category.CreateEntry(
+        VisualRayCast = Category.CreateEntry(
             "enable_visual_raycast_wireless",
             false,
             "Enable Visual Raycast",
             "Shows RayCast Lines");
+
 
         DebugLogging = Category.CreateEntry(
             "enable_logging_wireless",

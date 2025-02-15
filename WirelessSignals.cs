@@ -77,8 +77,9 @@ public class WirelessSignals : SonsMod
         RaycastHit raycastHit;
         Physics.Raycast(transform.position, transform.forward, out raycastHit, 25f, LayerMask.GetMask(new string[]
         {
-            "Terrain",
-            "Default"
+                "Terrain",
+                "Default",
+                "Prop"
         }));
         // Check If Raycast Hit Something
         if (raycastHit.collider == null)
@@ -103,6 +104,10 @@ public class WirelessSignals : SonsMod
                 Misc.Msg("[WirelessCmd] Spawning - WirelessTransmitterSwitch Parameters Created");
                 transmitterSwitch.Spawn(parameters);
                 Misc.Msg("[WirelessCmd] Complete - Spawning WirelessTransmitterSwitch");
+                break;
+            case "rml":
+                Misc.Msg("[WirelessCmd] Removing RayCast Lines");
+                Debug.RayCast.RemoveLines();
                 break;
         }
         

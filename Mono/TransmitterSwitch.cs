@@ -1,7 +1,6 @@
 ﻿using RedLoader;
 using Sons.Gui.Input;
 using UnityEngine;
-using WirelessSignals.UI;
 
 namespace WirelessSignals.Mono
 {
@@ -36,7 +35,7 @@ namespace WirelessSignals.Mono
             floorLightInWorld.range = 1;
 
             GameObject bulbLight = lights.transform.FindChild("Bulb").gameObject;
-            var bulbLightInWorld = floorLight.GetComponentInChildren<Light>();
+            var bulbLightInWorld = bulbLight.GetComponentInChildren<Light>();
             bulbLightInWorld.intensity = 100000;
             bulbLightInWorld.range = 0.1f;
 
