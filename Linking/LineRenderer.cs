@@ -11,7 +11,8 @@ namespace WirelessSignals.Linking
     {
         public bool shouldUpdateRun = false;
         public Dictionary<string, GameObject> hitObjects = new Dictionary<string, GameObject>();  // Last Hit Object
-        public List<GameObject> lineRenderers = new List<GameObject>();
+        //public List<GameObject> lineRenderers = new List<GameObject>();
+        public Dictionary<string, GameObject> lineRenderers = new Dictionary<string, GameObject>();  // ReciverUnqiueId, LineRenderer
         private Material lineMaterial;
         private UnityEngine.LineRenderer activeLineRenderer = null;
         private bool isRepairToolInHand = false;
@@ -47,6 +48,12 @@ namespace WirelessSignals.Linking
                     Misc.Msg("[LineRenderer] [HitReciver]: Reciver wirelessTransmitter is null"); 
                     Misc.Msg("[LineRenderer] [HitReciver]: Reciver unlinked");
                     SonsTools.ShowMessage("Reciver Successfully Unlinked");
+                    // Destory LineRenderer
+                    if (lineRenderers.ContainsKey(controller.uniqueId))
+                    {
+                        Destroy(lineRenderers[controller.uniqueId]);
+                        lineRenderers.Remove(controller.uniqueId);
+                    }
                 }
                 else  // Unlink Both Reciver And Transmitter
                 {
@@ -56,6 +63,12 @@ namespace WirelessSignals.Linking
                     transmitterController.UnlinkReciver(controller.uniqueId);
                     Misc.Msg("[LineRenderer] [HitReciver]: Reciver and Transmitter unlinked");
                     SonsTools.ShowMessage("Reciver Successfully Unlinked");
+                    // Destory LineRenderer
+                    if (lineRenderers.ContainsKey(controller.uniqueId))
+                    {
+                        Destroy(lineRenderers[controller.uniqueId]);
+                        lineRenderers.Remove(controller.uniqueId);
+                    }
                 }
                 return;
             }
@@ -83,7 +96,7 @@ namespace WirelessSignals.Linking
                         // Fix Linking In Case Something Have Gone Wrong
                         controller.linkedToTranmitterSwithUniqueId = transmitterController.uniqueId;
                     }
-                    CreateLineRenderer(activeLineRenderer.GetPosition(0), activeLineRenderer.GetPosition(1), true);
+                    CreateLineRenderer(activeLineRenderer.GetPosition(0), activeLineRenderer.GetPosition(1), true, controller.uniqueId);
                     shouldUpdateRun = false;
                     DestoryActiveLineRenderer();
                     return;
@@ -91,7 +104,7 @@ namespace WirelessSignals.Linking
                 else // Link Reciver
                 {
                     shouldUpdateRun = false;
-                    CreateLineRenderer(activeLineRenderer.GetPosition(0), activeLineRenderer.GetPosition(1), true);
+                    CreateLineRenderer(activeLineRenderer.GetPosition(0), activeLineRenderer.GetPosition(1), true, controller.uniqueId);
                     DestoryActiveLineRenderer();
                     transmitterController.LinkReciver(controller.uniqueId);
                     controller.Link(transmitterController.uniqueId);
@@ -130,11 +143,10 @@ namespace WirelessSignals.Linking
                 shouldUpdateRun = false;
                 DestoryActiveLineRenderer();
                 hitObjects.Clear(); // Clear the stored hit objects
-                hitObjects["TransmitterSwitch"] = go;  // Store the transmitter switch hit
             }
         }
 
-        public void CreateLineRenderer(Vector3 start, Vector3 end, bool visible = false)
+        public void CreateLineRenderer(Vector3 start, Vector3 end, bool visible = false, string linkedReciverUniqueId = null)
         {
             // Create new GameObject for the line
             GameObject lineObject = new GameObject("SignalLine");
@@ -157,7 +169,11 @@ namespace WirelessSignals.Linking
             line.receiveShadows = false;
 
             // Add To List
-            lineRenderers.Add(lineObject);
+            //lineRenderers.Add(lineObject);
+            if (linkedReciverUniqueId != null)
+            {
+                lineRenderers[linkedReciverUniqueId] = lineObject;
+            }
 
             // Set LineRenderer visibility
             lineObject.SetActive(visible);
@@ -165,17 +181,25 @@ namespace WirelessSignals.Linking
 
         public void HideLineRenderers()
         {
+            //foreach (var line in lineRenderers)
+            //{
+            //    line.SetActive(false);
+            //}
             foreach (var line in lineRenderers)
             {
-                line.SetActive(false);
+                line.Value.SetActive(false);
             }
         }
 
         public void ShowLineRenderers()
         {
+            //foreach (var line in lineRenderers)
+            //{
+            //    line.SetActive(true);
+            //}
             foreach (var line in lineRenderers)
             {
-                line.SetActive(true);
+                line.Value.SetActive(true);
             }
         }
 
@@ -224,6 +248,7 @@ namespace WirelessSignals.Linking
                 HideLineRenderers();
                 DestoryActiveLineRenderer();
                 shouldUpdateRun = false;
+                hitObjects.Clear();
             }
         }
     }
