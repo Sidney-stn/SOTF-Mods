@@ -1,0 +1,75 @@
+﻿using Construction;
+using HarmonyLib;
+using UnityEngine;
+
+namespace WirelessSignals.Linking
+{
+    [HarmonyPatch(typeof(RepairTool))]
+    [HarmonyPatch("OnTriggerEnter")]
+    [HarmonyPatch(new Type[] { typeof(Collider) })]
+    public class RepairToolPatch
+    {
+        // Dictionary to store last interaction time for each object
+        private static Dictionary<string, float> lastInteractionTimes = new Dictionary<string, float>();
+        private const float INTERACTION_COOLDOWN = 0.5f; // Half second cooldown
+
+        [HarmonyPrefix]
+        public static bool Prefix(Collider other)
+        {
+            if (other != null && other.transform != null && other.transform.root != null)
+            {
+                UnityEngine.Debug.Log($"RepairTool triggered with: {other.transform.root.name}");
+                Misc.Msg($"RepairTool triggered with: {other.transform.root.name}");
+
+                if (other.transform.root.name.Contains("TransmitterSwitch") || other.transform.root.name.Contains("Reciver"))
+                {
+                    string objectId = other.transform.root.GetInstanceID().ToString();
+                    float currentTime = Time.time;
+
+                    // Check if this object has a recorded last interaction time
+                    if (lastInteractionTimes.TryGetValue(objectId, out float lastTime))
+                    {
+                        // If not enough time has passed since last interaction, skip
+                        if (currentTime - lastTime < INTERACTION_COOLDOWN)
+                        {
+                            return false;
+                        }
+                    }
+
+                    // Update the last interaction time
+                    lastInteractionTimes[objectId] = currentTime;
+                }
+
+                if (other.transform.root.name.Contains("TransmitterSwitch"))
+                {
+                    GameObject open = other.transform.root.gameObject;
+                    Mono.TransmitterSwitch controller = open.GetComponent<Mono.TransmitterSwitch>();
+                    if (controller != null)
+                    {
+                        controller.Toggle();
+                        return false; // Skip original method
+                    }
+                    else
+                    {
+                        Misc.Msg("Controller is null!");
+                    }
+                }
+                else if (other.transform.root.name.Contains("Reciver"))
+                {
+                    GameObject open = other.transform.root.gameObject;
+                    Mono.Reciver controller = open.GetComponent<Mono.Reciver>();
+                    if (controller != null)
+                    {
+                        //controller.Toggle();
+                        return false; // Skip original method
+                    }
+                    else
+                    {
+                        Misc.Msg("Controller is null!");
+                    }
+                }
+            }
+            return true; // Continue to original method
+        }
+    }
+}

@@ -55,7 +55,8 @@ namespace WirelessSignals.Prefab
                 if (rotation == Quaternion.identity) { Misc.Msg("[Spawn] [TransmitterSpawnParameters] Invalid Rotation"); throw new ArgumentException("[TransmitterSpawnParameters] Invalid Rotation!"); }
                 GameObject spawnedObject = GameObject.Instantiate(gameObjectWithComps, position, rotation);
                 if (spawnedObject == null) { Misc.Msg("[Spawn] [TransmitterSpawnParameters] SpawnedObject Is Null"); throw new InvalidOperationException("[TransmitterSpawnParameters] spawnedObject Is Null!"); }
-
+                Mono.TransmitterSwitch controller = spawnedObject.GetComponent<Mono.TransmitterSwitch>();
+                controller.uniqueId = uniqueId;
                 spawnedGameObjects.Add(uniqueId, spawnedObject);
 
                 Misc.Msg("[Spawn] TransmitterSwitch Spawned");

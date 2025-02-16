@@ -22,7 +22,7 @@ namespace WirelessSignals.Mono
             }
             if (uniqueId == null)
             {
-                Misc.Msg("TransmitterSwitch: uniqueId is null! Shound Never be");
+                Misc.Msg("Reciver: uniqueId is null! Shound Never be");
             }
 
             // Light
@@ -60,7 +60,7 @@ namespace WirelessSignals.Mono
             }
             else
             {
-                Misc.Msg("[TransmitterSwitch] [TurnOnLight] Can't Turn On Lights, Null!");
+                Misc.Msg("[Reciver] [TurnOnLight] Can't Turn On Lights, Null!");
             }
         }
         private void TurnOffLight()
@@ -72,12 +72,13 @@ namespace WirelessSignals.Mono
             }
             else
             {
-                Misc.Msg("[TransmitterSwitch] [TurnOffLight] Can't Turn Off Lights, Null!");
+                Misc.Msg("[Reciver] [TurnOffLight] Can't Turn Off Lights, Null!");
             }
         }
 
         public void SetState(bool state)
         {
+            Misc.Msg($"[Reciver] [SetState] Setting State: {state}");
             isOn = state;
             if (state)
             {

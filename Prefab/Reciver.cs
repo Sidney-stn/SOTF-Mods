@@ -55,6 +55,8 @@ namespace WirelessSignals.Prefab
                 if (rotation == Quaternion.identity) { Misc.Msg("[Spawn] [RaciverSpawnParameters] Invalid Rotation"); throw new ArgumentException("[RaciverSpawnParameters] Invalid Rotation!"); }
                 GameObject spawnedObject = GameObject.Instantiate(gameObjectWithComps, position, rotation);
                 if (spawnedObject == null) { Misc.Msg("[Spawn] [RaciverSpawnParameters] SpawnedObject Is Null"); throw new InvalidOperationException("[RaciverSpawnParameters] spawnedObject Is Null!"); }
+                Mono.Reciver controller = spawnedObject.GetComponent<Mono.Reciver>();
+                controller.uniqueId = uniqueId;
 
                 spawnedGameObjects.Add(uniqueId, spawnedObject);
 
