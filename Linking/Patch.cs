@@ -43,30 +43,14 @@ namespace WirelessSignals.Linking
                 if (other.transform.root.name.Contains("TransmitterSwitch"))
                 {
                     GameObject open = other.transform.root.gameObject;
-                    Mono.TransmitterSwitch controller = open.GetComponent<Mono.TransmitterSwitch>();
-                    if (controller != null)
-                    {
-                        controller.Toggle();
-                        return false; // Skip original method
-                    }
-                    else
-                    {
-                        Misc.Msg("Controller is null!");
-                    }
+                    WirelessSignals.linkingCotroller.HitTransmitterSwitch(open);
+                    return false; // Skip original method
                 }
                 else if (other.transform.root.name.Contains("Reciver"))
                 {
                     GameObject open = other.transform.root.gameObject;
-                    Mono.Reciver controller = open.GetComponent<Mono.Reciver>();
-                    if (controller != null)
-                    {
-                        //controller.Toggle();
-                        return false; // Skip original method
-                    }
-                    else
-                    {
-                        Misc.Msg("Controller is null!");
-                    }
+                    WirelessSignals.linkingCotroller.HitReciver(open);
+                    return false; // Skip original method
                 }
             }
             return true; // Continue to original method

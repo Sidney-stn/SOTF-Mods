@@ -131,5 +131,31 @@ namespace WirelessSignals.Mono
                 }
             }
         }
+
+        public void UnlinkReciver(string reciverUniqueId)
+        {
+            if (linkedUniqueIdsRecivers.Contains(reciverUniqueId))
+            {
+                linkedUniqueIdsRecivers.Remove(reciverUniqueId);
+                Misc.Msg("[TransmitterSwitch] [UnlinkReciver] Reciver Unlinked");
+            }
+            else
+            {
+                Misc.Msg("[TransmitterSwitch] [UnlinkReciver] Reciver Not Found");
+            }
+        }
+
+        public void LinkReciver(string reciverUniqueId)
+        {
+            if (!linkedUniqueIdsRecivers.Contains(reciverUniqueId))
+            {
+                linkedUniqueIdsRecivers.Add(reciverUniqueId);
+                Misc.Msg("[TransmitterSwitch] [LinkReciver] Reciver Linked");
+            }
+            else
+            {
+                Misc.Msg("[TransmitterSwitch] [LinkReciver] Reciver Already Linked");
+            }
+        }
     }
 }

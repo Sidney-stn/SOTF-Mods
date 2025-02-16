@@ -6,6 +6,8 @@ using UnityEngine.UI;
 using UnityEngine;
 using WirelessSignals.Prefab;
 using SUI;
+using TheForest.Items.Inventory;
+using WirelessSignals.Linking;
 
 namespace WirelessSignals;
 
@@ -55,6 +57,8 @@ public class WirelessSignals : SonsMod
         // This is called when the player leaves the world.
         Misc.OnHostModeGotten -= Misc.OnHostModeGottenCorrectly;
         Misc.dialogManager.QuitGameConfirmDialog.remove_OnOption1Clicked((Il2CppSystem.Action)OnLeaveWorld);
+
+        RepairToolInHand.Deinitialize(LocalPlayer.Inventory);
     }
 
     internal static void OnEnterWorld()
@@ -69,10 +73,17 @@ public class WirelessSignals : SonsMod
         reciver.Setup();
         Misc.Msg("[OnEnterWorld] Complete - Creating Reciver");
 
+        // Subscribe To UnityAction Listeners OnEqipped And OnUnEqupped
+        PlayerInventory playerInventory = LocalPlayer.Inventory;
+        RepairToolInHand.Initialize(playerInventory);
+
+        linkingCotroller = LocalPlayer.GameObject.AddComponent<Linking.LineRenderer>();
+
     }
 
     internal static WirelessTransmitterSwitch transmitterSwitch;
     internal static Reciver reciver;
+    internal static Linking.LineRenderer linkingCotroller;
 
 
     [DebugCommand("wireless")]

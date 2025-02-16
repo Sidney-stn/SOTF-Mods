@@ -1,8 +1,5 @@
-﻿
-using RedLoader;
-using Sons.Gui.Input;
+﻿using RedLoader;
 using UnityEngine;
-using WirelessSignals.UI;
 
 namespace WirelessSignals.Mono
 {
@@ -12,6 +9,7 @@ namespace WirelessSignals.Mono
         internal string uniqueId;
         internal bool? isOn = false;
         internal bool isSetupPrefab;
+        internal string linkedToTranmitterSwithUniqueId = null;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         private void Start()
@@ -87,6 +85,44 @@ namespace WirelessSignals.Mono
             else
             {
                 TurnOffLight();
+            }
+        }
+
+        public void Unlink()
+        {
+            Misc.Msg("[Reciver] [Unlink] Unlinking Reciver");
+            isOn = false;
+            TurnOffLight();
+            linkedToTranmitterSwithUniqueId = null;
+        }
+
+        public void Link(string transmitterUniqueId)
+        {
+            Misc.Msg("[Reciver] [Link] Linking Reciver");
+            linkedToTranmitterSwithUniqueId = transmitterUniqueId;
+
+            // Check if transmitter is on
+            GameObject transmitter = WirelessSignals.transmitterSwitch.FindByUniqueId(transmitterUniqueId);
+            if (transmitter == null)
+            {
+                Misc.Msg("[Reciver] [Link] Transmitter is null");
+                return;
+            }
+            Mono.TransmitterSwitch transmitterController = transmitter.GetComponent<Mono.TransmitterSwitch>();
+            if (transmitterController == null)
+            {
+                Misc.Msg("[Reciver] [Link] Transmitter controller is null");
+                return;
+            }
+            if (transmitterController.isOn == true)  // I do it manually here since SetState should update networking and this does not
+            {
+                TurnOnLight();
+                isOn = true;
+            }
+            else
+            {
+                TurnOffLight();
+                isOn = false;
             }
         }
     }
