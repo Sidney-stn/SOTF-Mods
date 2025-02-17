@@ -1,5 +1,7 @@
-﻿using Sons.Crafting.Structures;
+﻿using RedLoader;
+using Sons.Crafting.Structures;
 using SonsSdk;
+using SonsSdk.Building;
 using UnityEngine;
 
 namespace WirelessSignals.Structure
@@ -10,7 +12,36 @@ namespace WirelessSignals.Structure
         internal virtual int structureId { get; set; }
         internal virtual string blueprintName { get; set; }
         internal virtual Texture2D bookPage { get; set; }
-        internal abstract void OnCraftingNodeCreated(StructureCraftingNode arg1);
+        internal virtual Il2CppSystem.Type placerComponent { get; set; }
+        internal virtual void OnCraftingNodeCreated(StructureCraftingNode arg1)
+        {
+            if (arg1.Recipe.Id == structureId)
+            {
+                Misc.Msg("[StructureBase] [OnCraftingNodeCreated] Crafting Node Created");
+                GameObject builtPrefab = arg1.Recipe._builtPrefab;
+                if (placerComponent != null)
+                {
+                    Misc.Msg("[StructureBase] [OnCraftingNodeCreated] Adding Placer Component");
+                    var placerComponentVar = builtPrefab.AddComponent(placerComponent);
+                    if (placerComponentVar == null) { throw new InvalidOperationException("[StructureBase] [OnCraftingNodeCreated] Placer Component Is Null!"); }
+                    // Try direct property or field setting
+                    dynamic dynamicComponent = placerComponentVar;
+                    dynamicComponent.isSetupPrefab = true;
+                    dynamicComponent.structureName = blueprintName;
+
+                }
+
+                if (bookPage != null)
+                {
+                    Misc.Msg("[Reciver] [OnCraftingNodeCreated] Creating Book Page");
+                    CustomBlueprintManager.CreateBookPage(arg1.Recipe, null, bookPage);
+                }
+                else
+                {
+                    RLog.Error("[Reciver] [OnCraftingNodeCreated] Failed To Create Book Page!");
+                }
+            }
+        }
 
         internal virtual void SetupStructure(GameObject goToInstantiate, Action<GameObject> completeSetup = null)
         {

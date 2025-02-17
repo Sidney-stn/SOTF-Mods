@@ -96,8 +96,9 @@ namespace WirelessSignals.Linking
                         // Fix Linking In Case Something Have Gone Wrong
                         controller.linkedToTranmitterSwithUniqueId = transmitterController.uniqueId;
                     }
-                    CreateLineRenderer(activeLineRenderer.GetPosition(0), activeLineRenderer.GetPosition(1), true, controller.uniqueId);
+                    //CreateLineRenderer(activeLineRenderer.GetPosition(0), activeLineRenderer.GetPosition(1), true, controller.uniqueId);
                     shouldUpdateRun = false;
+                    hitObjects.Clear(); // Clear the stored hit objects
                     DestoryActiveLineRenderer();
                     return;
                 } 

@@ -1,21 +1,23 @@
 ﻿using Il2CppInterop.Runtime;
 using RedLoader;
 using Sons.Crafting.Structures;
+using SonsSdk;
 using SonsSdk.Building;
+using TheForest.Items.Inventory;
 using UnityEngine;
 
 namespace WirelessSignals.Structure
 {
-    internal class Reciver : StructureBase
+    internal class TransmitterSwitch : StructureBase
     {
         internal void Setup()
         {
-            structureId = 751120;
-            blueprintName = "Reciver";
+            structureId = 751122;
+            blueprintName = "TransmitterSwitch";
             bookPage = null;
-            //placerComponent = Il2CppType.Of<Mono.Reciver>();
+            //placerComponent = Il2CppType.Of<Mono.TransmitterSwitch>();
             placerComponent = Il2CppType.Of<Mono.PlaceStructure>();
-            SetupStructure(Assets.Reciver, completeSetup: CompleteSetup);
+            SetupStructure(Assets.TransmitterSwitch, completeSetup: CompleteSetup);
         }
         internal override void CompleteSetup(GameObject obj)
         {

@@ -40,6 +40,16 @@ public class WirelessSignals : SonsMod
 
         // Adding Ingame CFG
         SettingsRegistry.CreateSettings(this, null, typeof(Config));
+
+        // Setup Structures
+        reciverStructure = new Structure.Reciver();  // Reciver Structure
+        reciverStructure.Setup();
+
+        transmitterSwitchStructure = new Structure.TransmitterSwitch();  // TransmitterSwitch Structure
+        transmitterSwitchStructure.Setup();
+
+        transmitterDetectorStructure = new Structure.TransmitterDetector();  // TransmitterDetector Structure
+        transmitterDetectorStructure.Setup();
     }
 
     protected override void OnGameStart()
@@ -72,18 +82,30 @@ public class WirelessSignals : SonsMod
         reciver = new Reciver();
         reciver.Setup();
         Misc.Msg("[OnEnterWorld] Complete - Creating Reciver");
+        Misc.Msg("[OnEnterWorld] Creating TransmitterDetector");
+        transmitterDetector = new TransmitterDetector();
+        transmitterDetector.Setup();
+        Misc.Msg("[OnEnterWorld] Complete - Creating TransmitterDetector");
 
         // Subscribe To UnityAction Listeners OnEqipped And OnUnEqupped
         PlayerInventory playerInventory = LocalPlayer.Inventory;
         RepairToolInHand.Initialize(playerInventory);
 
         linkingCotroller = LocalPlayer.GameObject.AddComponent<Linking.LineRenderer>();
-
     }
 
+    // Prefabs
     internal static WirelessTransmitterSwitch transmitterSwitch;
     internal static Reciver reciver;
+    internal static TransmitterDetector transmitterDetector;
+
+    // Line Renderer for Linking
     internal static Linking.LineRenderer linkingCotroller;
+
+    // Structure For Ingame System
+    internal static Structure.Reciver reciverStructure;
+    internal static Structure.TransmitterSwitch transmitterSwitchStructure;
+    internal static Structure.TransmitterDetector transmitterDetectorStructure;
 
 
     [DebugCommand("wireless")]

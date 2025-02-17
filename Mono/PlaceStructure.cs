@@ -1,0 +1,100 @@
+﻿using RedLoader;
+using Sons.Crafting.Structures;
+using UnityEngine;
+
+
+namespace WirelessSignals.Mono
+{
+    [RegisterTypeInIl2Cpp]
+    internal class PlaceStructure : MonoBehaviour
+    {
+        public bool isSetupPrefab;
+        public string structureName;
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
+        private void Start()
+        {
+            if (isSetupPrefab) { return; }
+
+            Misc.Msg("[PlaceStructure] Start");
+            if (structureName == null)
+            {
+                if (gameObject.name.ToLower().Contains("reciver"))
+                {
+                    structureName = "reciver";
+                }
+                else if (gameObject.name.ToLower().Contains("transmitterswitch"))
+                {
+                    structureName = "transmitterswitch";
+                }
+            }
+            Misc.Msg("[PlaceStructure] Deleting Bolt And ScrewStructure");
+            ScrewStructure scewStructure = gameObject.GetComponent<ScrewStructure>();
+            if (scewStructure != null) { DestroyImmediate(scewStructure); Misc.Msg("[PlaceStructure] [Start] ScrewStructure Deleted"); } else { Misc.Msg("[PlaceStructure] [Start] ScrewStructure Not Found For Deletion!"); }
+            BoltEntity bolt = gameObject.GetComponent<BoltEntity>();
+            if (bolt != null)
+            {
+                if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
+                {
+                    bolt.Entity.Detach();
+                }
+                DestroyImmediate(bolt);
+                Misc.Msg("[PlaceStructure] [Start] BoltEntity Deleted");
+            }
+            else { Misc.Msg("[PlaceStructure] [Start] BoltEntity Not Found For Deletion!"); }
+
+            if (gameObject != null)
+            {
+                if (string.IsNullOrEmpty(structureName)) { RLog.Error("[PlaceStructure] [Start] StructureName Is Null Or Empty!"); return; }
+
+                Misc.Msg("[PlaceStructure] Adding Components");
+                switch (structureName.ToLower())  // These names are the same as bluprintName inhereted from StructureBase
+                {
+                    case "reciver":
+                        Misc.Msg("[PlaceStructure] [Start] Reciver Started Adding Component");
+                        string uniqueId = Guid.NewGuid().ToString();
+                        if (string.IsNullOrEmpty(uniqueId)) { Misc.Msg("[PlaceStructure] [Start] uniqueId Is Null Or Empty!"); return; }
+                        Mono.Reciver reciverController = gameObject.AddComponent<Mono.Reciver>();
+                        reciverController.uniqueId = uniqueId;
+                        WirelessSignals.reciver.spawnedGameObjects.Add(uniqueId, gameObject);
+                        Misc.Msg($"[PlaceStructure] [Start] Reciver Set UniqueId {uniqueId}");
+
+                        // Network
+
+                        break;
+                    case "transmitterswitch":
+                        Misc.Msg("[PlaceStructure] [Start] TransmitterSwitch Started Adding Component");
+                        string uniqueId1 = Guid.NewGuid().ToString();
+                        if (string.IsNullOrEmpty(uniqueId1)) { Misc.Msg("[PlaceStructure] [Start] uniqueId Is Null Or Empty!"); return; }
+                        Mono.TransmitterSwitch transmitterController = gameObject.AddComponent<Mono.TransmitterSwitch>();
+                        transmitterController.uniqueId = uniqueId1;
+                        WirelessSignals.transmitterSwitch.spawnedGameObjects.Add(uniqueId1, gameObject);
+                        Misc.Msg($"[PlaceStructure] [Start] TransmitterSwitch Set UniqueId {uniqueId1}");
+
+                        // Network
+
+                        break;
+                    case "transmitterdetector":
+                        Misc.Msg("[PlaceStructure] [Start] TransmitterDetector Started Adding Component");
+                        string uniqueId2 = Guid.NewGuid().ToString();
+                        if (string.IsNullOrEmpty(uniqueId2)) { Misc.Msg("[PlaceStructure] [Start] uniqueId Is Null Or Empty!"); return; }
+                        Mono.TransmitterDetector transmitterDetectorController = gameObject.AddComponent<Mono.TransmitterDetector>();
+                        transmitterDetectorController.uniqueId = uniqueId2;
+                        WirelessSignals.transmitterDetector.spawnedGameObjects.Add(uniqueId2, gameObject);
+                        Misc.Msg($"[PlaceStructure] [Start] TransmitterDetector Set UniqueId {uniqueId2}");
+
+                        // Network
+
+                        break;
+                    default:
+                        Misc.Msg($"[PlaceStructure] [Start] StructureName {structureName} Not Found!");
+                        break;
+                }
+            }
+            else { Misc.Msg("[PlaceStructure] [Start] GameObject That PlaceStructure Ccomponent Is Attatched To Is Null!!!!"); }
+
+            Misc.Msg("[PlaceStructure] [Start] Destroying PlaceStructure Component");
+            Destroy(this);
+        }
+    }
+}

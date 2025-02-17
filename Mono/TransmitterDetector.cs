@@ -1,16 +1,17 @@
 ﻿using RedLoader;
+using Sons.Gui.Input;
 using SonsSdk;
 using UnityEngine;
 
 namespace WirelessSignals.Mono
 {
     [RegisterTypeInIl2Cpp]
-    internal class Reciver : MonoBehaviour
+    internal class TransmitterDetector : MonoBehaviour
     {
         public string uniqueId;
         public bool? isOn = false;
         public bool isSetupPrefab;
-        public string linkedToTranmitterSwithUniqueId = null;
+        public HashSet<string> linkedUniqueIdsRecivers = new HashSet<string>();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         private void Start()
@@ -21,7 +22,7 @@ namespace WirelessSignals.Mono
             }
             if (string.IsNullOrEmpty(uniqueId))
             {
-                RLog.Warning("[Mono] [Reciver]: uniqueId is null! Shound Never be");
+                RLog.Warning("[Mono] [TransmitterDetector]: uniqueId is null! Shound Never be");
                 SonsTools.ShowMessage("Something went wrong when placing down structure!");
             }
 
@@ -51,7 +52,7 @@ namespace WirelessSignals.Mono
 
         }
 
-        private void TurnOnLight()
+        public void TurnOnLight()
         {
             GameObject lights = transform.FindChild("Light").gameObject;
             if (lights != null)
@@ -60,10 +61,10 @@ namespace WirelessSignals.Mono
             }
             else
             {
-                Misc.Msg("[Reciver] [TurnOnLight] Can't Turn On Lights, Null!");
+                Misc.Msg("[TransmitterDetector] [TurnOnLight] Can't Turn On Lights, Null!");
             }
         }
-        private void TurnOffLight()
+        public void TurnOffLight()
         {
             GameObject lights = transform.FindChild("Light").gameObject;
             if (lights != null)
@@ -72,59 +73,64 @@ namespace WirelessSignals.Mono
             }
             else
             {
-                Misc.Msg("[Reciver] [TurnOffLight] Can't Turn Off Lights, Null!");
+                Misc.Msg("[TransmitterDetector] [TurnOffLight] Can't Turn Off Lights, Null!");
             }
         }
 
+
         public void SetState(bool state)
         {
-            Misc.Msg($"[Reciver] [SetState] Setting State: {state}");
+            Misc.Msg($"[TransmitterDetector] [SetState] Setting State To: {state}");
             isOn = state;
             if (state)
             {
                 TurnOnLight();
+                Misc.Msg("[TransmitterDetector] [Toggle] Turned On");
             }
             else
             {
                 TurnOffLight();
+                Misc.Msg("[TransmitterDetector] [Toggle] Turned Off");
+            }
+            // Update All Recivers Linked
+            foreach (var reciverUniqueId in linkedUniqueIdsRecivers)
+            {
+                var reciver = WirelessSignals.reciver.FindByUniqueId(reciverUniqueId);
+                if (reciver)
+                {
+                    reciver.GetComponent<Reciver>().SetState((bool)isOn);  // Set Reciver State (bool) should always work since the state is set above and can never be null
+                    Misc.Msg("[TransmitterDetector] [Toggle] Reciver Updated");
+                }
+                else
+                {
+                    Misc.Msg("[TransmitterDetector] [Toggle] Reciver Not Found");
+                }
             }
         }
 
-        public void Unlink()
+        public void UnlinkReciver(string reciverUniqueId)
         {
-            Misc.Msg("[Reciver] [Unlink] Unlinking Reciver");
-            isOn = false;
-            TurnOffLight();
-            linkedToTranmitterSwithUniqueId = null;
-        }
-
-        public void Link(string transmitterUniqueId)
-        {
-            Misc.Msg("[Reciver] [Link] Linking Reciver");
-            linkedToTranmitterSwithUniqueId = transmitterUniqueId;
-
-            // Check if transmitter is on
-            GameObject transmitter = WirelessSignals.transmitterSwitch.FindByUniqueId(transmitterUniqueId);
-            if (transmitter == null)
+            if (linkedUniqueIdsRecivers.Contains(reciverUniqueId))
             {
-                Misc.Msg("[Reciver] [Link] Transmitter is null");
-                return;
-            }
-            Mono.TransmitterSwitch transmitterController = transmitter.GetComponent<Mono.TransmitterSwitch>();
-            if (transmitterController == null)
-            {
-                Misc.Msg("[Reciver] [Link] Transmitter controller is null");
-                return;
-            }
-            if (transmitterController.isOn == true)  // I do it manually here since SetState should update networking and this does not
-            {
-                TurnOnLight();
-                isOn = true;
+                linkedUniqueIdsRecivers.Remove(reciverUniqueId);
+                Misc.Msg("[TransmitterDetector] [UnlinkReciver] Reciver Unlinked");
             }
             else
             {
-                TurnOffLight();
-                isOn = false;
+                Misc.Msg("[TransmitterDetector] [UnlinkReciver] Reciver Not Found");
+            }
+        }
+
+        public void LinkReciver(string reciverUniqueId)
+        {
+            if (!linkedUniqueIdsRecivers.Contains(reciverUniqueId))
+            {
+                linkedUniqueIdsRecivers.Add(reciverUniqueId);
+                Misc.Msg("[TransmitterDetector] [LinkReciver] Reciver Linked");
+            }
+            else
+            {
+                Misc.Msg("[TransmitterDetector] [LinkReciver] Reciver Already Linked");
             }
         }
     }

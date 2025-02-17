@@ -1,5 +1,6 @@
 ﻿using RedLoader;
 using Sons.Gui.Input;
+using SonsSdk;
 using UnityEngine;
 
 namespace WirelessSignals.Mono
@@ -7,12 +8,12 @@ namespace WirelessSignals.Mono
     [RegisterTypeInIl2Cpp]
     internal class TransmitterSwitch : MonoBehaviour
     {
-        internal string uniqueId;
-        internal bool? isOn = false;
-        internal bool isSetupPrefab;
+        public string uniqueId;
+        public bool? isOn = false;
+        public bool isSetupPrefab;
         private Animator _animController = null;
         private LinkUiElement _linkUi = null;
-        internal HashSet<string> linkedUniqueIdsRecivers = new HashSet<string>();
+        public HashSet<string> linkedUniqueIdsRecivers = new HashSet<string>();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         private void Start()
@@ -21,9 +22,10 @@ namespace WirelessSignals.Mono
             {
                 return;
             }
-            if (uniqueId == null)
+            if (string.IsNullOrEmpty(uniqueId))
             {
-                Misc.Msg("TransmitterSwitch: uniqueId is null! Shound Never be");
+                RLog.Warning("[Mono] [TransmitterSwitch]: uniqueId is null! Shound Never be");
+                SonsTools.ShowMessage("Something went wrong when placing down structure!");
             }
 
             // Light
