@@ -7,6 +7,7 @@ using WirelessSignals.Prefab;
 using SUI;
 using TheForest.Items.Inventory;
 using WirelessSignals.Linking;
+using WirelessSignals.Saving;
 
 namespace WirelessSignals;
 
@@ -49,6 +50,13 @@ public class WirelessSignals : SonsMod
 
         transmitterDetectorStructure = new Structure.TransmitterDetector();  // TransmitterDetector Structure
         transmitterDetectorStructure.Setup();
+
+        // Create and register the save manager
+        prefabSaveManager = new PrefabSaveManager();
+
+        // Register with SonsSaveTools
+        SonsSaveTools.Register(prefabSaveManager);
+        Misc.Msg("[OnSdkInitialized] Complete - Creating PrefabSaveManager");
     }
 
     protected override void OnGameStart()
@@ -76,15 +84,22 @@ public class WirelessSignals : SonsMod
         Misc.Msg("[OnEnterWorld] Creating WirelessTransmitterSwitch");
         transmitterSwitch = new WirelessTransmitterSwitch();
         transmitterSwitch.Setup();
+        prefabSaveManager.RegisterPrefabManager("TransmitterSwitch", transmitterSwitch);
         Misc.Msg("[OnEnterWorld] Complete - Creating WirelessTransmitterSwitch");
         Misc.Msg("[OnEnterWorld] Creating Reciver");
         reciver = new Reciver();
         reciver.Setup();
+        prefabSaveManager.RegisterPrefabManager("Receiver", reciver);
         Misc.Msg("[OnEnterWorld] Complete - Creating Reciver");
         Misc.Msg("[OnEnterWorld] Creating TransmitterDetector");
         transmitterDetector = new TransmitterDetector();
         transmitterDetector.Setup();
+        prefabSaveManager.RegisterPrefabManager("Detector", transmitterDetector);
         Misc.Msg("[OnEnterWorld] Complete - Creating TransmitterDetector");
+
+        Misc.Msg("[OnEnterWorld] Creating PrefabSaveManager");
+        
+
 
         // Subscribe To UnityAction Listeners OnEqipped And OnUnEqupped
         PlayerInventory playerInventory = LocalPlayer.Inventory;
@@ -92,6 +107,8 @@ public class WirelessSignals : SonsMod
 
         linkingCotroller = LocalPlayer.GameObject.AddComponent<Linking.LineRenderer>();
     }
+    // Saving System
+    private static PrefabSaveManager prefabSaveManager;
 
     // Prefabs
     internal static WirelessTransmitterSwitch transmitterSwitch;

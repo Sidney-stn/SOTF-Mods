@@ -76,11 +76,59 @@ namespace WirelessSignals.Prefab
             }
         }
 
+        protected override Saving.SaveData CreateSaveDataFromGameObject(GameObject obj)
+        {
+            var component = obj.GetComponent<Mono.Reciver>();
+            return new ReceiverSaveData
+            {
+                UniqueId = component.uniqueId,
+                Position = obj.transform.position,
+                Rotation = obj.transform.rotation,
+                IsOn = component.isOn
+            };
+        }
+
+        protected override SpawnParameters CreateSpawnParametersFromSaveData(Saving.SaveData data)
+        {
+            var receiverData = data as ReceiverSaveData;
+            if (receiverData == null)
+                throw new ArgumentException("Invalid save data type");
+
+            return new ReciverSpawnParameters
+            {
+                position = receiverData.Position,
+                rotation = receiverData.Rotation,
+                uniqueId = receiverData.UniqueId,
+                isOn = receiverData.IsOn
+            };
+        }
+
+        protected override void ApplySaveDataToGameObject(GameObject obj, Saving.SaveData data)
+        {
+            var receiverData = data as ReceiverSaveData;
+            if (receiverData == null) return;
+
+            var component = obj.GetComponent<Mono.Reciver>();
+            if (component != null)
+            {
+                component.uniqueId = receiverData.UniqueId;
+                component.isOn = receiverData.IsOn;
+            }
+        }
+
     }
 
     internal class ReciverSpawnParameters : SpawnParameters
     {
         public bool raiseNetworkEvent = false;
         public bool? isOn = null;
+    }
+
+    // Base class for specific save data types
+    [Serializable]
+    public class ReceiverSaveData : Saving.SaveData
+    {
+        public bool? IsOn { get; set; }
+        // Add other receiver-specific properties
     }
 }

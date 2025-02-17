@@ -75,6 +75,46 @@ namespace WirelessSignals.Prefab
             }
         }
 
+        protected override Saving.SaveData CreateSaveDataFromGameObject(GameObject obj)
+        {
+            var component = obj.GetComponent<Mono.TransmitterSwitch>();
+            return new TransmitterSwitchSaveData
+            {
+                UniqueId = component.uniqueId,
+                Position = obj.transform.position,
+                Rotation = obj.transform.rotation,
+                IsOn = component.isOn
+            };
+        }
+
+        protected override SpawnParameters CreateSpawnParametersFromSaveData(Saving.SaveData data)
+        {
+            var receiverData = data as TransmitterSwitchSaveData;
+            if (receiverData == null)
+                throw new ArgumentException("Invalid save data type");
+
+            return new TransmitterSwitchSpawnParameters
+            {
+                position = receiverData.Position,
+                rotation = receiverData.Rotation,
+                uniqueId = receiverData.UniqueId,
+                isOn = receiverData.IsOn
+            };
+        }
+
+        protected override void ApplySaveDataToGameObject(GameObject obj, Saving.SaveData data)
+        {
+            var receiverData = data as TransmitterSwitchSaveData;
+            if (receiverData == null) return;
+
+            var component = obj.GetComponent<Mono.TransmitterSwitch>();
+            if (component != null)
+            {
+                component.uniqueId = receiverData.UniqueId;
+                component.isOn = receiverData.IsOn;
+            }
+        }
+
     }
 
     internal class TransmitterSwitchSpawnParameters : SpawnParameters
@@ -82,5 +122,13 @@ namespace WirelessSignals.Prefab
         public bool raiseNetworkEvent = false;
         public bool? isOn = null;
         public HashSet<string> linkedUniqueIdsRecivers = null;
+    }
+
+    // Base class for specific save data types
+    [Serializable]
+    public class TransmitterSwitchSaveData : Saving.SaveData
+    {
+        public bool? IsOn { get; set; }
+        // Add other receiver-specific properties
     }
 }
