@@ -1,6 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SonsSdk;
+using Unity.Baselib.LowLevel;
+using UnityEngine;
 using WirelessSignals.Prefab;
+using WirelessSignals.Saving.WirelessSignals.Saving;
 
 namespace WirelessSignals.Saving
 {
@@ -20,20 +24,18 @@ namespace WirelessSignals.Saving
         {
             prefabManagers[type] = manager;
 
-            // If we have deferred data and all managers are registered, process it
             if (deferredLoadQueue.Count > 0 && isWorldReady)
             {
                 ProcessDeferredLoads();
             }
         }
 
-        public string Name => "PrefabSaveManagerWirelessSignals";
+        public string Name => "PrefabSaveManager";
         public bool IncludeInPlayerSave => false;
 
         public void SetWorldReady()
         {
             isWorldReady = true;
-            // Process any queued loads once the world is ready
             ProcessDeferredLoads();
         }
 
@@ -46,19 +48,26 @@ namespace WirelessSignals.Saving
             }
         }
 
-        private SaveData ConvertSaveData(JObject itemData, string managerType)
+        private SaveData ConvertToCorrectType(string json, string managerType)
         {
-            // Convert based on manager type
-            switch (managerType)
+            try
             {
-                case "TransmitterSwitch":
-                    return itemData.ToObject<TransmitterSwitchSaveData>();
-                case "Receiver":
-                    return itemData.ToObject<ReceiverSaveData>();
-                case "Detector":
-                    return itemData.ToObject<TransmitterDetectorSaveData>();
-                default:
-                    return itemData.ToObject<SaveData>();
+                switch (managerType)
+                {
+                    case "TransmitterSwitch":
+                        return JsonConvert.DeserializeObject<TransmitterSwitchSaveData>(json);
+                    case "Receiver":
+                        return JsonConvert.DeserializeObject<ReceiverSaveData>(json);
+                    case "Detector":
+                        return JsonConvert.DeserializeObject<TransmitterDetectorSaveData>(json);
+                    default:
+                        return JsonConvert.DeserializeObject<SaveData>(json);
+                }
+            }
+            catch (Exception ex)
+            {
+                Misc.Msg($"[Error] Failed to convert save data: {ex.Message}");
+                return null;
             }
         }
 
@@ -70,7 +79,31 @@ namespace WirelessSignals.Saving
                 {
                     foreach (var itemData in managerData.Items)
                     {
-                        manager.LoadFromSaveData(itemData);
+                        try
+                        {
+                            var serializableData = SerializableSaveData.FromSaveData(itemData);
+                            string jsonString = JsonConvert.SerializeObject(serializableData);
+                            SaveData typedData;
+
+                            switch (managerData.ManagerType)
+                            {
+                                case "TransmitterSwitch":
+                                    var switchData = JsonConvert.DeserializeObject<SerializableTransmitterSwitchData>(jsonString);
+                                    typedData = switchData.ToSaveData();
+                                    break;
+                                // Add cases for Receiver and Detector
+                                default:
+                                    var baseData = JsonConvert.DeserializeObject<SerializableSaveData>(jsonString);
+                                    typedData = baseData.ToSaveData();
+                                    break;
+                            }
+
+                            manager.LoadFromSaveData(typedData);
+                        }
+                        catch (Exception ex)
+                        {
+                            Misc.Msg($"[Error] Failed to load prefab: {ex.Message}");
+                        }
                     }
                 }
             }
@@ -88,12 +121,20 @@ namespace WirelessSignals.Saving
 
             foreach (var entry in prefabManagers)
             {
-                var managerSaveData = new ManagerSaveData
+                try
                 {
-                    ManagerType = entry.Key,
-                    Items = entry.Value.GetAllSaveData()
-                };
-                saveData.ManagerData.Add(managerSaveData);
+                    var items = entry.Value.GetAllSaveData();
+                    var managerSaveData = new ManagerSaveData
+                    {
+                        ManagerType = entry.Key,
+                        Items = items
+                    };
+                    saveData.ManagerData.Add(managerSaveData);
+                }
+                catch (Exception ex)
+                {
+                    Misc.Msg($"[Error] Failed to save prefab manager {entry.Key}: {ex.Message}");
+                }
             }
 
             return saveData;
@@ -109,7 +150,6 @@ namespace WirelessSignals.Saving
 
             if (!isWorldReady || Misc.hostMode == Misc.SimpleSaveGameType.NotIngame)
             {
-                // Implement deferred loading
                 Misc.Msg("[Loading] World not ready, deferring load");
                 deferredLoadQueue.Enqueue(data);
                 return;
