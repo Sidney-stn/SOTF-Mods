@@ -11,7 +11,7 @@ namespace WirelessSignals.Linking
     {
         // Dictionary to store last interaction time for each object
         private static Dictionary<string, float> lastInteractionTimes = new Dictionary<string, float>();
-        private const float INTERACTION_COOLDOWN = 0.5f; // Half second cooldown
+        private const float INTERACTION_COOLDOWN = 1f; // Second cooldown
 
         [HarmonyPrefix]
         public static bool Prefix(Collider other)
@@ -21,7 +21,7 @@ namespace WirelessSignals.Linking
                 UnityEngine.Debug.Log($"RepairTool triggered with: {other.transform.root.name}");
                 Misc.Msg($"RepairTool triggered with: {other.transform.root.name}");
 
-                if (other.transform.root.name.Contains("TransmitterSwitch") || other.transform.root.name.Contains("Reciver"))
+                if (other.transform.root.name.Contains("TransmitterSwitch") || other.transform.root.name.Contains("Reciver") || other.transform.root.name.Contains("TransmitterDetector"))
                 {
                     string objectId = other.transform.root.GetInstanceID().ToString();
                     float currentTime = Time.time;
@@ -50,6 +50,12 @@ namespace WirelessSignals.Linking
                 {
                     GameObject open = other.transform.root.gameObject;
                     WirelessSignals.linkingCotroller.HitReciver(open);
+                    return false; // Skip original method
+                }
+                else if (other.transform.root.name.Contains("TransmitterDetector"))
+                {
+                    GameObject open = other.transform.root.gameObject;
+                    WirelessSignals.linkingCotroller.HitDetector(open);
                     return false; // Skip original method
                 }
             }

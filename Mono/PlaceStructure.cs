@@ -21,11 +21,15 @@ namespace WirelessSignals.Mono
             {
                 if (gameObject.name.ToLower().Contains("reciver"))
                 {
-                    structureName = "reciver";
+                    structureName = "Reciver";
                 }
                 else if (gameObject.name.ToLower().Contains("transmitterswitch"))
                 {
-                    structureName = "transmitterswitch";
+                    structureName = "TransmitterSwitch";
+                }
+                else if (gameObject.name.ToLower().Contains("transmitterdetector"))
+                {
+                    structureName = "TransmitterDetector";
                 }
             }
             Misc.Msg("[PlaceStructure] Deleting Bolt And ScrewStructure");

@@ -157,6 +157,19 @@ public class WirelessSignals : SonsMod
                 reciver.Spawn(reciverParameters);
                 Misc.Msg("[WirelessCmd] Complete - Spawning Reciver");
                 break;
+            case "spawn3":
+                Misc.Msg("[WirelessCmd] Spawning - TransmitterDetector");
+                var transmitterDetectorParameters = new Prefab.TransmitterDetectorSpawnParameters
+                {
+                    position = raycastHit.point + Vector3.up * 0.1f,
+                    rotation = LocalPlayer.Transform.rotation,
+                    uniqueId = null,
+                    isOn = false
+                };
+                Misc.Msg("[WirelessCmd] Spawning - TransmitterDetector Parameters Created");
+                transmitterDetector.Spawn(transmitterDetectorParameters);
+                Misc.Msg("[WirelessCmd] Complete - Spawning TransmitterDetector");
+                break;
             case "rml":
                 Misc.Msg("[WirelessCmd] Removing RayCast Lines");
                 Debug.RayCast.RemoveLines();

@@ -1,4 +1,6 @@
 ﻿using Il2CppInterop.Runtime;
+using SonsSdk;
+using TheForest.Items.Inventory;
 using TheForest.Utils;
 using UnityEngine;
 
@@ -19,6 +21,16 @@ namespace WirelessSignals.Prefab
 
         internal override void ConfigureComponents(GameObject obj)
         {
+            // Add wire to the structure
+            Transform wirePlacement = obj.transform.GetChild(0).GetChild(22);
+            if (wirePlacement == null) { throw new InvalidOperationException("[TransmitterSwitch] [CompleteSetup] WirePlacement Is Null!"); }
+            GameObject wire = GameObject.Instantiate(ItemTools.GetHeldPrefab(418).gameObject, wirePlacement);
+            HeldItemIdentifier itemIdent = wire.GetComponent<HeldItemIdentifier>();
+            GameObject.Destroy(itemIdent);
+            wire.transform.localScale = new Vector3(5, 3, 5);
+            wire.transform.rotation = Quaternion.Euler(90, 0, 0);
+            wire.transform.localPosition = new Vector3(0, 0.16f, 0.1f);
+
             var mainComponent = obj.GetComponent<Mono.TransmitterDetector>();
             if (mainComponent == null) { throw new InvalidOperationException("[TransmitterDetector] mainComponent Is Null!"); }
             mainComponent.isOn = null;

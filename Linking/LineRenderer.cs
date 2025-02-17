@@ -11,7 +11,6 @@ namespace WirelessSignals.Linking
     {
         public bool shouldUpdateRun = false;
         public Dictionary<string, GameObject> hitObjects = new Dictionary<string, GameObject>();  // Last Hit Object
-        //public List<GameObject> lineRenderers = new List<GameObject>();
         public Dictionary<string, GameObject> lineRenderers = new Dictionary<string, GameObject>();  // ReciverUnqiueId, LineRenderer
         private Material lineMaterial;
         private UnityEngine.LineRenderer activeLineRenderer = null;
@@ -26,44 +25,64 @@ namespace WirelessSignals.Linking
 
         public void HitReciver(GameObject go)
         {
-            if (go == null) 
+            if (go == null)
             {
                 Misc.Msg("[LineRenderer] [HitReciver]: GameObject is null");
                 return;
             }
 
-            // If transmitter switch hit is not stored, unlink the reciver
-            if (!hitObjects.ContainsKey("TransmitterSwitch"))
+            // If neither transmitter switch nor detector hit is stored, unlink the receiver
+            if (!hitObjects.ContainsKey("TransmitterSwitch") && !hitObjects.ContainsKey("TransmitterDetector"))
             {
-                hitObjects.Clear();  // Clear iF it has another Reciver Stored
-                hitObjects["Reciver"] = go;  // Store the reciver hit
-                // Unlink the reciver
+                hitObjects.Clear();  // Clear if it has another Receiver Stored
+                hitObjects["Reciver"] = go;  // Store the receiver hit
+
+                // Unlink the receiver
                 Mono.Reciver controller = go.GetComponent<Mono.Reciver>();
                 if (controller == null) { Misc.Msg("[LineRenderer] [HitReciver]: Reciver controller is null"); return; }
                 if (string.IsNullOrEmpty(controller.linkedToTranmitterSwithUniqueId)) { Misc.Msg("[LineRenderer] [HitReciver]: Reciver linkedToTranmitterSwithUniqueId is null"); return; }
+
+                // Try to find the linked transmitter (either switch or detector)
                 GameObject wirelessTransmitter = WirelessSignals.transmitterSwitch.FindByUniqueId(controller.linkedToTranmitterSwithUniqueId);
-                if (wirelessTransmitter == null) // If transmitter is not found by uniqueId Stored, unlink
+                GameObject wirelessDetector = WirelessSignals.transmitterDetector.FindByUniqueId(controller.linkedToTranmitterSwithUniqueId);
+
+                if (wirelessTransmitter == null && wirelessDetector == null) // If neither transmitter is found by uniqueId Stored, unlink
                 {
-                    controller.Unlink();  // Unlink Reciver
-                    Misc.Msg("[LineRenderer] [HitReciver]: Reciver wirelessTransmitter is null"); 
+                    controller.Unlink();  // Unlink Receiver
+                    Misc.Msg("[LineRenderer] [HitReciver]: No linked transmitter or detector found");
                     Misc.Msg("[LineRenderer] [HitReciver]: Reciver unlinked");
-                    SonsTools.ShowMessage("Reciver Successfully Unlinked");
-                    // Destory LineRenderer
+                    SonsTools.ShowMessage("Receiver Successfully Unlinked");
+                    // Destroy LineRenderer
                     if (lineRenderers.ContainsKey(controller.uniqueId))
                     {
                         Destroy(lineRenderers[controller.uniqueId]);
                         lineRenderers.Remove(controller.uniqueId);
                     }
                 }
-                else  // Unlink Both Reciver And Transmitter
+                else if (wirelessTransmitter != null)  // Unlink from TransmitterSwitch
                 {
                     controller.Unlink();
                     Mono.TransmitterSwitch transmitterController = wirelessTransmitter.GetComponent<Mono.TransmitterSwitch>();
                     if (transmitterController == null) { Misc.Msg("[LineRenderer] [HitReciver]: Transmitter controller is null"); return; }
                     transmitterController.UnlinkReciver(controller.uniqueId);
-                    Misc.Msg("[LineRenderer] [HitReciver]: Reciver and Transmitter unlinked");
-                    SonsTools.ShowMessage("Reciver Successfully Unlinked");
-                    // Destory LineRenderer
+                    Misc.Msg("[LineRenderer] [HitReciver]: Reciver and Transmitter Switch unlinked");
+                    SonsTools.ShowMessage("Receiver Successfully Unlinked from Transmitter");
+                    // Destroy LineRenderer
+                    if (lineRenderers.ContainsKey(controller.uniqueId))
+                    {
+                        Destroy(lineRenderers[controller.uniqueId]);
+                        lineRenderers.Remove(controller.uniqueId);
+                    }
+                }
+                else if (wirelessDetector != null)  // Unlink from TransmitterDetector
+                {
+                    controller.Unlink();
+                    Mono.TransmitterDetector detectorController = wirelessDetector.GetComponent<Mono.TransmitterDetector>();
+                    if (detectorController == null) { Misc.Msg("[LineRenderer] [HitReciver]: Detector controller is null"); return; }
+                    detectorController.UnlinkReciver(controller.uniqueId);
+                    Misc.Msg("[LineRenderer] [HitReciver]: Reciver and Detector unlinked");
+                    SonsTools.ShowMessage("Receiver Successfully Unlinked from Detector");
+                    // Destroy LineRenderer
                     if (lineRenderers.ContainsKey(controller.uniqueId))
                     {
                         Destroy(lineRenderers[controller.uniqueId]);
@@ -72,9 +91,9 @@ namespace WirelessSignals.Linking
                 }
                 return;
             }
-            else if (hitObjects.ContainsKey("TransmitterSwitch"))  // If transmitter switch hit is stored, link the reciver
+            else if (hitObjects.ContainsKey("TransmitterSwitch"))  // If transmitter switch hit is stored, link the receiver
             {
-                // Link the reciver
+                // Link the receiver
                 Mono.Reciver controller = go.GetComponent<Mono.Reciver>();
                 if (controller == null)
                 {
@@ -87,22 +106,21 @@ namespace WirelessSignals.Linking
                     Misc.Msg("[LineRenderer] [HitReciver]: Transmitter controller is null");
                     return;
                 }
-                if (transmitterController.linkedUniqueIdsRecivers.Contains(controller.uniqueId))  // If reciver is already linked to transmitter switch
+                if (transmitterController.linkedUniqueIdsRecivers.Contains(controller.uniqueId))  // If receiver is already linked to transmitter switch
                 {
                     Misc.Msg("[LineRenderer] [HitReciver]: Reciver Already Linked");
-                    SonsTools.ShowMessage("Reciver Already Linked");
+                    SonsTools.ShowMessage("Receiver Already Linked");
                     if (controller.linkedToTranmitterSwithUniqueId != transmitterController.uniqueId)
                     {
                         // Fix Linking In Case Something Have Gone Wrong
                         controller.linkedToTranmitterSwithUniqueId = transmitterController.uniqueId;
                     }
-                    //CreateLineRenderer(activeLineRenderer.GetPosition(0), activeLineRenderer.GetPosition(1), true, controller.uniqueId);
                     shouldUpdateRun = false;
                     hitObjects.Clear(); // Clear the stored hit objects
                     DestoryActiveLineRenderer();
                     return;
-                } 
-                else // Link Reciver
+                }
+                else // Link Receiver
                 {
                     shouldUpdateRun = false;
                     CreateLineRenderer(activeLineRenderer.GetPosition(0), activeLineRenderer.GetPosition(1), true, controller.uniqueId);
@@ -110,12 +128,54 @@ namespace WirelessSignals.Linking
                     transmitterController.LinkReciver(controller.uniqueId);
                     controller.Link(transmitterController.uniqueId);
                     Misc.Msg("[LineRenderer] [HitReciver]: Reciver Linked");
-                    SonsTools.ShowMessage("Reciver Successfully Linked - Link Point 2/2");
+                    SonsTools.ShowMessage("Receiver Successfully Linked - Link Point 2/2");
                 }
 
                 hitObjects.Clear(); // Clear the stored hit objects
-                hitObjects["Reciver"] = go;  // Store the reciver hit
+                hitObjects["Reciver"] = go;  // Store the receiver hit
+            }
+            else if (hitObjects.ContainsKey("TransmitterDetector"))  // If transmitter detector hit is stored, link the receiver
+            {
+                // Link the receiver
+                Mono.Reciver controller = go.GetComponent<Mono.Reciver>();
+                if (controller == null)
+                {
+                    Misc.Msg("[LineRenderer] [HitReciver]: Reciver controller is null");
+                    return;
+                }
+                Mono.TransmitterDetector transmitterController = hitObjects["TransmitterDetector"].GetComponent<Mono.TransmitterDetector>();
+                if (transmitterController == null)
+                {
+                    Misc.Msg("[LineRenderer] [HitReciver]: TransmitterDetector controller is null");
+                    return;
+                }
+                if (transmitterController.linkedUniqueIdsRecivers.Contains(controller.uniqueId))  // If receiver is already linked to transmitter detector
+                {
+                    Misc.Msg("[LineRenderer] [HitReciver]: Reciver Already Linked");
+                    SonsTools.ShowMessage("Receiver Already Linked");
+                    if (controller.linkedToTranmitterSwithUniqueId != transmitterController.uniqueId)
+                    {
+                        // Fix Linking In Case Something Have Gone Wrong
+                        controller.linkedToTranmitterSwithUniqueId = transmitterController.uniqueId;
+                    }
+                    shouldUpdateRun = false;
+                    hitObjects.Clear(); // Clear the stored hit objects
+                    DestoryActiveLineRenderer();
+                    return;
+                }
+                else // Link Receiver
+                {
+                    shouldUpdateRun = false;
+                    CreateLineRenderer(activeLineRenderer.GetPosition(0), activeLineRenderer.GetPosition(1), true, controller.uniqueId);
+                    DestoryActiveLineRenderer();
+                    transmitterController.LinkReciver(controller.uniqueId);
+                    controller.Link(transmitterController.uniqueId);
+                    Misc.Msg("[LineRenderer] [HitReciver]: Reciver Linked to Detector");
+                    SonsTools.ShowMessage("Receiver Successfully Linked to Detector - Link Point 2/2");
+                }
 
+                hitObjects.Clear(); // Clear the stored hit objects
+                hitObjects["Reciver"] = go;  // Store the receiver hit
             }
         }
 
@@ -127,7 +187,7 @@ namespace WirelessSignals.Linking
                 return;
             }
             // If nothing is stored, store the transmitter switch hit
-            if (!hitObjects.ContainsKey("TransmitterSwitch"))
+            if (!hitObjects.ContainsKey("TransmitterSwitch") && !hitObjects.ContainsKey("TransmitterDetector"))
             {
                 hitObjects.Clear();  // Clear iF it has another Transmitter Switch Stored
                 hitObjects["TransmitterSwitch"] = go;  // Store the transmitter switch hit
@@ -144,6 +204,50 @@ namespace WirelessSignals.Linking
                 shouldUpdateRun = false;
                 DestoryActiveLineRenderer();
                 hitObjects.Clear(); // Clear the stored hit objects
+            } else if (hitObjects.ContainsKey("TransmitterDetector"))  // If transmitter detector hit is stored, stop the linking
+            {
+                Misc.Msg("[LineRenderer] [HitTransmitterSwitch]: Transmitter Detector Hit - Stopped Linking");
+                SonsTools.ShowMessage("Transmitter Detector Hit - Stopped Linking");
+                shouldUpdateRun = false;
+                DestoryActiveLineRenderer();
+                hitObjects.Clear(); // Clear the stored hit objects
+            }
+        }
+
+        public void HitDetector(GameObject go)
+        {
+            if (go == null)
+            {
+                Misc.Msg("[LineRenderer] [HitDetector]: GameObject is null");
+                return;
+            }
+            // If nothing is stored, store the transmitter switch hit
+            if (!hitObjects.ContainsKey("TransmitterDetector") && !hitObjects.ContainsKey("TransmitterSwitch"))
+            {
+                hitObjects.Clear();  // Clear iF it has another Detector Stored
+                hitObjects["TransmitterDetector"] = go;  // Store the detector hit
+                Misc.Msg("[LineRenderer] [HitDetector]: Detector Hit - Link Point 1/2");
+                SonsTools.ShowMessage("Detector Hit - Link Point 1/2");
+                CreateActiveLineRenderer(go.transform.position);  // Create Active Line Renderer
+                shouldUpdateRun = true;
+                return;
+            }
+            else if (hitObjects.ContainsKey("TransmitterDetector"))  // If detector hit is stored, stop the linking
+            {
+                Misc.Msg("[LineRenderer] [HitDetector]: Detector Hit - Stopped Linking");
+                SonsTools.ShowMessage("Detector Hit - Stopped Linking");
+                shouldUpdateRun = false;
+                DestoryActiveLineRenderer();
+                hitObjects.Clear(); // Clear the stored hit objects
+            }
+            else if (hitObjects.ContainsKey("TransmitterSwitch"))  // If transmitter switch hit is stored, stop the linking
+            {
+                Misc.Msg("[LineRenderer] [HitDetector]: Transmitter Switch Hit - Stopped Linking");
+                SonsTools.ShowMessage("Transmitter Switch Hit - Stopped Linking");
+                shouldUpdateRun = false;
+                DestoryActiveLineRenderer();
+                hitObjects.Clear(); // Clear the stored hit objects
+
             }
         }
 

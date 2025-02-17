@@ -33,28 +33,28 @@ namespace WirelessSignals.Prefab
             Misc.Msg("[Spawn] Spawning Reciver");
             if (parameters is ReciverSpawnParameters reciverParams)
             {
-                Misc.Msg("[Spawn] [RaciverSpawnParameters] Parameters Are Correct");
+                Misc.Msg("[Spawn] [ReciverSpawnParameters] Parameters Are Correct");
                 // Access transmitter-specific parameters
                 string uniqueId = reciverParams.uniqueId;
                 if (string.IsNullOrEmpty(uniqueId))
                 {
-                    Misc.Msg("[Spawn] [RaciverSpawnParameters] UniqueId Is Null Or Empty, generating new one");
+                    Misc.Msg("[Spawn] [ReciverSpawnParameters] UniqueId Is Null Or Empty, generating new one");
                     uniqueId = Guid.NewGuid().ToString();  // Generate a new unique ID
                 }
                 if (DoesUniqueIdExist(uniqueId))
                 {
-                    Misc.Msg($"[Spawn] [RaciverSpawnParameters] UniqueId {uniqueId} Already Exists!");
-                    throw new ArgumentException($"[Spawn] [RaciverSpawnParameters] UniqueId {uniqueId} Already Exists!");
+                    Misc.Msg($"[Spawn] [ReciverSpawnParameters] UniqueId {uniqueId} Already Exists!");
+                    throw new ArgumentException($"[Spawn] [ReciverSpawnParameters] UniqueId {uniqueId} Already Exists!");
                 }
-                Misc.Msg("[Spawn] [RaciverSpawnParameters] UniqueId: " + uniqueId);
-                if (!LocalPlayer.IsInWorld) { Misc.Msg("[Spawn] [RaciverSpawnParameters] LocalPlayer Is Not In World"); throw new InvalidOperationException("[RaciverSpawnParameters] LocalPlayer Is Not In World!"); }
-                if (gameObjectWithComps == null) { Misc.Msg("[Spawn] [RaciverSpawnParameters] Setup GameObject Is Null"); throw new InvalidOperationException("[RaciverSpawnParameters] gameObjectWithComps Is Null!"); }
+                Misc.Msg("[Spawn] [ReciverSpawnParameters] UniqueId: " + uniqueId);
+                if (!LocalPlayer.IsInWorld) { Misc.Msg("[Spawn] [ReciverSpawnParameters] LocalPlayer Is Not In World"); throw new InvalidOperationException("[ReciverSpawnParameters] LocalPlayer Is Not In World!"); }
+                if (gameObjectWithComps == null) { Misc.Msg("[Spawn] [ReciverSpawnParameters] Setup GameObject Is Null"); throw new InvalidOperationException("[ReciverSpawnParameters] gameObjectWithComps Is Null!"); }
                 Vector3 position = reciverParams.position;
-                if (position == Vector3.zero) { Misc.Msg("[Spawn] [RaciverSpawnParameters] Invalid Position"); throw new ArgumentException("[RaciverSpawnParameters] Invalid Position!"); }
+                if (position == Vector3.zero) { Misc.Msg("[Spawn] [ReciverSpawnParameters] Invalid Position"); throw new ArgumentException("[ReciverSpawnParameters] Invalid Position!"); }
                 Quaternion rotation = reciverParams.rotation;
-                if (rotation == Quaternion.identity) { Misc.Msg("[Spawn] [RaciverSpawnParameters] Invalid Rotation"); throw new ArgumentException("[RaciverSpawnParameters] Invalid Rotation!"); }
+                if (rotation == Quaternion.identity) { Misc.Msg("[Spawn] [ReciverSpawnParameters] Invalid Rotation"); throw new ArgumentException("[ReciverSpawnParameters] Invalid Rotation!"); }
                 GameObject spawnedObject = GameObject.Instantiate(gameObjectWithComps, position, rotation);
-                if (spawnedObject == null) { Misc.Msg("[Spawn] [RaciverSpawnParameters] SpawnedObject Is Null"); throw new InvalidOperationException("[RaciverSpawnParameters] spawnedObject Is Null!"); }
+                if (spawnedObject == null) { Misc.Msg("[Spawn] [ReciverSpawnParameters] SpawnedObject Is Null"); throw new InvalidOperationException("[ReciverSpawnParameters] spawnedObject Is Null!"); }
                 Mono.Reciver controller = spawnedObject.GetComponent<Mono.Reciver>();
                 controller.uniqueId = uniqueId;
 
@@ -71,8 +71,8 @@ namespace WirelessSignals.Prefab
             }
             else
             {
-                Misc.Msg("[RaciverSpawnParameters] Invalid Parameters");
-                throw new ArgumentException("[RaciverSpawnParameters] Invalid Parameters!");
+                Misc.Msg("[ReciverSpawnParameters] Invalid Parameters");
+                throw new ArgumentException("[ReciverSpawnParameters] Invalid Parameters!");
             }
         }
 
