@@ -1,4 +1,5 @@
-﻿using SonsSdk;
+﻿using Newtonsoft.Json.Linq;
+using SonsSdk;
 using WirelessSignals.Prefab;
 
 namespace WirelessSignals.Saving
@@ -12,15 +13,68 @@ namespace WirelessSignals.Saving
         public PrefabSaveManager()
         {
             prefabManagers = new Dictionary<string, PrefabBase>();
+            isWorldReady = false;
         }
 
         public void RegisterPrefabManager(string type, PrefabBase manager)
         {
             prefabManagers[type] = manager;
+
+            // If we have deferred data and all managers are registered, process it
+            if (deferredLoadQueue.Count > 0 && isWorldReady)
+            {
+                ProcessDeferredLoads();
+            }
         }
 
         public string Name => "PrefabSaveManagerWirelessSignals";
         public bool IncludeInPlayerSave => false;
+
+        public void SetWorldReady()
+        {
+            isWorldReady = true;
+            // Process any queued loads once the world is ready
+            ProcessDeferredLoads();
+        }
+
+        private void ProcessDeferredLoads()
+        {
+            while (deferredLoadQueue.Count > 0)
+            {
+                var data = deferredLoadQueue.Dequeue();
+                ProcessLoadData(data);
+            }
+        }
+
+        private SaveData ConvertSaveData(JObject itemData, string managerType)
+        {
+            // Convert based on manager type
+            switch (managerType)
+            {
+                case "TransmitterSwitch":
+                    return itemData.ToObject<TransmitterSwitchSaveData>();
+                case "Receiver":
+                    return itemData.ToObject<ReceiverSaveData>();
+                case "Detector":
+                    return itemData.ToObject<TransmitterDetectorSaveData>();
+                default:
+                    return itemData.ToObject<SaveData>();
+            }
+        }
+
+        private void ProcessLoadData(AllPrefabsData data)
+        {
+            foreach (var managerData in data.ManagerData)
+            {
+                if (prefabManagers.TryGetValue(managerData.ManagerType, out var manager))
+                {
+                    foreach (var itemData in managerData.Items)
+                    {
+                        manager.LoadFromSaveData(itemData);
+                    }
+                }
+            }
+        }
 
         public AllPrefabsData Save()
         {
@@ -53,22 +107,15 @@ namespace WirelessSignals.Saving
                 return;
             }
 
-            if (Misc.hostMode == Misc.SimpleSaveGameType.NotIngame)
+            if (!isWorldReady || Misc.hostMode == Misc.SimpleSaveGameType.NotIngame)
             {
-                // Implement deferred loading if needed
+                // Implement deferred loading
+                Misc.Msg("[Loading] World not ready, deferring load");
+                deferredLoadQueue.Enqueue(data);
                 return;
             }
 
-            foreach (var managerData in data.ManagerData)
-            {
-                if (prefabManagers.TryGetValue(managerData.ManagerType, out var manager))
-                {
-                    foreach (var itemData in managerData.Items)
-                    {
-                        manager.LoadFromSaveData(itemData);
-                    }
-                }
-            }
+            ProcessLoadData(data);
         }
 
         [Serializable]

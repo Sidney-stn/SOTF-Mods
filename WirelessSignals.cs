@@ -97,15 +97,15 @@ public class WirelessSignals : SonsMod
         prefabSaveManager.RegisterPrefabManager("Detector", transmitterDetector);
         Misc.Msg("[OnEnterWorld] Complete - Creating TransmitterDetector");
 
-        Misc.Msg("[OnEnterWorld] Creating PrefabSaveManager");
-        
-
 
         // Subscribe To UnityAction Listeners OnEqipped And OnUnEqupped
         PlayerInventory playerInventory = LocalPlayer.Inventory;
         RepairToolInHand.Initialize(playerInventory);
 
         linkingCotroller = LocalPlayer.GameObject.AddComponent<Linking.LineRenderer>();
+
+        // Mark the world as ready for loading
+        prefabSaveManager.SetWorldReady();
     }
     // Saving System
     private static PrefabSaveManager prefabSaveManager;
