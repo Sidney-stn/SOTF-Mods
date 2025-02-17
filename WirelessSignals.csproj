@@ -96,4 +96,7 @@
     </None>
     <None Remove="ReleaseBuild\**" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Saving\" />
+  </ItemGroup>
 </Project>

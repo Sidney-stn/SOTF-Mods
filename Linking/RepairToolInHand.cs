@@ -8,6 +8,7 @@ namespace WirelessSignals.Linking
 {
     public class RepairToolInHand
     { 
+        internal static PlayerInventory playerInventoryInstance;
         public static void Initialize(PlayerInventory playerInventory)
         {
             // Subscribing to the OnItemUnequippedEvent
@@ -21,6 +22,8 @@ namespace WirelessSignals.Linking
             {
                 playerInventory.OnItemEquippedEvent.AddListener((UnityAction<ItemInstance, int>)OnItemEquipped);
             }
+
+            playerInventoryInstance = playerInventory;
         }
 
         public static void Deinitialize(PlayerInventory playerInventory)
@@ -36,6 +39,8 @@ namespace WirelessSignals.Linking
             {
                 playerInventory.OnItemEquippedEvent.RemoveListener((UnityAction<ItemInstance, int>)OnItemEquipped);
             }
+
+            playerInventoryInstance = null;
         }
 
         public static void OnItemUnequipped(ItemInstance item, int slotIndex)

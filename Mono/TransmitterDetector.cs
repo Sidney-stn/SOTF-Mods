@@ -1,9 +1,12 @@
 ﻿using RedLoader;
 using Sons.Gui.Input;
+using Sons.Inventory;
 using SonsSdk;
 using System.Collections;
+using TheForest.Items.Inventory;
 using TheForest.Utils;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace WirelessSignals.Mono
 {
@@ -17,6 +20,9 @@ namespace WirelessSignals.Mono
 
         public bool foundObject;
         public string foundObjectName;
+        private GameObject _lineGameObject;
+        private bool addedRepairToolEquip = false;
+        private bool addedRepairToolUnequip = false;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         private void Start()
@@ -140,7 +146,8 @@ namespace WirelessSignals.Mono
                             foundObjectName = "StorageLogsStructure";
                             Misc.Msg("[Mono] [TransmitterDetector] [TryFindObject] Found StorageLogsStructure");
                             SonsTools.ShowMessage("Found StorageLogsStructure - Detecting", 5);
-                            CheckLogs(open, 6).RunCoro();
+                            CheckSimpleStorage(open, 6, "LogLayout").RunCoro();
+                            SetupLinkedLines(open.transform.position);
                             return;
                         }
                         else if (name.Contains("StorageLogsLargeStructure"))
@@ -149,39 +156,96 @@ namespace WirelessSignals.Mono
                             foundObjectName = "StorageLogsLargeStructure";
                             Misc.Msg("[Mono] [TransmitterDetector] [TryFindObject] Found StorageLogsLargeStructure");
                             SonsTools.ShowMessage("Found StorageLogsLargeStructure - Detecting", 5);
-                            CheckLogs(open, 24).RunCoro();
+                            CheckSimpleStorage(open, 24, "LogLayout").RunCoro();
+                            SetupLinkedLines(open.transform.position);
+                            return;
+                        }
+                        else if (name.Contains("StorageStonesStructure"))
+                        {
+                            foundObject = true;
+                            foundObjectName = "StorageStonesStructure";
+                            Misc.Msg("[Mono] [TransmitterDetector] [TryFindObject] Found StorageStonesStructure");
+                            SonsTools.ShowMessage("Found StorageStonesStructure - Detecting", 5);
+                            CheckSimpleStorage(open, 28, "StoneLayout").RunCoro();
+                            SetupLinkedLines(open.transform.position);
+                            return;
+                        }
+                        else if (name.Contains("StorageSticksStructure"))
+                        {
+                            foundObject = true;
+                            foundObjectName = "StorageSticksStructure";
+                            Misc.Msg("[Mono] [TransmitterDetector] [TryFindObject] Found StorageSticksStructure");
+                            SonsTools.ShowMessage("Found StorageSticksStructure - Detecting", 5);
+                            CheckSimpleStorage(open, 30, "StickLayout").RunCoro();
+                            SetupLinkedLines(open.transform.position);
+                            return;
+                        }
+                        else if (name.Contains("StorageRocksStructure"))
+                        {
+                            foundObject = true;
+                            foundObjectName = "StorageRocksStructure";
+                            Misc.Msg("[Mono] [TransmitterDetector] [TryFindObject] Found StorageRocksStructure");
+                            SonsTools.ShowMessage("Found StorageRocksStructure - Detecting", 5);
+                            CheckSimpleStorage(open, 17, "RockLayout").RunCoro();
+                            SetupLinkedLines(open.transform.position);
+                            return;
+                        }
+                        else if (name.Contains("StorageBonesStructure"))
+                        {
+                            foundObject = true;
+                            foundObjectName = "StorageBonesStructure";
+                            Misc.Msg("[Mono] [TransmitterDetector] [TryFindObject] Found StorageBonesStructure");
+                            SonsTools.ShowMessage("Found StorageBonesStructure - Detecting", 5);
+                            CheckSimpleStorage(open, 50, "BoneLayout").RunCoro();
+                            SetupLinkedLines(open.transform.position);
+                            return;
+                        }
+                        else if (name.Contains("FishTrapStructure"))
+                        {
+                            foundObject = true;
+                            foundObjectName = "FishTrapStructure";
+                            Misc.Msg("[Mono] [TransmitterDetector] [TryFindObject] Found FishTrapStructure");
+                            SonsTools.ShowMessage("Found FishTrapStructure - Detecting", 5);
+                            CheckSimpleStorage(open, 5, "FishLayout").RunCoro();
+                            SetupLinkedLines(open.transform.position);
                             return;
                         }
 
                     }
+
                 }
             }
         }
 
-        private IEnumerator CheckLogs(GameObject obj, int maxLogsInStorage)
+        private IEnumerator CheckSimpleStorage(GameObject obj, int maxInStorage, string layoutName)
         {
-            int maxLogs = maxLogsInStorage;
+            int maxLogs = maxInStorage;
+            string layoutGroupName = $"{layoutName}Group";
+            string itemLayoutGroupName = $"{layoutName}Item";
             GameObject checkObj = obj;
-            if (checkObj == null) { Misc.Msg("[Mono] [TransmitterDetector] [CheckLogs] CheckObj is Null"); yield break; }
-            Misc.Msg("[Mono] [TransmitterDetector] [CheckLogs] Start Checking Logs");
-            if (!foundObject) { Misc.Msg("[Mono] [TransmitterDetector] [CheckLogs] Retuned, found object is false"); }
+            if (checkObj == null) { Misc.Msg("[Mono] [TransmitterDetector] [CheckSimpleStorage] CheckObj is Null"); yield break; }
+            Misc.Msg("[Mono] [TransmitterDetector] [CheckSimpleStorage] Start Checking Item");
+            if (!foundObject) { Misc.Msg("[Mono] [TransmitterDetector] [CheckSimpleStorage] Retuned, found object is false"); }
             while (foundObject)
             {
-                Misc.Msg("[Mono] [TransmitterDetector] [CheckLogs] While Loop - Checking Logs");
-                if (!foundObject) { Misc.Msg("[Mono] [TransmitterDetector] [CheckLogs] Retuned, found object is false"); yield break; }
-                if (checkObj == null) { Misc.Msg("[Mono] [TransmitterDetector] [CheckLogs] While Loop - CheckObj is Null"); yield break; }
-                GameObject logLayoutGroup = checkObj.transform.FindChild("LogLayoutGroup").gameObject;
-                if (logLayoutGroup == null) { Misc.Msg("[Mono] [TransmitterDetector] [CheckLogs] While Loop - LogLayoutGroup is Null"); yield break; }
+                Misc.Msg("[Mono] [TransmitterDetector] [CheckSimpleStorage] While Loop - Checking Item");
+                if (!foundObject) { Misc.Msg("[Mono] [TransmitterDetector] [CheckSimpleStorage] Retuned, found object is false"); yield break; }
+                if (checkObj == null) { Misc.Msg("[Mono] [TransmitterDetector] [CheckSimpleStorage] While Loop - CheckObj is Null"); yield break; }
+                GameObject itemLayoutGroup = checkObj.transform.FindChild(layoutGroupName).gameObject;
+                if (itemLayoutGroup == null) { Misc.Msg("[Mono] [TransmitterDetector] [CheckSimpleStorage] While Loop - LayoutGroup is Null"); yield break; }
 
-                List<Transform> transforms = logLayoutGroup.transform.GetChildren();
+                List<Transform> transforms = itemLayoutGroup.transform.GetChildren();
                 int activeLogs = 0;
                 for (int i = 0; i < transforms.Count; i++)
                 {
                     Transform log = transforms[i];
-                    if (log == null) { Misc.Msg("[Mono] [TransmitterDetector] [CheckLogs] While Loop - Log is Null"); yield break; }
-                    if (log.gameObject.active && log.gameObject.name.Contains("LogLayoutItem"))
+                    if (log == null) { Misc.Msg("[Mono] [TransmitterDetector] [CheckSimpleStorage] While Loop - Log is Null"); yield break; }
+                    if (log.gameObject.active)
                     {
-                        activeLogs++;
+                        if (log.gameObject.name.Contains(itemLayoutGroupName))
+                        {
+                            activeLogs++;
+                        }
                     }
                 }
 
@@ -190,7 +254,7 @@ namespace WirelessSignals.Mono
                     if (isOn == false)  // ONLY ENABLE IF NOT ALREADY ENABLED
                     {
                         SetState(true);
-                    } 
+                    }
                 }
                 else  // If Not All Logs Are Active - DISABLE SIGNAL
                 {
@@ -217,17 +281,95 @@ namespace WirelessSignals.Mono
                     if (maxLogs < 8)
                     {
                         yield return new WaitForSeconds(1f);  // If Player Is Close To The Structure, This Will Be Called Every Second
-                    } else
+                    }
+                    else
                     {
                         yield return new WaitForSeconds(3f);  // If Player Is Close To The Structure, This Will Be Called Every 30 Seconds
                     }
-                    
-                } 
+
+                }
                 else
                 {
                     yield return new WaitForSeconds(30f);  // If Player Is Far From The Structure, This Will Be Called Every 30 Seconds
                 }
-                
+
+            }
+        }
+
+        private void OnItemEquipped(ItemInstance item, int slotIndex)
+        {
+            if (slotIndex == 422 && _lineGameObject != null)
+            {
+                Misc.Msg("[TransmitterDetector] [OnItemEquipped] RepairToolInHand Equipped");
+                _lineGameObject.SetActive(true);
+            }
+        }
+
+        private void OnItemUnequipped(ItemInstance item, int slotIndex)
+        {
+            if (slotIndex == 422 && _lineGameObject != null)
+            {
+                Misc.Msg("[TransmitterDetector] [OnItemUnequipped] RepairToolInHand Unequipped");
+                _lineGameObject.SetActive(false);
+            }
+        }
+
+        private void SetupLinkedLines(Vector3 attatchedObjectPos)
+        {
+            Misc.Msg("[TransmitterDetector] [SetupLinkedLines] Setting Up Linked Lines");
+            // Subscribing to the OnItemUnequippedEvent
+            if (Linking.RepairToolInHand.playerInventoryInstance.OnItemUnequippedEvent != null && !addedRepairToolUnequip)
+            {
+                Linking.RepairToolInHand.playerInventoryInstance.OnItemUnequippedEvent.AddListener((UnityAction<ItemInstance, int>)OnItemUnequipped);
+                addedRepairToolUnequip = true;
+            }
+
+            // Subscribing to the OnItemEquippedEvent
+            if (Linking.RepairToolInHand.playerInventoryInstance.OnItemEquippedEvent != null && !addedRepairToolEquip)
+            {
+                Linking.RepairToolInHand.playerInventoryInstance.OnItemEquippedEvent.AddListener((UnityAction<ItemInstance, int>)OnItemEquipped);
+                addedRepairToolEquip = true;
+            }
+
+            if (Linking.RepairToolInHand.playerInventoryInstance.OnItemEquippedEvent != null && Linking.RepairToolInHand.playerInventoryInstance.OnItemUnequippedEvent != null)
+            {
+                if (_lineGameObject != null)
+                {
+                    DestroyImmediate(_lineGameObject);
+                }
+                _lineGameObject = new GameObject("LineRenderer");
+                _lineGameObject.SetParent(transform);
+
+                // Add LineRenderer component
+                UnityEngine.LineRenderer line = _lineGameObject.AddComponent<UnityEngine.LineRenderer>();
+
+                // Set material and basic properties
+                line.material = WirelessSignals.redMat;
+                line.positionCount = 2;
+                line.startWidth = 0.07f;
+                line.endWidth = 0.07f;
+
+                // Set start and end positions
+                line.SetPosition(0, gameObject.transform.position);
+                line.SetPosition(1, attatchedObjectPos);
+
+                // Optional quality settings
+                line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                line.receiveShadows = false;
+
+                Misc.Msg("[TransmitterDetector] [SetupLinkedLines] LineRenderer Setup Complete");
+
+
+                // Set LineRenderer visibility
+                if (LocalPlayer.Inventory != null && LocalPlayer.Inventory.RightHandItem != null &&
+                    LocalPlayer.Inventory.RightHandItem._itemID == 422)
+                {
+                    _lineGameObject.SetActive(true);
+                }
+                else
+                {
+                    _lineGameObject.SetActive(false);
+                }
             }
         }
 
@@ -317,6 +459,37 @@ namespace WirelessSignals.Mono
             else
             {
                 Misc.Msg("[TransmitterDetector] [LinkReciver] Reciver Already Linked");
+            }
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
+        private void OnDisable()
+        {
+            if (_lineGameObject != null)
+            {
+                Destroy(_lineGameObject);
+            }
+
+            // Unsubscribing from the OnItemUnequippedEvent
+            if (Linking.RepairToolInHand.playerInventoryInstance.OnItemUnequippedEvent != null)
+            {
+                Linking.RepairToolInHand.playerInventoryInstance.OnItemUnequippedEvent.RemoveListener((UnityAction<ItemInstance, int>)OnItemUnequipped);
+            }
+
+            // Unsubscribing from the OnItemEquippedEvent
+            if (Linking.RepairToolInHand.playerInventoryInstance.OnItemEquippedEvent != null)
+            {
+                Linking.RepairToolInHand.playerInventoryInstance.OnItemEquippedEvent.RemoveListener((UnityAction<ItemInstance, int>)OnItemEquipped);
+            }
+
+            // Unlink All Recivers
+            foreach (var reciverUniqueId in linkedUniqueIdsRecivers)
+            {
+                var reciver = WirelessSignals.reciver.FindByUniqueId(reciverUniqueId);
+                if (reciver)
+                {
+                    reciver.GetComponent<Reciver>().SetState(false);
+                }
             }
         }
     }
