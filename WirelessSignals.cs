@@ -1,6 +1,5 @@
 ﻿using SonsSdk;
 using SonsSdk.Attributes;
-using static TheForest.Player.Actions.GatheringPrefabsDefinition;
 using TheForest.Utils;
 using UnityEngine.UI;
 using UnityEngine;
@@ -106,6 +105,11 @@ public class WirelessSignals : SonsMod
     internal static Structure.Reciver reciverStructure;
     internal static Structure.TransmitterSwitch transmitterSwitchStructure;
     internal static Structure.TransmitterDetector transmitterDetectorStructure;
+
+    // Material For Line Renderer
+    internal static Material blackMat = Assets.TransmitterSwitch.transform.GetChild(0).FindChild("Wire (418)").GetChild(0).GetComponent<MeshRenderer>().materials[0];
+    internal static Material redMat = Assets.TransmitterSwitch.transform.GetChild(0).GetChild(16).GetChild(0).GetComponent<MeshRenderer>().materials[0];
+
 
 
     [DebugCommand("wireless")]
