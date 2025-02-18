@@ -1,14 +1,14 @@
-﻿using Newtonsoft.Json;
-using RedLoader;
+﻿using RedLoader;
 using UnityEngine;
 
 namespace WirelessSignals.Saving
 {
     [RegisterTypeInIl2Cpp]
-    public class SaveData
+    [Serializable] // Add this attribute
+    public class SaveData : Il2CppSystem.Object
     {
-        public string UniqueId { get; set; }
-        public Vector3 Position { get; set; }
-        public Quaternion Rotation { get; set; }
+        public string UniqueId;
+        public Vector3 Position;
+        public Quaternion Rotation;
     }
 }

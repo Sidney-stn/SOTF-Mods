@@ -8,6 +8,7 @@ using SUI;
 using TheForest.Items.Inventory;
 using WirelessSignals.Linking;
 using WirelessSignals.Saving;
+using WirelessSignals.Debug;
 
 namespace WirelessSignals;
 

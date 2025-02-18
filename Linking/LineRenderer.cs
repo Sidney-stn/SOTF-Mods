@@ -14,6 +14,7 @@ namespace WirelessSignals.Linking
         public Dictionary<string, GameObject> lineRenderers = new Dictionary<string, GameObject>();  // ReciverUnqiueId, LineRenderer
         private Material lineMaterial;
         private UnityEngine.LineRenderer activeLineRenderer = null;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Most Likley to be used later")]
         private bool isRepairToolInHand = false;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]

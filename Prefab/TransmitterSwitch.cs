@@ -1,5 +1,4 @@
-﻿
-using Il2CppInterop.Runtime;
+﻿using Il2CppInterop.Runtime;
 using RedLoader;
 using TheForest.Utils;
 using UnityEngine;
@@ -90,9 +89,11 @@ namespace WirelessSignals.Prefab
 
         protected override SpawnParameters CreateSpawnParametersFromSaveData(Saving.SaveData data)
         {
-            var receiverData = data as TransmitterSwitchSaveData;
-            if (receiverData == null)
+            if (!(data is TransmitterSwitchSaveData receiverData))
+            {
+                Misc.Msg($"[Error] Expected TransmitterSwitchSaveData but got {data.GetType()}");
                 throw new ArgumentException("Invalid save data type");
+            }
 
             return new TransmitterSwitchSpawnParameters
             {

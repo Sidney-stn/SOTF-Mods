@@ -47,64 +47,6 @@ namespace WirelessSignals.Saving
             }
         }
 
-        private SaveData ConvertSaveData(JObject itemData, string managerType)
-        {
-            try
-            {
-                // Create base properties
-                var baseData = new SaveData
-                {
-                    UniqueId = itemData["UniqueId"]?.ToString(),
-                    Position = new Vector3(
-                        float.Parse(itemData["Position"]["x"].ToString()),
-                        float.Parse(itemData["Position"]["y"].ToString()),
-                        float.Parse(itemData["Position"]["z"].ToString())
-                    ),
-                    Rotation = new Quaternion(
-                        float.Parse(itemData["Rotation"]["x"].ToString()),
-                        float.Parse(itemData["Rotation"]["y"].ToString()),
-                        float.Parse(itemData["Rotation"]["z"].ToString()),
-                        float.Parse(itemData["Rotation"]["w"].ToString())
-                    )
-                };
-
-                // Then create the appropriate save data type
-                switch (managerType)
-                {
-                    case "TransmitterSwitch":
-                        return new TransmitterSwitchSaveData
-                        {
-                            UniqueId = baseData.UniqueId,
-                            Position = baseData.Position,
-                            Rotation = baseData.Rotation,
-                            IsOn = itemData["IsOn"] != null ? bool.Parse(itemData["IsOn"].ToString()) : null
-                        };
-                    case "Receiver":
-                        return new ReceiverSaveData
-                        {
-                            UniqueId = baseData.UniqueId,
-                            Position = baseData.Position,
-                            Rotation = baseData.Rotation,
-                            IsOn = itemData["IsOn"] != null ? bool.Parse(itemData["IsOn"].ToString()) : null
-                        };
-                    case "Detector":
-                        return new TransmitterDetectorSaveData
-                        {
-                            UniqueId = baseData.UniqueId,
-                            Position = baseData.Position,
-                            Rotation = baseData.Rotation,
-                            IsOn = itemData["IsOn"] != null ? bool.Parse(itemData["IsOn"].ToString()) : null
-                        };
-                    default:
-                        return baseData;
-                }
-            }
-            catch (Exception ex)
-            {
-                Misc.Msg($"[Error] Failed to convert save data: {ex.Message}");
-                throw;
-            }
-        }
 
         private void ProcessLoadData(AllPrefabsData data)
         {
@@ -112,18 +54,20 @@ namespace WirelessSignals.Saving
             {
                 if (prefabManagers.TryGetValue(managerData.ManagerType, out var manager))
                 {
-                    foreach (var itemData in managerData.Items)
+                    // Cast Items back to list of SaveData
+                    var items = managerData.Items as List<SaveData>;
+                    if (items != null)
                     {
-                        try
+                        foreach (var itemData in items)
                         {
-                            var json = JsonConvert.SerializeObject(itemData);
-                            var jObject = JObject.Parse(json);
-                            var typedData = ConvertSaveData(jObject, managerData.ManagerType);
-                            manager.LoadFromSaveData(typedData);
-                        }
-                        catch (Exception ex)
-                        {
-                            Misc.Msg($"[Error] Failed to load prefab: {ex.Message}");
+                            try
+                            {
+                                manager.LoadFromSaveData(itemData);
+                            }
+                            catch (Exception ex)
+                            {
+                                Misc.Msg($"[Error] Failed to load prefab: {ex.Message}");
+                            }
                         }
                     }
                 }
@@ -149,7 +93,7 @@ namespace WirelessSignals.Saving
                 };
                 saveData.ManagerData.Add(managerSaveData);
             }
-
+            Misc.Msg($"[Saving] Saved {saveData.ManagerData.Count} prefab managers");
             return saveData;
         }
 
@@ -181,7 +125,7 @@ namespace WirelessSignals.Saving
         public class ManagerSaveData
         {
             public string ManagerType { get; set; }
-            public List<SaveData> Items { get; set; } = new List<SaveData>();
+            public object Items { get; set; } = new List<SaveData>();
         }
 
     }

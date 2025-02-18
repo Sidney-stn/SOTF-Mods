@@ -101,9 +101,11 @@ namespace WirelessSignals.Prefab
 
         protected override SpawnParameters CreateSpawnParametersFromSaveData(Saving.SaveData data)
         {
-            var receiverData = data as TransmitterDetectorSaveData;
-            if (receiverData == null)
+            if (!(data is TransmitterDetectorSaveData receiverData))
+            {
+                Misc.Msg($"[Error] Expected TransmitterDetectorSaveData but got {data.GetType()}");
                 throw new ArgumentException("Invalid save data type");
+            }
 
             return new TransmitterDetectorSpawnParameters
             {
