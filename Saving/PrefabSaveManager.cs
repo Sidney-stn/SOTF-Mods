@@ -54,15 +54,23 @@ namespace WirelessSignals.Saving
             {
                 if (prefabManagers.TryGetValue(managerData.ManagerType, out var manager))
                 {
-                    // Cast Items back to list of SaveData
-                    var items = managerData.Items as List<SaveData>;
+                    var items = managerData.Items;
                     if (items != null)
                     {
-                        foreach (var itemData in items)
+                        foreach (var item in items)
                         {
                             try
                             {
-                                manager.LoadFromSaveData(itemData);
+                                // Convert JObject to proper type based on manager type
+                                object typedData = managerData.ManagerType switch
+                                {
+                                    "TransmitterSwitch" => JsonConvert.DeserializeObject<TransmitterSwitchSaveData>(item.ToString()),
+                                    "Receiver" => JsonConvert.DeserializeObject<ReceiverSaveData>(item.ToString()),
+                                    "Detector" => JsonConvert.DeserializeObject<TransmitterDetectorSaveData>(item.ToString()),
+                                    _ => item
+                                };
+
+                                manager.LoadFromSaveData(typedData);
                             }
                             catch (Exception ex)
                             {
@@ -86,21 +94,14 @@ namespace WirelessSignals.Saving
 
             foreach (var entry in prefabManagers)
             {
-                var items = entry.Value.GetAllSaveData();
                 var managerSaveData = new ManagerSaveData
                 {
                     ManagerType = entry.Key,
-                    Items = entry.Key switch
-                    {
-                        "TransmitterSwitch" => items.Cast<TransmitterSwitchSaveData>().ToList(),
-                        "Receiver" => items.Cast<ReceiverSaveData>().ToList(),
-                        "Detector" => items.Cast<TransmitterDetectorSaveData>().ToList(),
-                        _ => items
-                    }
+                    Items = entry.Value.GetAllSaveData()
                 };
                 saveData.ManagerData.Add(managerSaveData);
             }
-            Misc.Msg($"[Saving] Saved {saveData.ManagerData.Count} prefab managers");
+            Misc.Msg($"[Saving] Saved {saveData.ManagerData.Count} Prefabs");
             return saveData;
         }
 
@@ -132,13 +133,7 @@ namespace WirelessSignals.Saving
         public class ManagerSaveData
         {
             public string ManagerType { get; set; }
-            public dynamic Items { get; set; }
-
-            public ManagerSaveData()
-            {
-                // Initialize based on manager type
-                Items = new List<SaveData>();
-            }
+            public List<object> Items { get; set; } = new List<object>();
         }
 
     }

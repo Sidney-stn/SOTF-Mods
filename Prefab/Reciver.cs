@@ -77,7 +77,7 @@ namespace WirelessSignals.Prefab
             }
         }
 
-        protected override Saving.SaveData CreateSaveDataFromGameObject(GameObject obj)
+        protected override object CreateSaveDataFromGameObject(GameObject obj)
         {
             var component = obj.GetComponent<Mono.Reciver>();
             return new ReceiverSaveData
@@ -89,9 +89,8 @@ namespace WirelessSignals.Prefab
             };
         }
 
-        protected override SpawnParameters CreateSpawnParametersFromSaveData(Saving.SaveData data)
+        protected override SpawnParameters CreateSpawnParametersFromSaveData(object data)
         {
-            // Instead of casting directly, check if the data is of the right type
             if (!(data is ReceiverSaveData receiverData))
             {
                 Misc.Msg($"[Error] Expected ReceiverSaveData but got {data.GetType()}");
@@ -107,10 +106,13 @@ namespace WirelessSignals.Prefab
             };
         }
 
-        protected override void ApplySaveDataToGameObject(GameObject obj, Saving.SaveData data)
+        protected override void ApplySaveDataToGameObject(GameObject obj, object data)
         {
-            var receiverData = data as ReceiverSaveData;
-            if (receiverData == null) return;
+            if (!(data is ReceiverSaveData receiverData))
+            {
+                Misc.Msg("[Error] Object Data is Not ReciverSaveData!");
+                return;
+            }
 
             var component = obj.GetComponent<Mono.Reciver>();
             if (component != null)
@@ -129,11 +131,27 @@ namespace WirelessSignals.Prefab
     }
 
     // Base class for specific save data types
-    [RegisterTypeInIl2Cpp]
+    //[RegisterTypeInIl2Cpp]
+    //[Serializable]
+    //public class ReceiverSaveData : Il2CppSystem.Object
+    //{
+    //    // Redeclare all base fields
+    //    public string UniqueId;
+    //    public Vector3 Position;
+    //    public Quaternion Rotation;
+    //    // Additional receiver-specific fields
+    //    public bool? IsOn;
+    //    // Future fields can be added here
+    //}
     [Serializable]
-    public class ReceiverSaveData : Saving.SaveData
+    public class ReceiverSaveData
     {
-        public bool? IsOn { get; set; }
-        // Add other receiver-specific properties
+        // Redeclare all base fields
+        public string UniqueId;
+        public Vector3 Position;
+        public Quaternion Rotation;
+        // Additional receiver-specific fields
+        public bool? IsOn;
+        // Future fields can be added here
     }
 }

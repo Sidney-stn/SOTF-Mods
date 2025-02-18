@@ -75,7 +75,7 @@ namespace WirelessSignals.Prefab
             }
         }
 
-        protected override Saving.SaveData CreateSaveDataFromGameObject(GameObject obj)
+        protected override object CreateSaveDataFromGameObject(GameObject obj)
         {
             var component = obj.GetComponent<Mono.TransmitterSwitch>();
             return new TransmitterSwitchSaveData
@@ -87,11 +87,11 @@ namespace WirelessSignals.Prefab
             };
         }
 
-        protected override SpawnParameters CreateSpawnParametersFromSaveData(Saving.SaveData data)
+        protected override SpawnParameters CreateSpawnParametersFromSaveData(object data)
         {
             if (!(data is TransmitterSwitchSaveData receiverData))
             {
-                Misc.Msg($"[Error] Expected TransmitterSwitchSaveData but got {data.GetType()}");
+                Misc.Msg($"[Error] Expected ReceiverSaveData but got {data.GetType()}");
                 throw new ArgumentException("Invalid save data type");
             }
 
@@ -104,10 +104,13 @@ namespace WirelessSignals.Prefab
             };
         }
 
-        protected override void ApplySaveDataToGameObject(GameObject obj, Saving.SaveData data)
+        protected override void ApplySaveDataToGameObject(GameObject obj, object data)
         {
-            var receiverData = data as TransmitterSwitchSaveData;
-            if (receiverData == null) return;
+            if (!(data is TransmitterSwitchSaveData receiverData))
+            {
+                Misc.Msg("[Error] Object Data is Not TransmitterSwitchSaveData!");
+                return;
+            }
 
             var component = obj.GetComponent<Mono.TransmitterSwitch>();
             if (component != null)
@@ -127,11 +130,28 @@ namespace WirelessSignals.Prefab
     }
 
     // Base class for specific save data types
-    [RegisterTypeInIl2Cpp]
+    //[RegisterTypeInIl2Cpp]
+    //[Serializable]
+    //public class TransmitterSwitchSaveData : Il2CppSystem.Object
+    //{
+    //    // Redeclare all base fields
+    //    public string UniqueId;
+    //    public Vector3 Position;
+    //    public Quaternion Rotation;
+    //    // Additional transmitter-specific fields
+    //    public bool? IsOn;
+    //    // Future fields can be added here
+    //}
+
     [Serializable]
-    public class TransmitterSwitchSaveData : Saving.SaveData
+    public class TransmitterSwitchSaveData
     {
-        public bool? IsOn { get; set; }
-        // Add other receiver-specific properties
+        // Redeclare all base fields
+        public string UniqueId;
+        public Vector3 Position;
+        public Quaternion Rotation;
+        // Additional transmitter-specific fields
+        public bool? IsOn;
+        // Future fields can be added here
     }
 }

@@ -24,7 +24,7 @@ namespace WirelessSignals.Prefab
         {
             // Add wire to the structure
             Transform wirePlacement = obj.transform.GetChild(0).GetChild(22);
-            if (wirePlacement == null) { throw new InvalidOperationException("[TransmitterSwitch] [CompleteSetup] WirePlacement Is Null!"); }
+            if (wirePlacement == null) { throw new InvalidOperationException("[TransmitterDetector] [CompleteSetup] WirePlacement Is Null!"); }
             GameObject wire = GameObject.Instantiate(ItemTools.GetHeldPrefab(418).gameObject, wirePlacement);
             HeldItemIdentifier itemIdent = wire.GetComponent<HeldItemIdentifier>();
             GameObject.Destroy(itemIdent);
@@ -87,7 +87,7 @@ namespace WirelessSignals.Prefab
             }
         }
 
-        protected override Saving.SaveData CreateSaveDataFromGameObject(GameObject obj)
+        protected override object CreateSaveDataFromGameObject(GameObject obj)
         {
             var component = obj.GetComponent<Mono.TransmitterDetector>();
             return new TransmitterDetectorSaveData
@@ -99,11 +99,11 @@ namespace WirelessSignals.Prefab
             };
         }
 
-        protected override SpawnParameters CreateSpawnParametersFromSaveData(Saving.SaveData data)
+        protected override SpawnParameters CreateSpawnParametersFromSaveData(object data)
         {
             if (!(data is TransmitterDetectorSaveData receiverData))
             {
-                Misc.Msg($"[Error] Expected TransmitterDetectorSaveData but got {data.GetType()}");
+                Misc.Msg($"[Error] Expected ReceiverSaveData but got {data.GetType()}");
                 throw new ArgumentException("Invalid save data type");
             }
 
@@ -116,10 +116,13 @@ namespace WirelessSignals.Prefab
             };
         }
 
-        protected override void ApplySaveDataToGameObject(GameObject obj, Saving.SaveData data)
+        protected override void ApplySaveDataToGameObject(GameObject obj, object data)
         {
-            var receiverData = data as TransmitterDetectorSaveData;
-            if (receiverData == null) return;
+            if (!(data is TransmitterDetectorSaveData receiverData))
+            {
+                Misc.Msg("[Error] Object Data is Not TransmitterDetectorSaveData!");
+                return;
+            }
 
             var component = obj.GetComponent<Mono.TransmitterDetector>();
             if (component != null)
@@ -139,11 +142,27 @@ namespace WirelessSignals.Prefab
     }
 
     // Base class for specific save data types
-    [RegisterTypeInIl2Cpp]
+    //[RegisterTypeInIl2Cpp]
+    //[Serializable]
+    //public class TransmitterDetectorSaveData : Il2CppSystem.Object
+    //{
+    //    // Redeclare all base fields
+    //    public string UniqueId;
+    //    public Vector3 Position;
+    //    public Quaternion Rotation;
+    //    // Additional detector-specific fields
+    //    public bool? IsOn;
+    //    // Future fields can be added here
+    //}
     [Serializable]
-    public class TransmitterDetectorSaveData : Saving.SaveData
+    public class TransmitterDetectorSaveData
     {
-        public bool? IsOn { get; set; }
-        // Add other receiver-specific properties
+        // Redeclare all base fields
+        public string UniqueId;
+        public Vector3 Position;
+        public Quaternion Rotation;
+        // Additional detector-specific fields
+        public bool? IsOn;
+        // Future fields can be added here
     }
 }

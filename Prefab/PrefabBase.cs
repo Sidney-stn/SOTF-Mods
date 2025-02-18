@@ -64,13 +64,13 @@ namespace WirelessSignals.Prefab
         internal abstract void Setup();
 
         // Abstract methods for save/load operations
-        protected abstract Saving.SaveData CreateSaveDataFromGameObject(GameObject obj);
-        protected abstract SpawnParameters CreateSpawnParametersFromSaveData(Saving.SaveData data);
-        protected abstract void ApplySaveDataToGameObject(GameObject obj, Saving.SaveData data);
+        protected abstract object CreateSaveDataFromGameObject(GameObject obj);
+        protected abstract SpawnParameters CreateSpawnParametersFromSaveData(object data);
+        protected abstract void ApplySaveDataToGameObject(GameObject obj, object data);
 
-        internal virtual List<Saving.SaveData> GetAllSaveData()
+        internal virtual List<object> GetAllSaveData()
         {
-            var allSaveData = new List<Saving.SaveData>();
+            var allSaveData = new List<object>();
             foreach (var obj in spawnedGameObjects.Values)
             {
                 if (obj != null)
@@ -81,7 +81,7 @@ namespace WirelessSignals.Prefab
             return allSaveData;
         }
 
-        internal virtual void LoadFromSaveData(Saving.SaveData data)
+        internal virtual void LoadFromSaveData(object data)
         {
             if (data == null) return;
 
