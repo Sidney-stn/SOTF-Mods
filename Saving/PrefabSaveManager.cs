@@ -86,10 +86,17 @@ namespace WirelessSignals.Saving
 
             foreach (var entry in prefabManagers)
             {
+                var items = entry.Value.GetAllSaveData();
                 var managerSaveData = new ManagerSaveData
                 {
                     ManagerType = entry.Key,
-                    Items = entry.Value.GetAllSaveData()
+                    Items = entry.Key switch
+                    {
+                        "TransmitterSwitch" => items.Cast<TransmitterSwitchSaveData>().ToList(),
+                        "Receiver" => items.Cast<ReceiverSaveData>().ToList(),
+                        "Detector" => items.Cast<TransmitterDetectorSaveData>().ToList(),
+                        _ => items
+                    }
                 };
                 saveData.ManagerData.Add(managerSaveData);
             }
@@ -125,7 +132,13 @@ namespace WirelessSignals.Saving
         public class ManagerSaveData
         {
             public string ManagerType { get; set; }
-            public object Items { get; set; } = new List<SaveData>();
+            public dynamic Items { get; set; }
+
+            public ManagerSaveData()
+            {
+                // Initialize based on manager type
+                Items = new List<SaveData>();
+            }
         }
 
     }
