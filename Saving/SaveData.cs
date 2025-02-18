@@ -1,9 +1,10 @@
 ﻿using Newtonsoft.Json;
+using RedLoader;
 using UnityEngine;
 
 namespace WirelessSignals.Saving
 {
-    [Serializable]
+    [RegisterTypeInIl2Cpp]
     public class SaveData
     {
         public string UniqueId { get; set; }

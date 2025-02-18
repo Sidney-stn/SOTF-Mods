@@ -1,5 +1,6 @@
 ﻿
 using Il2CppInterop.Runtime;
+using RedLoader;
 using TheForest.Utils;
 using UnityEngine;
 
@@ -125,6 +126,7 @@ namespace WirelessSignals.Prefab
     }
 
     // Base class for specific save data types
+    [RegisterTypeInIl2Cpp]
     [Serializable]
     public class TransmitterSwitchSaveData : Saving.SaveData
     {

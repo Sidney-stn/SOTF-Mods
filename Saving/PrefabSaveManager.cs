@@ -1,10 +1,8 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SonsSdk;
-using Unity.Baselib.LowLevel;
 using UnityEngine;
 using WirelessSignals.Prefab;
-using WirelessSignals.Saving.WirelessSignals.Saving;
 
 namespace WirelessSignals.Saving
 {
@@ -24,6 +22,7 @@ namespace WirelessSignals.Saving
         {
             prefabManagers[type] = manager;
 
+            // If we have deferred data and all managers are registered, process it
             if (deferredLoadQueue.Count > 0 && isWorldReady)
             {
                 ProcessDeferredLoads();
@@ -48,26 +47,62 @@ namespace WirelessSignals.Saving
             }
         }
 
-        private SaveData ConvertToCorrectType(string json, string managerType)
+        private SaveData ConvertSaveData(JObject itemData, string managerType)
         {
             try
             {
+                // Create base properties
+                var baseData = new SaveData
+                {
+                    UniqueId = itemData["UniqueId"]?.ToString(),
+                    Position = new Vector3(
+                        float.Parse(itemData["Position"]["x"].ToString()),
+                        float.Parse(itemData["Position"]["y"].ToString()),
+                        float.Parse(itemData["Position"]["z"].ToString())
+                    ),
+                    Rotation = new Quaternion(
+                        float.Parse(itemData["Rotation"]["x"].ToString()),
+                        float.Parse(itemData["Rotation"]["y"].ToString()),
+                        float.Parse(itemData["Rotation"]["z"].ToString()),
+                        float.Parse(itemData["Rotation"]["w"].ToString())
+                    )
+                };
+
+                // Then create the appropriate save data type
                 switch (managerType)
                 {
                     case "TransmitterSwitch":
-                        return JsonConvert.DeserializeObject<TransmitterSwitchSaveData>(json);
+                        return new TransmitterSwitchSaveData
+                        {
+                            UniqueId = baseData.UniqueId,
+                            Position = baseData.Position,
+                            Rotation = baseData.Rotation,
+                            IsOn = itemData["IsOn"] != null ? bool.Parse(itemData["IsOn"].ToString()) : null
+                        };
                     case "Receiver":
-                        return JsonConvert.DeserializeObject<ReceiverSaveData>(json);
+                        return new ReceiverSaveData
+                        {
+                            UniqueId = baseData.UniqueId,
+                            Position = baseData.Position,
+                            Rotation = baseData.Rotation,
+                            IsOn = itemData["IsOn"] != null ? bool.Parse(itemData["IsOn"].ToString()) : null
+                        };
                     case "Detector":
-                        return JsonConvert.DeserializeObject<TransmitterDetectorSaveData>(json);
+                        return new TransmitterDetectorSaveData
+                        {
+                            UniqueId = baseData.UniqueId,
+                            Position = baseData.Position,
+                            Rotation = baseData.Rotation,
+                            IsOn = itemData["IsOn"] != null ? bool.Parse(itemData["IsOn"].ToString()) : null
+                        };
                     default:
-                        return JsonConvert.DeserializeObject<SaveData>(json);
+                        return baseData;
                 }
             }
             catch (Exception ex)
             {
                 Misc.Msg($"[Error] Failed to convert save data: {ex.Message}");
-                return null;
+                throw;
             }
         }
 
@@ -81,23 +116,9 @@ namespace WirelessSignals.Saving
                     {
                         try
                         {
-                            var serializableData = SerializableSaveData.FromSaveData(itemData);
-                            string jsonString = JsonConvert.SerializeObject(serializableData);
-                            SaveData typedData;
-
-                            switch (managerData.ManagerType)
-                            {
-                                case "TransmitterSwitch":
-                                    var switchData = JsonConvert.DeserializeObject<SerializableTransmitterSwitchData>(jsonString);
-                                    typedData = switchData.ToSaveData();
-                                    break;
-                                // Add cases for Receiver and Detector
-                                default:
-                                    var baseData = JsonConvert.DeserializeObject<SerializableSaveData>(jsonString);
-                                    typedData = baseData.ToSaveData();
-                                    break;
-                            }
-
+                            var json = JsonConvert.SerializeObject(itemData);
+                            var jObject = JObject.Parse(json);
+                            var typedData = ConvertSaveData(jObject, managerData.ManagerType);
                             manager.LoadFromSaveData(typedData);
                         }
                         catch (Exception ex)
@@ -121,20 +142,12 @@ namespace WirelessSignals.Saving
 
             foreach (var entry in prefabManagers)
             {
-                try
+                var managerSaveData = new ManagerSaveData
                 {
-                    var items = entry.Value.GetAllSaveData();
-                    var managerSaveData = new ManagerSaveData
-                    {
-                        ManagerType = entry.Key,
-                        Items = items
-                    };
-                    saveData.ManagerData.Add(managerSaveData);
-                }
-                catch (Exception ex)
-                {
-                    Misc.Msg($"[Error] Failed to save prefab manager {entry.Key}: {ex.Message}");
-                }
+                    ManagerType = entry.Key,
+                    Items = entry.Value.GetAllSaveData()
+                };
+                saveData.ManagerData.Add(managerSaveData);
             }
 
             return saveData;
@@ -170,5 +183,6 @@ namespace WirelessSignals.Saving
             public string ManagerType { get; set; }
             public List<SaveData> Items { get; set; } = new List<SaveData>();
         }
+
     }
 }

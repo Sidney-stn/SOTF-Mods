@@ -1,4 +1,5 @@
 ﻿using Il2CppInterop.Runtime;
+using RedLoader;
 using SonsSdk;
 using TheForest.Items.Inventory;
 using TheForest.Utils;
@@ -136,6 +137,7 @@ namespace WirelessSignals.Prefab
     }
 
     // Base class for specific save data types
+    [RegisterTypeInIl2Cpp]
     [Serializable]
     public class TransmitterDetectorSaveData : Saving.SaveData
     {
