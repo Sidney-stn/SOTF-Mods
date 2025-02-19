@@ -159,5 +159,15 @@ namespace WirelessSignals.Mono
                 Misc.Msg("[TransmitterSwitch] [LinkReciver] Reciver Already Linked");
             }
         }
+
+        public Vector3 GetPosition()
+        {
+            return transform.position;
+        }
+
+        public Quaternion GetRotation()
+        {
+            return transform.rotation;
+        }
     }
 }

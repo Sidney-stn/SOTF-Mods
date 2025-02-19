@@ -22,7 +22,6 @@ namespace WirelessSignals.Saving
         {
             prefabManagers[type] = manager;
 
-            // If we have deferred data and all managers are registered, process it
             if (deferredLoadQueue.Count > 0 && isWorldReady)
             {
                 ProcessDeferredLoads();
@@ -47,36 +46,63 @@ namespace WirelessSignals.Saving
             }
         }
 
+        [Serializable]
+        public class AllPrefabsData
+        {
+            public ManagerSaveData SaveData = new ManagerSaveData();
+        }
+
+        [Serializable]
+        public class ManagerSaveData
+        {
+            public List<Prefab.Reciver.ReceiverSaveData> ReceiverItems = new List<Prefab.Reciver.ReceiverSaveData>();
+            public List<Prefab.WirelessTransmitterSwitch.TransmitterSwitchSaveData> SwitchItems = new List<Prefab.WirelessTransmitterSwitch.TransmitterSwitchSaveData>();
+            public List<Prefab.TransmitterDetector.TransmitterDetectorSaveData> DetectorItems = new List<Prefab.TransmitterDetector.TransmitterDetectorSaveData>();
+        }
 
         private void ProcessLoadData(AllPrefabsData data)
         {
-            foreach (var managerData in data.ManagerData)
+            if (prefabManagers.TryGetValue("Receiver", out var receiverManager))
             {
-                if (prefabManagers.TryGetValue(managerData.ManagerType, out var manager))
+                foreach (var item in data.SaveData.ReceiverItems)
                 {
-                    var items = managerData.Items;
-                    if (items != null)
+                    try
                     {
-                        foreach (var item in items)
-                        {
-                            try
-                            {
-                                // Convert JObject to proper type based on manager type
-                                object typedData = managerData.ManagerType switch
-                                {
-                                    "TransmitterSwitch" => JsonConvert.DeserializeObject<TransmitterSwitchSaveData>(item.ToString()),
-                                    "Receiver" => JsonConvert.DeserializeObject<ReceiverSaveData>(item.ToString()),
-                                    "Detector" => JsonConvert.DeserializeObject<TransmitterDetectorSaveData>(item.ToString()),
-                                    _ => item
-                                };
+                        receiverManager.LoadFromSaveData(item);
+                    }
+                    catch (Exception ex)
+                    {
+                        Misc.Msg($"[Error] Failed to load receiver: {ex.Message}");
+                    }
+                }
+            }
 
-                                manager.LoadFromSaveData(typedData);
-                            }
-                            catch (Exception ex)
-                            {
-                                Misc.Msg($"[Error] Failed to load prefab: {ex.Message}");
-                            }
-                        }
+            if (prefabManagers.TryGetValue("TransmitterSwitch", out var switchManager))
+            {
+                foreach (var item in data.SaveData.SwitchItems)
+                {
+                    try
+                    {
+                        switchManager.LoadFromSaveData(item);
+                    }
+                    catch (Exception ex)
+                    {
+                        Misc.Msg($"[Error] Failed to load switch: {ex.Message}");
+                    }
+                }
+            }
+
+            if (prefabManagers.TryGetValue("Detector", out var detectorManager))
+            {
+                foreach (var item in data.SaveData.DetectorItems)
+                {
+                    try
+                    {
+                        detectorManager.LoadFromSaveData(item);
+                    }
+                    catch (Exception ex)
+                    {
+                        Misc.Msg($"[Error] Failed to load detector: {ex.Message}");
                     }
                 }
             }
@@ -92,16 +118,33 @@ namespace WirelessSignals.Saving
 
             var saveData = new AllPrefabsData();
 
-            foreach (var entry in prefabManagers)
+            if (prefabManagers.TryGetValue("Receiver", out var receiverManager))
             {
-                var managerSaveData = new ManagerSaveData
+                saveData.SaveData.ReceiverItems = receiverManager.GetAllSaveData()
+                    .Cast<Reciver.ReceiverSaveData>().ToList();
+
+                // Loop through all recivers and log their uniqueId, position, and isOn
+                foreach (var item in saveData.SaveData.ReceiverItems)
                 {
-                    ManagerType = entry.Key,
-                    Items = entry.Value.GetAllSaveData()
-                };
-                saveData.ManagerData.Add(managerSaveData);
+                    Misc.Msg($"[Saving] Receiver: {item.UniqueId} {item.Position} {item.IsOn}");
+                }
             }
-            Misc.Msg($"[Saving] Saved {saveData.ManagerData.Count} Prefabs");
+
+            if (prefabManagers.TryGetValue("TransmitterSwitch", out var switchManager))
+            {
+                saveData.SaveData.SwitchItems = switchManager.GetAllSaveData()
+                    .Cast<WirelessTransmitterSwitch.TransmitterSwitchSaveData>().ToList();
+            }
+
+            if (prefabManagers.TryGetValue("Detector", out var detectorManager))
+            {
+                saveData.SaveData.DetectorItems = detectorManager.GetAllSaveData()
+                    .Cast<TransmitterDetector.TransmitterDetectorSaveData>().ToList();
+            }
+
+            // Log Save Data Prefabs Count Saved
+            Misc.Msg($"[Saving] Saved {saveData.SaveData.ReceiverItems.Count} Receiver, {saveData.SaveData.SwitchItems.Count} Switch, {saveData.SaveData.DetectorItems.Count} Detector");
+
             return saveData;
         }
 
@@ -121,19 +164,6 @@ namespace WirelessSignals.Saving
             }
 
             ProcessLoadData(data);
-        }
-
-        [Serializable]
-        public class AllPrefabsData
-        {
-            public List<ManagerSaveData> ManagerData { get; set; } = new List<ManagerSaveData>();
-        }
-
-        [Serializable]
-        public class ManagerSaveData
-        {
-            public string ManagerType { get; set; }
-            public List<object> Items { get; set; } = new List<object>();
         }
 
     }

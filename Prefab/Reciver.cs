@@ -53,7 +53,6 @@ namespace WirelessSignals.Prefab
                 Vector3 position = reciverParams.position;
                 if (position == Vector3.zero) { Misc.Msg("[Spawn] [ReciverSpawnParameters] Invalid Position"); throw new ArgumentException("[ReciverSpawnParameters] Invalid Position!"); }
                 Quaternion rotation = reciverParams.rotation;
-                if (rotation == Quaternion.identity) { Misc.Msg("[Spawn] [ReciverSpawnParameters] Invalid Rotation"); throw new ArgumentException("[ReciverSpawnParameters] Invalid Rotation!"); }
                 GameObject spawnedObject = GameObject.Instantiate(gameObjectWithComps, position, rotation);
                 if (spawnedObject == null) { Misc.Msg("[Spawn] [ReciverSpawnParameters] SpawnedObject Is Null"); throw new InvalidOperationException("[ReciverSpawnParameters] spawnedObject Is Null!"); }
                 Mono.Reciver controller = spawnedObject.GetComponent<Mono.Reciver>();
@@ -80,9 +79,18 @@ namespace WirelessSignals.Prefab
         protected override object CreateSaveDataFromGameObject(GameObject obj)
         {
             var component = obj.GetComponent<Mono.Reciver>();
+            string uniqueId = component.uniqueId;
+            if (string.IsNullOrEmpty(uniqueId)) { 
+                Misc.Msg("[CreateSaveDataFromGameObject] [Reciver] Skipped Saving - UniqueId is null");
+                return null;
+            }
+            Vector3 position = component.GetPosition();
+            if (position == Vector3.zero) { Misc.Msg("[CreateSaveDataFromGameObject] [Reciver] Skipped Saving - Invalid Position"); return null; }
+            Quaternion rotation = component.GetRotation();
+            bool? isOn = component.isOn;
             return new ReceiverSaveData
             {
-                UniqueId = component.uniqueId,
+                UniqueId = uniqueId,
                 Position = obj.transform.position,
                 Rotation = obj.transform.rotation,
                 IsOn = component.isOn
@@ -91,35 +99,59 @@ namespace WirelessSignals.Prefab
 
         protected override SpawnParameters CreateSpawnParametersFromSaveData(object data)
         {
-            if (!(data is ReceiverSaveData receiverData))
+            var saveData = data as ReceiverSaveData;
+            if (saveData == null)
             {
-                Misc.Msg($"[Error] Expected ReceiverSaveData but got {data.GetType()}");
+                Misc.Msg($"[Error] Expected ReceiverSaveData but got {data?.GetType()}");
                 throw new ArgumentException("Invalid save data type");
             }
 
+            Misc.Msg($"[CreateSpawnParametersFromSaveData] [Receiver] Creating Spawn Parameters From Loaded Save Data. UniqueId: {saveData.UniqueId} Position: {saveData.Position}");
+
             return new ReciverSpawnParameters
             {
-                position = receiverData.Position,
-                rotation = receiverData.Rotation,
-                uniqueId = receiverData.UniqueId,
-                isOn = receiverData.IsOn
+                position = saveData.Position,
+                rotation = saveData.Rotation,
+                uniqueId = saveData.UniqueId,
+                isOn = saveData.IsOn
             };
         }
 
         protected override void ApplySaveDataToGameObject(GameObject obj, object data)
         {
-            if (!(data is ReceiverSaveData receiverData))
-            {
-                Misc.Msg("[Error] Object Data is Not ReciverSaveData!");
-                return;
-            }
+            var saveData = data as ReceiverSaveData;
+            if (saveData == null) return;
 
             var component = obj.GetComponent<Mono.Reciver>();
             if (component != null)
             {
-                component.uniqueId = receiverData.UniqueId;
-                component.isOn = receiverData.IsOn;
+                component.uniqueId = saveData.UniqueId;
+                component.isOn = saveData.IsOn;
             }
+        }
+
+        internal override List<object> GetAllSaveData()
+        {
+            var allSaveData = new List<ReceiverSaveData>();
+            foreach (var obj in spawnedGameObjects.Values)
+            {
+                if (obj != null)
+                {
+                    allSaveData.Add(CreateSaveDataFromGameObject(obj) as ReceiverSaveData);
+                }
+            }
+            return allSaveData.Cast<object>().ToList();
+        }
+
+        // Base class for specific save data types
+        [RegisterTypeInIl2Cpp]
+        [Serializable]
+        public class ReceiverSaveData : Il2CppSystem.Object
+        {
+            public string UniqueId;
+            public Vector3 Position;
+            public Quaternion Rotation;
+            public bool? IsOn;
         }
 
     }
@@ -130,28 +162,5 @@ namespace WirelessSignals.Prefab
         public bool? isOn = null;
     }
 
-    // Base class for specific save data types
-    //[RegisterTypeInIl2Cpp]
-    //[Serializable]
-    //public class ReceiverSaveData : Il2CppSystem.Object
-    //{
-    //    // Redeclare all base fields
-    //    public string UniqueId;
-    //    public Vector3 Position;
-    //    public Quaternion Rotation;
-    //    // Additional receiver-specific fields
-    //    public bool? IsOn;
-    //    // Future fields can be added here
-    //}
-    [Serializable]
-    public class ReceiverSaveData
-    {
-        // Redeclare all base fields
-        public string UniqueId;
-        public Vector3 Position;
-        public Quaternion Rotation;
-        // Additional receiver-specific fields
-        public bool? IsOn;
-        // Future fields can be added here
-    }
+    
 }

@@ -64,7 +64,6 @@ namespace WirelessSignals.Prefab
                 Vector3 position = transmitterParams.position;
                 if (position == Vector3.zero) { Misc.Msg("[Spawn] [TransmitterDetectorSpawnParameters] Invalid Position"); throw new ArgumentException("[TransmitterDetectorSpawnParameters] Invalid Position!"); }
                 Quaternion rotation = transmitterParams.rotation;
-                if (rotation == Quaternion.identity) { Misc.Msg("[Spawn] [TransmitterDetectorSpawnParameters] Invalid Rotation"); throw new ArgumentException("[TransmitterDetectorSpawnParameters] Invalid Rotation!"); }
                 GameObject spawnedObject = GameObject.Instantiate(gameObjectWithComps, position, rotation);
                 if (spawnedObject == null) { Misc.Msg("[Spawn] [TransmitterDetectorSpawnParameters] SpawnedObject Is Null"); throw new InvalidOperationException("[TransmitterDetectorSpawnParameters] spawnedObject Is Null!"); }
                 Mono.TransmitterDetector controller = spawnedObject.GetComponent<Mono.TransmitterDetector>();
@@ -90,6 +89,17 @@ namespace WirelessSignals.Prefab
         protected override object CreateSaveDataFromGameObject(GameObject obj)
         {
             var component = obj.GetComponent<Mono.TransmitterDetector>();
+            string uniqueId = component.uniqueId;
+            if (string.IsNullOrEmpty(uniqueId))
+            {
+                Misc.Msg("[CreateSaveDataFromGameObject] [TransmitterDetector] Skipped Saving - UniqueId is null");
+                return null;
+            }
+            Vector3 position = component.GetPosition();
+            if (position == Vector3.zero) { Misc.Msg("[CreateSaveDataFromGameObject] [TransmitterDetector] Skipped Saving - Invalid Position"); return null; }
+            Quaternion rotation = component.GetRotation();
+            bool? isOn = component.isOn;
+
             return new TransmitterDetectorSaveData
             {
                 UniqueId = component.uniqueId,
@@ -101,35 +111,58 @@ namespace WirelessSignals.Prefab
 
         protected override SpawnParameters CreateSpawnParametersFromSaveData(object data)
         {
-            if (!(data is TransmitterDetectorSaveData receiverData))
+            var saveData = data as TransmitterDetectorSaveData;
+            if (saveData == null)
             {
-                Misc.Msg($"[Error] Expected ReceiverSaveData but got {data.GetType()}");
+                Misc.Msg($"[Error] Expected TransmitterDetectorSaveData but got {data?.GetType()}");
                 throw new ArgumentException("Invalid save data type");
             }
 
+            Misc.Msg($"[CreateSpawnParametersFromSaveData] [TransmitterDetector] Creating Spawn Parameters From Loaded Save Data. UniqueId: {saveData.UniqueId} Position: {saveData.Position}");
+
             return new TransmitterDetectorSpawnParameters
             {
-                position = receiverData.Position,
-                rotation = receiverData.Rotation,
-                uniqueId = receiverData.UniqueId,
-                isOn = receiverData.IsOn
+                position = saveData.Position,
+                rotation = saveData.Rotation,
+                uniqueId = saveData.UniqueId,
+                isOn = saveData.IsOn
             };
         }
 
         protected override void ApplySaveDataToGameObject(GameObject obj, object data)
         {
-            if (!(data is TransmitterDetectorSaveData receiverData))
-            {
-                Misc.Msg("[Error] Object Data is Not TransmitterDetectorSaveData!");
-                return;
-            }
+            var saveData = data as TransmitterDetectorSaveData;
+            if (saveData == null) return;
 
             var component = obj.GetComponent<Mono.TransmitterDetector>();
             if (component != null)
             {
-                component.uniqueId = receiverData.UniqueId;
-                component.isOn = receiverData.IsOn;
+                component.uniqueId = saveData.UniqueId;
+                component.isOn = saveData.IsOn;
             }
+        }
+
+        internal override List<object> GetAllSaveData()
+        {
+            var allSaveData = new List<TransmitterDetectorSaveData>();
+            foreach (var obj in spawnedGameObjects.Values)
+            {
+                if (obj != null)
+                {
+                    allSaveData.Add(CreateSaveDataFromGameObject(obj) as TransmitterDetectorSaveData);
+                }
+            }
+            return allSaveData.Cast<object>().ToList();
+        }
+
+        [RegisterTypeInIl2Cpp]
+        [Serializable]
+        public class TransmitterDetectorSaveData : Il2CppSystem.Object
+        {
+            public string UniqueId;
+            public Vector3 Position;
+            public Quaternion Rotation;
+            public bool? IsOn;
         }
 
     }
@@ -139,30 +172,5 @@ namespace WirelessSignals.Prefab
         public bool raiseNetworkEvent = false;
         public bool? isOn = null;
         public HashSet<string> linkedUniqueIdsRecivers = null;
-    }
-
-    // Base class for specific save data types
-    //[RegisterTypeInIl2Cpp]
-    //[Serializable]
-    //public class TransmitterDetectorSaveData : Il2CppSystem.Object
-    //{
-    //    // Redeclare all base fields
-    //    public string UniqueId;
-    //    public Vector3 Position;
-    //    public Quaternion Rotation;
-    //    // Additional detector-specific fields
-    //    public bool? IsOn;
-    //    // Future fields can be added here
-    //}
-    [Serializable]
-    public class TransmitterDetectorSaveData
-    {
-        // Redeclare all base fields
-        public string UniqueId;
-        public Vector3 Position;
-        public Quaternion Rotation;
-        // Additional detector-specific fields
-        public bool? IsOn;
-        // Future fields can be added here
     }
 }

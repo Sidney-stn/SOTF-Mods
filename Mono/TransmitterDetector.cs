@@ -493,5 +493,15 @@ namespace WirelessSignals.Mono
             }
 
         }
+
+        public Vector3 GetPosition()
+        {
+            return transform.position;
+        }
+
+        public Quaternion GetRotation()
+        {
+            return transform.rotation;
+        }
     }
 }

@@ -68,18 +68,7 @@ namespace WirelessSignals.Prefab
         protected abstract SpawnParameters CreateSpawnParametersFromSaveData(object data);
         protected abstract void ApplySaveDataToGameObject(GameObject obj, object data);
 
-        internal virtual List<object> GetAllSaveData()
-        {
-            var allSaveData = new List<object>();
-            foreach (var obj in spawnedGameObjects.Values)
-            {
-                if (obj != null)
-                {
-                    allSaveData.Add(CreateSaveDataFromGameObject(obj));
-                }
-            }
-            return allSaveData;
-        }
+        internal abstract List<object> GetAllSaveData();
 
         internal virtual void LoadFromSaveData(object data)
         {
