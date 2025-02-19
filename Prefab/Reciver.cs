@@ -93,7 +93,8 @@ namespace WirelessSignals.Prefab
                 UniqueId = uniqueId,
                 Position = obj.transform.position,
                 Rotation = obj.transform.rotation,
-                IsOn = component.isOn
+                IsOn = component.isOn,
+                LinkedToTranmitterSwithUniqueId = component.linkedToTranmitterSwithUniqueId
             };
         }
 
@@ -113,7 +114,8 @@ namespace WirelessSignals.Prefab
                 position = saveData.Position,
                 rotation = saveData.Rotation,
                 uniqueId = saveData.UniqueId,
-                isOn = saveData.IsOn
+                isOn = saveData.IsOn,
+                linkedToTranmitterSwithUniqueId = saveData.LinkedToTranmitterSwithUniqueId
             };
         }
 
@@ -127,6 +129,7 @@ namespace WirelessSignals.Prefab
             {
                 component.uniqueId = saveData.UniqueId;
                 component.isOn = saveData.IsOn;
+                component.linkedToTranmitterSwithUniqueId = saveData.LinkedToTranmitterSwithUniqueId;
             }
         }
 
@@ -152,6 +155,7 @@ namespace WirelessSignals.Prefab
             public Vector3 Position;
             public Quaternion Rotation;
             public bool? IsOn;
+            public string LinkedToTranmitterSwithUniqueId;
         }
 
     }
@@ -160,6 +164,7 @@ namespace WirelessSignals.Prefab
     {
         public bool raiseNetworkEvent = false;
         public bool? isOn = null;
+        public string linkedToTranmitterSwithUniqueId = null;
     }
 
     

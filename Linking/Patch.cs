@@ -18,11 +18,15 @@ namespace WirelessSignals.Linking
         {
             if (other != null && other.transform != null && other.transform.root != null)
             {
-                UnityEngine.Debug.Log($"RepairTool triggered with: {other.transform.root.name}");
-                Misc.Msg($"RepairTool triggered with: {other.transform.root.name}");
+                // Logs Every Object that is being interacted with if uncommented
+                //UnityEngine.Debug.Log($"RepairTool triggered with: {other.transform.root.name}");
+                //Misc.Msg($"RepairTool triggered with: {other.transform.root.name}");
 
                 if (other.transform.root.name.Contains("TransmitterSwitch") || other.transform.root.name.Contains("Reciver") || other.transform.root.name.Contains("TransmitterDetector"))
                 {
+                    UnityEngine.Debug.Log($"RepairTool triggered with: {other.transform.root.name}");
+                    Misc.Msg($"RepairTool triggered with: {other.transform.root.name}");
+
                     string objectId = other.transform.root.GetInstanceID().ToString();
                     float currentTime = Time.time;
 

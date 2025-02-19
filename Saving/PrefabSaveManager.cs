@@ -58,6 +58,9 @@ namespace WirelessSignals.Saving
             public List<Prefab.Reciver.ReceiverSaveData> ReceiverItems = new List<Prefab.Reciver.ReceiverSaveData>();
             public List<Prefab.WirelessTransmitterSwitch.TransmitterSwitchSaveData> SwitchItems = new List<Prefab.WirelessTransmitterSwitch.TransmitterSwitchSaveData>();
             public List<Prefab.TransmitterDetector.TransmitterDetectorSaveData> DetectorItems = new List<Prefab.TransmitterDetector.TransmitterDetectorSaveData>();
+
+            // For Saving Lines
+            public Dictionary<string, List<Vector3>> LinkedLines = new Dictionary<string, List<Vector3>>();
         }
 
         private void ProcessLoadData(AllPrefabsData data)
@@ -106,6 +109,12 @@ namespace WirelessSignals.Saving
                     }
                 }
             }
+
+            // Load Linked Lines
+            if (WirelessSignals.linkingCotroller != null)
+            {
+                WirelessSignals.linkingCotroller.LoadLinkedLines(data.SaveData.LinkedLines);
+            }
         }
 
         public AllPrefabsData Save()
@@ -144,6 +153,12 @@ namespace WirelessSignals.Saving
 
             // Log Save Data Prefabs Count Saved
             Misc.Msg($"[Saving] Saved {saveData.SaveData.ReceiverItems.Count} Receiver, {saveData.SaveData.SwitchItems.Count} Switch, {saveData.SaveData.DetectorItems.Count} Detector");
+
+            // Save Linked Lines
+            if (WirelessSignals.linkingCotroller != null)
+            {
+                saveData.SaveData.LinkedLines = WirelessSignals.linkingCotroller.GetLinkedLinesForSaving();
+            }
 
             return saveData;
         }

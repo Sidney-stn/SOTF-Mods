@@ -1,9 +1,7 @@
 ﻿using RedLoader;
-using Sons.Gui.Input;
 using Sons.Inventory;
 using SonsSdk;
 using System.Collections;
-using TheForest.Items.Inventory;
 using TheForest.Utils;
 using UnityEngine;
 using UnityEngine.Events;
@@ -138,7 +136,12 @@ namespace WirelessSignals.Mono
                         !string.IsNullOrEmpty(raycastHit.collider.transform.root.name))
                     {
                         GameObject open = raycastHit.collider.transform.root.gameObject;
-                        if (open == null) { return; }  // Add A Way For Scanning Here
+                        if (open == null) // If No Objects Found Enter Scanning Mode
+                        {
+                            // Enable Scanning Mode
+                            ContinuesObjectSearch().RunCoro();
+                            return;
+                        }
                         string name = raycastHit.collider.transform.root.name;
                         if (name.Contains("StorageLogsStructure"))
                         {
@@ -217,13 +220,46 @@ namespace WirelessSignals.Mono
             }
         }
 
+        private IEnumerator ContinuesObjectSearch()
+        {
+            yield return new WaitForSeconds(5f);
+            while (true)
+            {
+                if (foundObject)
+                {
+                    yield break;
+                }
+                TryFindObject();
+                if (Vector3.Distance(LocalPlayer.GameObject.transform.position, transform.position) <= 50f)
+                {
+                    yield return new WaitForSeconds(30f);
+                } else
+                {
+                    yield return new WaitForSeconds(5f);
+                }
+                    
+            }
+        }
+
         private IEnumerator CheckSimpleStorage(GameObject obj, int maxInStorage, string layoutName)
         {
             int maxLogs = maxInStorage;
             string layoutGroupName = $"{layoutName}Group";
             string itemLayoutGroupName = $"{layoutName}Item";
             GameObject checkObj = obj;
-            if (checkObj == null) { Misc.Msg("[Mono] [TransmitterDetector] [CheckSimpleStorage] CheckObj is Null"); yield break; }
+            if (checkObj == null) { 
+                Misc.Msg("[Mono] [TransmitterDetector] [CheckSimpleStorage] CheckObj is Null");
+                // This will trigger if object is destroyed
+                foundObject = false;
+                foundObjectName = null;
+                if (isOn == true)  // ONLY DISABLE IF NOT ALREADY DISABLED
+                {
+                    SetState(false);
+                }
+                Destroy(_lineGameObject);  // Destory LineRenderer if object is destroyed
+                ContinuesObjectSearch().RunCoro();
+                yield break;
+            }
             Misc.Msg("[Mono] [TransmitterDetector] [CheckSimpleStorage] Start Checking Item");
             if (!foundObject) { Misc.Msg("[Mono] [TransmitterDetector] [CheckSimpleStorage] Retuned, found object is false"); }
             while (foundObject)

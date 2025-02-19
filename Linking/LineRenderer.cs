@@ -285,6 +285,36 @@ namespace WirelessSignals.Linking
             lineObject.SetActive(visible);
         }
 
+        public Dictionary<string, List<Vector3>> GetLinkedLinesForSaving()  // Reciver Object Id, List Pos1 Pos2
+        {
+            Dictionary<string, List<Vector3>> linkedLines = new Dictionary<string, List<Vector3>>();
+            foreach (var line in lineRenderers)
+            {
+                List<Vector3> positions = new List<Vector3>();
+                positions.Add(line.Value.GetComponent<UnityEngine.LineRenderer>().GetPosition(0));
+                positions.Add(line.Value.GetComponent<UnityEngine.LineRenderer>().GetPosition(1));
+                linkedLines.Add(line.Key, positions);
+            }
+            return linkedLines;
+        }
+
+        public void LoadLinkedLines(Dictionary<string, List<Vector3>> linkedLines)
+        {
+            bool visible = false;
+            if (LocalPlayer.Inventory != null && LocalPlayer.Inventory.RightHandItem != null)
+            {
+                if (LocalPlayer.Inventory.RightHandItem._itemID == 422)
+                {
+                    visible = true;
+                }
+            }
+            foreach (var line in linkedLines)
+            {
+                
+                CreateLineRenderer(line.Value[0], line.Value[1], visible, line.Key);
+            }
+        }
+
         public void HideLineRenderers()
         {
             //foreach (var line in lineRenderers)
