@@ -22,6 +22,7 @@ namespace WirelessSignals.Mono
         private GameObject _lineGameObject;
         private bool addedRepairToolEquip = false;
         private bool addedRepairToolUnequip = false;
+        private bool isSearching = false;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         private void Start()
@@ -60,13 +61,11 @@ namespace WirelessSignals.Mono
             }
 
             TryFindObject();
-            UpdateDebugUi();
+            UpdateDebugUi(true);
             if (Debug.VisualData.GetDebugMode())
             {
                 SetDebugUi(true);
             }
-            // Fixed Fucked Position
-            transform.FindChild("UI").FindChild("Canvas").transform.localPosition = new Vector3(0, 0, 0);
 
         }
 
@@ -149,6 +148,7 @@ namespace WirelessSignals.Mono
                         {
                             // Enable Scanning Mode
                             ContinuesObjectSearch().RunCoro();
+                            Misc.Msg("[Mono] [TransmitterDetector] [TryFindObject] No Objects Found - Scanning Mode Enabled");
                             return;
                         }
                         string name = raycastHit.collider.transform.root.name;
@@ -156,6 +156,7 @@ namespace WirelessSignals.Mono
                         {
                             foundObject = true;
                             foundObjectName = "StorageLogsStructure";
+                            isSearching = false;
                             Misc.Msg("[Mono] [TransmitterDetector] [TryFindObject] Found StorageLogsStructure");
                             SonsTools.ShowMessage("Found StorageLogsStructure - Detecting", 5);
                             CheckSimpleStorage(open, 6, "LogLayout").RunCoro();
@@ -166,6 +167,7 @@ namespace WirelessSignals.Mono
                         {
                             foundObject = true;
                             foundObjectName = "StorageLogsLargeStructure";
+                            isSearching = false;
                             Misc.Msg("[Mono] [TransmitterDetector] [TryFindObject] Found StorageLogsLargeStructure");
                             SonsTools.ShowMessage("Found StorageLogsLargeStructure - Detecting", 5);
                             CheckSimpleStorage(open, 24, "LogLayout").RunCoro();
@@ -176,6 +178,7 @@ namespace WirelessSignals.Mono
                         {
                             foundObject = true;
                             foundObjectName = "StorageStonesStructure";
+                            isSearching = false;
                             Misc.Msg("[Mono] [TransmitterDetector] [TryFindObject] Found StorageStonesStructure");
                             SonsTools.ShowMessage("Found StorageStonesStructure - Detecting", 5);
                             CheckSimpleStorage(open, 28, "StoneLayout").RunCoro();
@@ -186,6 +189,7 @@ namespace WirelessSignals.Mono
                         {
                             foundObject = true;
                             foundObjectName = "StorageSticksStructure";
+                            isSearching = false;
                             Misc.Msg("[Mono] [TransmitterDetector] [TryFindObject] Found StorageSticksStructure");
                             SonsTools.ShowMessage("Found StorageSticksStructure - Detecting", 5);
                             CheckSimpleStorage(open, 30, "StickLayout").RunCoro();
@@ -196,6 +200,7 @@ namespace WirelessSignals.Mono
                         {
                             foundObject = true;
                             foundObjectName = "StorageRocksStructure";
+                            isSearching = false;
                             Misc.Msg("[Mono] [TransmitterDetector] [TryFindObject] Found StorageRocksStructure");
                             SonsTools.ShowMessage("Found StorageRocksStructure - Detecting", 5);
                             CheckSimpleStorage(open, 17, "RockLayout").RunCoro();
@@ -206,6 +211,7 @@ namespace WirelessSignals.Mono
                         {
                             foundObject = true;
                             foundObjectName = "StorageBonesStructure";
+                            isSearching = false;
                             Misc.Msg("[Mono] [TransmitterDetector] [TryFindObject] Found StorageBonesStructure");
                             SonsTools.ShowMessage("Found StorageBonesStructure - Detecting", 5);
                             CheckSimpleStorage(open, 50, "BoneLayout").RunCoro();
@@ -216,11 +222,17 @@ namespace WirelessSignals.Mono
                         {
                             foundObject = true;
                             foundObjectName = "FishTrapStructure";
+                            isSearching = false;
                             Misc.Msg("[Mono] [TransmitterDetector] [TryFindObject] Found FishTrapStructure");
                             SonsTools.ShowMessage("Found FishTrapStructure - Detecting", 5);
                             CheckSimpleStorage(open, 5, "FishLayout").RunCoro();
                             SetupLinkedLines(open.transform.position);
                             return;
+                        } else
+                        {
+                            Misc.Msg("[Mono] [TransmitterDetector] [TryFindObject] Found Unknown Object");
+                            // Enable Scanning Mode
+                            ContinuesObjectSearch().RunCoro();
                         }
 
                     }
@@ -231,6 +243,19 @@ namespace WirelessSignals.Mono
 
         private IEnumerator ContinuesObjectSearch()
         {
+            if (isSearching)  // Kill if already searching
+            {
+                yield break;
+            }
+            if (!isSearching && !foundObject)  // Only Run If Not Already Searching And Object Is Not Found
+            {
+                isSearching = true;
+            }
+            
+            if (foundObject)  // Only Run If Object Is Not Found
+            {
+                yield break;
+            }
             yield return new WaitForSeconds(5f);
             while (true)
             {
@@ -270,6 +295,7 @@ namespace WirelessSignals.Mono
                 UpdateDebugUi();
                 yield break;
             }
+            UpdateDebugUi(true);
             Misc.Msg("[Mono] [TransmitterDetector] [CheckSimpleStorage] Start Checking Item");
             if (!foundObject) { Misc.Msg("[Mono] [TransmitterDetector] [CheckSimpleStorage] Retuned, found object is false"); }
             while (foundObject)
@@ -543,19 +569,40 @@ namespace WirelessSignals.Mono
 
         }
 
-        private void UpdateDebugUi()
+        private void UpdateDebugUi(bool isFirst = false)
         {
-            if (!Debug.VisualData.GetDebugMode()) { return; }
-            GameObject debugUi = transform.FindChild("UI").gameObject;
-            if (debugUi == null) { return; }
-            Text text = debugUi.transform.FindDeepChild("Text").GetComponent<Text>();
-            if (text == null) { return; }
-            text.text = $"IsOn: {isOn}\r\nUniqueId: {uniqueId}\r\nLinkedUniqueIdsRecivers: {string.Join(", ", linkedUniqueIdsRecivers.ToList())}\r\nFoundObject: {foundObject}\r\nFoundObjectName: {foundObjectName}";
+            if (!isFirst && !Debug.VisualData.GetDebugMode()) { return; }
+            Misc.Msg("[TransmitterDetector] [Mono] [UpdateDebugUi] Updating Debug Ui");
+
+            if (transform == null) { Misc.Msg("[TransmitterDetector] [Mono] [UpdateDebugUi] Main Transfrom == null"); return; }
+
+            GameObject debugUi = transform.FindChild("UI")?.gameObject;
+            if (debugUi == null) { Misc.Msg("[TransmitterDetector] [Mono] [UpdateDebugUi] Ui == null"); return; }
+
+            Transform canvas = debugUi.transform.FindChild("Canvas");
+            if (canvas == null) { Misc.Msg("[TransmitterDetector] [Mono] [UpdateDebugUi] Canvas == null"); return; }
+
+            Transform textTransform = canvas.FindChild("Text");
+            if (textTransform == null) { Misc.Msg("[TransmitterDetector] [Mono] [UpdateDebugUi] TextTransform == null"); return; }
+
+            Text text = textTransform.GetComponent<Text>();
+            if (text == null) { Misc.Msg("[TransmitterDetector] [Mono] [UpdateDebugUi] Text Comp == null"); return; }
+
+            if (Debug.VisualData.IsAdvanced())
+            {
+                text.text = $"IsOn: {(isOn.HasValue ? (isOn.Value ? "True" : "False") : "null")}\r\nUniqueId: {uniqueId}\r\nLinkedUniqueIdsRecivers: {string.Join(", ", linkedUniqueIdsRecivers)}\r\nFoundObject: {foundObject}\r\nFoundObjectName: {foundObjectName}";
+            }
+            else
+            {
+                text.text = $"IsOn: {(isOn.HasValue ? (isOn.Value ? "True" : "False") : "null")}\r\nLinked To Count: {linkedUniqueIdsRecivers.Count}\r\nFoundObject: {foundObject}\r\nFoundObjectName: {foundObjectName}";
+            }
         }
+        
 
         public void SetDebugUi(bool state)
         {
             GameObject debugUi = transform.FindChild("UI").gameObject;
+            if (debugUi == null) { Misc.Msg("[TransmitterDetector] [Mono] [SetDebugUi] Ui == null"); return; }
             if (state)
             {
                 UpdateDebugUi();

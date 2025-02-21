@@ -68,14 +68,12 @@ namespace WirelessSignals.Mono
                 TurnOffLight();
             }
 
-            UpdateDebugUi();
+            UpdateDebugUi(true);
             if (Debug.VisualData.GetDebugMode())
             {
                 SetDebugUi(true);
             }
 
-            // Fixed Fucked Position
-            transform.FindChild("UI").FindChild("Canvas").transform.localPosition = new Vector3(0, 0, 0);
         }
 
         public void TurnOnLight()
@@ -171,14 +169,21 @@ namespace WirelessSignals.Mono
             UpdateDebugUi();
         }
 
-        private void UpdateDebugUi()
+        private void UpdateDebugUi(bool isFirst = false)
         {
-            if (!Debug.VisualData.GetDebugMode()) { return; }
+            if (!isFirst && !Debug.VisualData.GetDebugMode()) { return; }
             GameObject debugUi = transform.FindChild("UI").gameObject;
             if (debugUi == null) { return; }
             Text text = debugUi.transform.FindDeepChild("Text").GetComponent<Text>();
             if (text == null) { return; }
-            text.text = $"IsOn: {isOn}\r\nUniqueId: {uniqueId}\r\nLinkedUniqueIdsRecivers: {string.Join(", ", linkedUniqueIdsRecivers.ToList())}";
+            if (Debug.VisualData.IsAdvanced())
+            {
+                text.text = $"IsOn: {(isOn.HasValue ? (isOn.Value ? "True" : "False") : "null")}\r\nUniqueId: {uniqueId}\r\nLinkedUniqueIdsRecivers: {string.Join(", ", linkedUniqueIdsRecivers.ToList())}";
+            }
+            else
+            {
+                text.text = $"IsOn: {(isOn.HasValue ? (isOn.Value ? "True" : "False") : "null")}\r\nLinked To Count: {linkedUniqueIdsRecivers.Count}";
+            }
         }
 
         public void SetDebugUi(bool state)

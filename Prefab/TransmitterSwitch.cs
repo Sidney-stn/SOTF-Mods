@@ -28,13 +28,16 @@ namespace WirelessSignals.Prefab
             mainComponent.uniqueId = null;
             mainComponent.isSetupPrefab = true;
 
+            CreateDebugUi(obj);
+        }
+
+        internal static void CreateDebugUi(GameObject obj, bool lower = false)
+        {
             // Create Debug Ui
             GameObject visualUi = new GameObject("UI");
             visualUi.transform.SetParent(obj.transform);
-            visualUi.transform.localPosition = new Vector3(0, 0.7f, 0);
             GameObject canvasGo = new GameObject("Canvas");
             canvasGo.transform.SetParent(visualUi.transform);
-            canvasGo.transform.localPosition = new Vector3(0, 0, 0);
             RectTransform canvasT = canvasGo.AddComponent<RectTransform>();
             //canvasT.position = new Vector3(0, 0, 0);
             canvasT.localScale = new Vector3(0.005f, 0.005f, 0.005f);
@@ -92,6 +95,15 @@ namespace WirelessSignals.Prefab
             text.raycastTarget = true;
             text.raycastPadding = new Vector4(0, 0, 0, 0);
             text.maskable = true;
+
+            visualUi.transform.localPosition = new Vector3(0, 0.7f, 0);
+            if (lower)
+            {
+                canvasGo.transform.localPosition = new Vector3(0, 0f, 0);
+            }
+            else { canvasGo.transform.localPosition = new Vector3(0, 0.7f, 0); }
+            textObj.transform.localPosition = Vector3.zero;
+
             visualUi.SetActive(false);
         }
 

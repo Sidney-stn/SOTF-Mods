@@ -48,14 +48,12 @@ namespace WirelessSignals.Mono
             {
                 TurnOffLight();
             }
-            UpdateDebugUi();
+            UpdateDebugUi(true);
             if (Debug.VisualData.GetDebugMode())
             {
                 SetDebugUi(true);
-            }
+            } 
 
-            // Fixed Fucked Position
-            transform.FindChild("UI").FindChild("Canvas").transform.localPosition = new Vector3(0, 0, 0);
 
         }
 
@@ -115,38 +113,76 @@ namespace WirelessSignals.Mono
 
             // Check if transmitter is on
             GameObject transmitter = WirelessSignals.transmitterSwitch.FindByUniqueId(transmitterUniqueId);
-            if (transmitter == null)
+            // Check if detector is on
+            GameObject detector = WirelessSignals.transmitterDetector.FindByUniqueId(transmitterUniqueId);
+            if (transmitter == null && detector == null)
             {
                 Misc.Msg("[Reciver] [Link] Transmitter is null");
                 return;
             }
-            Mono.TransmitterSwitch transmitterController = transmitter.GetComponent<Mono.TransmitterSwitch>();
-            if (transmitterController == null)
+            if (transmitter != null)
             {
-                Misc.Msg("[Reciver] [Link] Transmitter controller is null");
-                return;
-            }
-            if (transmitterController.isOn == true)  // I do it manually here since SetState should update networking and this does not
+                Mono.TransmitterSwitch transmitterController = transmitter.GetComponent<Mono.TransmitterSwitch>();
+                if (transmitterController == null)
+                {
+                    Misc.Msg("[Reciver] [Link] Transmitter controller is null");
+                    return;
+                }
+                if (transmitterController.isOn == true)  // I do it manually here since SetState should update networking and this does not
+                {
+                    TurnOnLight();
+                    isOn = true;
+                }
+                else
+                {
+                    TurnOffLight();
+                    isOn = false;
+                }
+            } else if (detector != null)
             {
-                TurnOnLight();
-                isOn = true;
+                Mono.TransmitterDetector detectorController = detector.GetComponent<Mono.TransmitterDetector>();
+                if (detectorController == null)
+                {
+                    Misc.Msg("[Reciver] [Link] Detector controller is null");
+                    return;
+                }
+                if (detectorController.isOn == true)  // I do it manually here since SetState should update networking and this does not
+                {
+                    TurnOnLight();
+                    isOn = true;
+                }
+                else
+                {
+                    TurnOffLight();
+                    isOn = false;
+                }
             }
-            else
-            {
-                TurnOffLight();
-                isOn = false;
-            }
+
             UpdateDebugUi();
         }
 
-        private void UpdateDebugUi()
+        public void LinkWithOutUpdate(string transmitterUniqueId)
         {
-            if (!Debug.VisualData.GetDebugMode()) { return; }
+            Misc.Msg("[Reciver] [LinkWithOutUpdate] Linking Reciver");
+            linkedToTranmitterSwithUniqueId = transmitterUniqueId;
+            UpdateDebugUi();
+        }
+
+        private void UpdateDebugUi(bool isFirst = false)
+        {
+            if (!isFirst && !Debug.VisualData.GetDebugMode()) { return; }
             GameObject debugUi = transform.FindChild("UI").gameObject;
             if (debugUi == null) { return; }
             Text text = debugUi.transform.FindDeepChild("Text").GetComponent<Text>();
             if (text == null) { return; }
-            text.text = $"IsOn: {isOn}\r\nUniqueId: {uniqueId}\r\nLinkedToTranmitterSwithUniqueId: {linkedToTranmitterSwithUniqueId}";
+            if (Debug.VisualData.IsAdvanced())
+            {
+                text.text = $"IsOn: {(isOn.HasValue ? (isOn.Value ? "True" : "False") : "null")}\r\nUniqueId: {uniqueId}\r\nLinkedToTranmitterSwithUniqueId: {linkedToTranmitterSwithUniqueId}";
+            }
+            else
+            {
+                text.text = $"IsOn: {(isOn.HasValue ? (isOn.Value ? "True" : "False") : "null")}\r\nLinked: {(string.IsNullOrEmpty(linkedToTranmitterSwithUniqueId) ? "False" : "True")}";
+            }
         }
 
         public void SetDebugUi(bool state)

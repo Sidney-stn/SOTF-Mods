@@ -41,7 +41,11 @@ namespace WirelessSignals.Linking
                 // Unlink the receiver
                 Mono.Reciver controller = go.GetComponent<Mono.Reciver>();
                 if (controller == null) { Misc.Msg("[LineRenderer] [HitReciver]: Reciver controller is null"); return; }
-                if (string.IsNullOrEmpty(controller.linkedToTranmitterSwithUniqueId)) { Misc.Msg("[LineRenderer] [HitReciver]: Reciver linkedToTranmitterSwithUniqueId is null"); return; }
+                if (string.IsNullOrEmpty(controller.linkedToTranmitterSwithUniqueId)) { 
+                    Misc.Msg("[LineRenderer] [HitReciver]: Reciver linkedToTranmitterSwithUniqueId is null");
+                    SonsTools.ShowMessage("Reciver Aready Unlinked");
+                    return;
+                }
 
                 // Try to find the linked transmitter (either switch or detector)
                 GameObject wirelessTransmitter = WirelessSignals.transmitterSwitch.FindByUniqueId(controller.linkedToTranmitterSwithUniqueId);
@@ -142,6 +146,15 @@ namespace WirelessSignals.Linking
                 if (controller == null)
                 {
                     Misc.Msg("[LineRenderer] [HitReciver]: Reciver controller is null");
+                    hitObjects.Clear(); // Clear the stored hit objects
+                    hitObjects["Reciver"] = go;  // Store the receiver hit
+                    return;
+                }
+                if (string.IsNullOrEmpty(controller.uniqueId))
+                {
+                    RLog.Warning("[LineRenderer] [HitReciver]: Reciver UniqueId is null");
+                    hitObjects.Clear(); // Clear the stored hit objects
+                    hitObjects["Reciver"] = go;  // Store the receiver hit
                     return;
                 }
                 Mono.TransmitterDetector transmitterController = hitObjects["TransmitterDetector"].GetComponent<Mono.TransmitterDetector>();
@@ -157,7 +170,8 @@ namespace WirelessSignals.Linking
                     if (controller.linkedToTranmitterSwithUniqueId != transmitterController.uniqueId)
                     {
                         // Fix Linking In Case Something Have Gone Wrong
-                        controller.linkedToTranmitterSwithUniqueId = transmitterController.uniqueId;
+                        //controller.linkedToTranmitterSwithUniqueId = transmitterController.uniqueId;
+                        controller.LinkWithOutUpdate(transmitterController.uniqueId);
                     }
                     shouldUpdateRun = false;
                     hitObjects.Clear(); // Clear the stored hit objects

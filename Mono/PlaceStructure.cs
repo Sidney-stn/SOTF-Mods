@@ -63,6 +63,9 @@ namespace WirelessSignals.Mono
                         WirelessSignals.reciver.spawnedGameObjects.Add(uniqueId, gameObject);
                         Misc.Msg($"[PlaceStructure] [Start] Reciver Set UniqueId {uniqueId}");
 
+                        // Setup Debug UI
+                        Prefab.Reciver.CreateDebugUi(gameObject, true);
+
                         // Network
 
                         break;
@@ -75,6 +78,9 @@ namespace WirelessSignals.Mono
                         WirelessSignals.transmitterSwitch.spawnedGameObjects.Add(uniqueId1, gameObject);
                         Misc.Msg($"[PlaceStructure] [Start] TransmitterSwitch Set UniqueId {uniqueId1}");
 
+                        // Setup Debug UI
+                        Prefab.WirelessTransmitterSwitch.CreateDebugUi(gameObject, true);
+
                         // Network
 
                         break;
@@ -86,6 +92,9 @@ namespace WirelessSignals.Mono
                         transmitterDetectorController.uniqueId = uniqueId2;
                         WirelessSignals.transmitterDetector.spawnedGameObjects.Add(uniqueId2, gameObject);
                         Misc.Msg($"[PlaceStructure] [Start] TransmitterDetector Set UniqueId {uniqueId2}");
+
+                        // Setup Debug UI
+                        Prefab.TransmitterDetector.CreateDebugUi(gameObject, true);
 
                         // Network
 

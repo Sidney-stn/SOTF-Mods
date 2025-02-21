@@ -5,6 +5,7 @@ using SonsSdk;
 using SonsSdk.Building;
 using TheForest.Items.Inventory;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace WirelessSignals.Structure
 {
