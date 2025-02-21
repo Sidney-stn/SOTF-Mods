@@ -1,6 +1,7 @@
 ﻿using RedLoader;
 using SonsSdk;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace WirelessSignals.Mono
 {
@@ -47,7 +48,14 @@ namespace WirelessSignals.Mono
             {
                 TurnOffLight();
             }
+            UpdateDebugUi();
+            if (Debug.VisualData.GetDebugMode())
+            {
+                SetDebugUi(true);
+            }
 
+            // Fixed Fucked Position
+            transform.FindChild("UI").FindChild("Canvas").transform.localPosition = new Vector3(0, 0, 0);
 
         }
 
@@ -88,6 +96,7 @@ namespace WirelessSignals.Mono
             {
                 TurnOffLight();
             }
+            UpdateDebugUi();
         }
 
         public void Unlink()
@@ -96,6 +105,7 @@ namespace WirelessSignals.Mono
             isOn = false;
             TurnOffLight();
             linkedToTranmitterSwithUniqueId = null;
+            UpdateDebugUi();
         }
 
         public void Link(string transmitterUniqueId)
@@ -126,6 +136,28 @@ namespace WirelessSignals.Mono
                 TurnOffLight();
                 isOn = false;
             }
+            UpdateDebugUi();
+        }
+
+        private void UpdateDebugUi()
+        {
+            if (!Debug.VisualData.GetDebugMode()) { return; }
+            GameObject debugUi = transform.FindChild("UI").gameObject;
+            if (debugUi == null) { return; }
+            Text text = debugUi.transform.FindDeepChild("Text").GetComponent<Text>();
+            if (text == null) { return; }
+            text.text = $"IsOn: {isOn}\r\nUniqueId: {uniqueId}\r\nLinkedToTranmitterSwithUniqueId: {linkedToTranmitterSwithUniqueId}";
+        }
+
+        public void SetDebugUi(bool state)
+        {
+            GameObject debugUi = transform.FindChild("UI").gameObject;
+            if (state)
+            {
+                UpdateDebugUi();
+                debugUi.SetActive(true);
+            }
+            else { debugUi.SetActive(false); }
         }
 
         public Vector3 GetPosition()

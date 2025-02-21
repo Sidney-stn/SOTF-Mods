@@ -89,6 +89,15 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>$(GameDir)\_RedLoader\Game\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(GameDir)\_RedLoader\Game\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextCoreTextEngineModule">
+      <HintPath>$(GameDir)\_RedLoader\Game\UnityEngine.TextCoreTextEngineModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextCoreFontEngineModule">
+      <HintPath>$(GameDir)\_RedLoader\Game\UnityEngine.TextCoreFontEngineModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Update="manifest.json">

@@ -5,6 +5,7 @@ using System.Collections;
 using TheForest.Utils;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 namespace WirelessSignals.Mono
 {
@@ -59,6 +60,14 @@ namespace WirelessSignals.Mono
             }
 
             TryFindObject();
+            UpdateDebugUi();
+            if (Debug.VisualData.GetDebugMode())
+            {
+                SetDebugUi(true);
+            }
+            // Fixed Fucked Position
+            transform.FindChild("UI").FindChild("Canvas").transform.localPosition = new Vector3(0, 0, 0);
+
         }
 
         private void TryFindObject()
@@ -258,6 +267,7 @@ namespace WirelessSignals.Mono
                 }
                 Destroy(_lineGameObject);  // Destory LineRenderer if object is destroyed
                 ContinuesObjectSearch().RunCoro();
+                UpdateDebugUi();
                 yield break;
             }
             Misc.Msg("[Mono] [TransmitterDetector] [CheckSimpleStorage] Start Checking Item");
@@ -470,6 +480,7 @@ namespace WirelessSignals.Mono
                     Misc.Msg("[TransmitterDetector] [Toggle] Reciver Not Found");
                 }
             }
+            UpdateDebugUi();
         }
 
         public void UnlinkReciver(string reciverUniqueId)
@@ -483,6 +494,7 @@ namespace WirelessSignals.Mono
             {
                 Misc.Msg("[TransmitterDetector] [UnlinkReciver] Reciver Not Found");
             }
+            UpdateDebugUi();
         }
 
         public void LinkReciver(string reciverUniqueId)
@@ -496,6 +508,7 @@ namespace WirelessSignals.Mono
             {
                 Misc.Msg("[TransmitterDetector] [LinkReciver] Reciver Already Linked");
             }
+            UpdateDebugUi();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
@@ -528,6 +541,26 @@ namespace WirelessSignals.Mono
                 }
             }
 
+        }
+
+        private void UpdateDebugUi()
+        {
+            if (!Debug.VisualData.GetDebugMode()) { return; }
+            GameObject debugUi = transform.FindChild("UI").gameObject;
+            if (debugUi == null) { return; }
+            Text text = debugUi.transform.FindDeepChild("Text").GetComponent<Text>();
+            if (text == null) { return; }
+            text.text = $"IsOn: {isOn}\r\nUniqueId: {uniqueId}\r\nLinkedUniqueIdsRecivers: {string.Join(", ", linkedUniqueIdsRecivers.ToList())}\r\nFoundObject: {foundObject}\r\nFoundObjectName: {foundObjectName}";
+        }
+
+        public void SetDebugUi(bool state)
+        {
+            GameObject debugUi = transform.FindChild("UI").gameObject;
+            if (state)
+            {
+                UpdateDebugUi();
+                debugUi.SetActive(true);
+            } else { debugUi.SetActive(false); }
         }
 
         public Vector3 GetPosition()

@@ -4,6 +4,7 @@ using SonsSdk;
 using TheForest.Items.Inventory;
 using TheForest.Utils;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace WirelessSignals.Prefab
 {
@@ -38,6 +39,71 @@ namespace WirelessSignals.Prefab
             mainComponent.uniqueId = null;
             mainComponent.isSetupPrefab = true;
 
+            // Create Debug Ui
+            GameObject visualUi = new GameObject("UI");
+            visualUi.transform.SetParent(obj.transform);
+            visualUi.transform.localPosition = new Vector3(0, 0.7f, 0);
+            GameObject canvasGo = new GameObject("Canvas");
+            canvasGo.transform.SetParent(visualUi.transform);
+            canvasGo.transform.localPosition = new Vector3(0, 0, 0);
+            RectTransform canvasT = canvasGo.AddComponent<RectTransform>();
+            //canvasT.position = new Vector3(0, 0, 0);
+            canvasT.localScale = new Vector3(0.005f, 0.005f, 0.005f);
+            canvasT.pivot = new Vector2(0.5f, 0.5f);
+            canvasT.anchorMax = new Vector2(0, 0);
+            canvasT.anchorMin = new Vector2(0, 0);
+            canvasT.rotation = Quaternion.Euler(0, 0, 0);
+            canvasT.sizeDelta = new Vector2(1920, 1080);
+
+            canvasGo.layer = 0; // Default
+            Canvas canvas = canvasGo.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.WorldSpace;
+            canvas.sortingLayerName = "Default";
+            canvas.sortingOrder = 0;
+            canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.None;
+            canvas.vertexColorAlwaysGammaSpace = false;
+
+            CanvasScaler canvasScaler = canvasGo.AddComponent<CanvasScaler>();
+            canvasScaler.dynamicPixelsPerUnit = 5;
+            canvasScaler.referencePixelsPerUnit = 100;
+
+            GraphicRaycaster graphicRaycaster = canvasGo.AddComponent<GraphicRaycaster>();
+            graphicRaycaster.ignoreReversedGraphics = true;
+            graphicRaycaster.blockingObjects = GraphicRaycaster.BlockingObjects.None;
+            graphicRaycaster.blockingMask = -1;
+
+            GameObject textObj = new GameObject("Text");
+            textObj.SetParent(canvasGo.transform);
+            RectTransform textT = textObj.AddComponent<RectTransform>();
+            textT.position = new Vector3(0, 0, 0);
+            textT.localScale = new Vector3(1, 1, 1);
+            textT.pivot = new Vector2(0.5f, 0.5f);
+            textT.anchorMax = new Vector2(0.5f, 0.5f);
+            textT.anchorMin = new Vector2(0.5f, 0.5f);
+            textT.rotation = Quaternion.Euler(0, 0, 0);
+            textT.sizeDelta = new Vector2(192, 70);
+
+            CanvasRenderer textCanvasRenderer = textObj.AddComponent<CanvasRenderer>();
+            textCanvasRenderer.cullTransparentMesh = true;
+
+            Text text = textObj.AddComponent<Text>();
+            text.text = "IsOn: Value\r\nUniqueId: Value\r\nLinkedUniqueIdsRecivers: Value\r\nFoundObject: Value\r\nFoundObjectName: Value";
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.fontStyle = FontStyle.Normal;
+            text.fontSize = 18;
+            text.lineSpacing = 1;
+            text.supportRichText = true;
+            text.alignByGeometry = false;
+            text.alignment = TextAnchor.UpperCenter;
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.resizeTextForBestFit = false;
+            text.color = new Color(1, 1, 1, 1);
+            text.material = null;
+            text.raycastTarget = true;
+            text.raycastPadding = new Vector4(0, 0, 0, 0);
+            text.maskable = true;
+            visualUi.SetActive(false);
         }
 
         internal override GameObject Spawn(SpawnParameters parameters)
