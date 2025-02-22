@@ -348,7 +348,8 @@ namespace WirelessSignals.Mono
                 }
 
                 // Wait for set time
-                if (Vector3.Distance(LocalPlayer.GameObject.transform.position, transform.position) <= 50f)
+                float distanceToObj = Vector3.Distance(LocalPlayer.GameObject.transform.position, transform.position);
+                if (distanceToObj <= 10f)
                 {
                     if (maxLogs < 8)
                     {
@@ -358,7 +359,9 @@ namespace WirelessSignals.Mono
                     {
                         yield return new WaitForSeconds(3f);  // If Player Is Close To The Structure, This Will Be Called Every 30 Seconds
                     }
-
+                } else if (distanceToObj <= 50f)
+                {
+                    yield return new WaitForSeconds(10f);  // If Player Is Close To The Structure, This Will Be Called Every 10 Seconds
                 }
                 else
                 {
