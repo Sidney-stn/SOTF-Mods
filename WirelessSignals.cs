@@ -42,6 +42,9 @@ public class WirelessSignals : SonsMod
         // Adding Ingame CFG
         SettingsRegistry.CreateSettings(this, null, typeof(Config));
 
+        // Setup ReciverUi
+        UI.ReciverUI.SetupUI();
+
         // Setup Structures
         reciverStructure = new Structure.Reciver();  // Reciver Structure
         reciverStructure.Setup();

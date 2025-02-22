@@ -1,4 +1,5 @@
 ﻿using RedLoader;
+using Sons.Gui.Input;
 using SonsSdk;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,6 +13,16 @@ namespace WirelessSignals.Mono
         public bool? isOn = false;
         public bool isSetupPrefab;
         public string linkedToTranmitterSwithUniqueId = null;
+
+        // Link Ui Menu
+        public LinkUiElement _linkUi = null;
+
+        // Settings Menu
+        private bool _linkedReciverObject = false;
+        private string _linkedReciverObjectName = null;  // Always lowercase
+        public float objectRange = 1f;
+        private List<GameObject> _objectsInRange = new List<GameObject>();
+
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         private void Start()
@@ -52,8 +63,12 @@ namespace WirelessSignals.Mono
             if (Debug.VisualData.GetDebugMode())
             {
                 SetDebugUi(true);
-            } 
+            }
 
+            if (_linkUi == null)
+            {
+                _linkUi = UI.LinkUi.CreateLinkUi(gameObject, 2f, null, null, new Vector3(0, 0f, 0), "screen.take");
+            }
 
         }
 
@@ -205,5 +220,22 @@ namespace WirelessSignals.Mono
         {
             return transform.rotation;
         }
+
+        public List<GameObject> GetObjectsInRange()
+        {
+            return _objectsInRange;
+        }
+
+        public bool IsLinkedReciverObject()
+        {
+            return _linkedReciverObject;
+        }
+
+        public string GetLinkedReciverObjectName()  // Alyways lowercase
+        {
+            return _linkedReciverObjectName;
+        }
+
+
     }
 }

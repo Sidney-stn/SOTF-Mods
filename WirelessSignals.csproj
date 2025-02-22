@@ -98,6 +98,9 @@
     <Reference Include="UnityEngine.TextCoreFontEngineModule">
       <HintPath>$(GameDir)\_RedLoader\Game\UnityEngine.TextCoreFontEngineModule.dll</HintPath>
     </Reference>
+    <Reference Include="Sons.Input">
+      <HintPath>$(GameDir)\_RedLoader\Game\Sons.Input.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Update="manifest.json">

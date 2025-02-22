@@ -15,5 +15,8 @@ namespace WirelessSignals
         [AssetReference("TransmitterDetector")]
         public static GameObject TransmitterDetector { get; set; }
 
+        [AssetReference("ReciverUI")]
+        public static GameObject ReciverUI { get; set; }
+
     }
 }

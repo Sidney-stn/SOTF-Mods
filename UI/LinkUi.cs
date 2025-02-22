@@ -40,8 +40,8 @@ namespace WirelessSignals.UI
             float squareSize = 0.3f;
             int gridDensity = 3;
 
-            Material blackMat = Assets.TransmitterSwitch.transform.GetChild(0).FindChild("Wire (418)").GetChild(0).GetComponent<MeshRenderer>().materials[0];
-            Material redMat = Assets.TransmitterSwitch.transform.GetChild(0).GetChild(16).GetChild(0).GetComponent<MeshRenderer>().materials[0];
+            Material blackMat = WirelessSignals.blackMat;
+            Material redMat = WirelessSignals.redMat;
 
             // Create LineRenderers if visualization is enabled
             List<LineRenderer> lineRenderers = new List<LineRenderer>();
@@ -107,25 +107,49 @@ namespace WirelessSignals.UI
                     if (hitSomething &&
                         raycastHit.collider != null &&
                         raycastHit.collider.transform.root != null &&
-                        !string.IsNullOrEmpty(raycastHit.collider.transform.root.name) &&
-                        raycastHit.collider.transform.root.name.Contains("TransmitterSwitch"))
+                        !string.IsNullOrEmpty(raycastHit.collider.transform.root.name))
                     {
-                        GameObject open = raycastHit.collider.transform.root.gameObject;
-                        Mono.TransmitterSwitch controller = open.GetComponent<TransmitterSwitch>();
-                        if (controller != null)
+                        string hitName = raycastHit.collider.transform.root.name;
+                        if (hitName.Contains("TransmitterSwitch"))  // For Toggeling Physical Switch
                         {
-                            controller.Toggle();
+                            GameObject open = raycastHit.collider.transform.root.gameObject;
+                            Mono.TransmitterSwitch controller = open.GetComponent<TransmitterSwitch>();
+                            if (controller != null)
+                            {
+                                controller.Toggle();
 
-                            // Clean up line renderers before returning
-                            //if (Config.VisualRayCast.Value)
-                            //{
-                            //    GameObject.Destroy(lineRenderers[0].transform.parent.gameObject);
-                            //}
-                            return;
+                                // Clean up line renderers before returning
+                                //if (Config.VisualRayCast.Value)
+                                //{
+                                //    GameObject.Destroy(lineRenderers[0].transform.parent.gameObject);
+                                //}
+                                return;
+                            }
+                            else
+                            {
+                                Misc.Msg("Controller is null!");
+                            }
                         }
-                        else
+                        else if (hitName.Contains("Reciver"))  // For Opening Reciver UI
                         {
-                            Misc.Msg("Controller is null!");
+                            GameObject open = raycastHit.collider.transform.root.gameObject;
+                            Mono.Reciver controller = open.GetComponent<Reciver>();
+                            if (controller != null)
+                            {
+                                LinkUiElement linkUi = controller._linkUi;
+                                if (linkUi == null) { return; }
+                                if (linkUi.IsActive)
+                                {
+                                    UI.ReciverUI.activeReciverPrefab = controller.gameObject;
+                                    UI.ReciverUI.OpenUI();
+                                }
+                                return;
+                            }
+                            else
+                            {
+                                Misc.Msg("Controller is null!");
+                            }
+
                         }
                     }
                 }
