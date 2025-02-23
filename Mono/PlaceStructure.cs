@@ -66,6 +66,9 @@ namespace WirelessSignals.Mono
                         // Setup Debug UI
                         Prefab.Reciver.CreateDebugUi(gameObject, true);
 
+                        // Setup Grass And Snow Remover
+                        WirelessSignals.reciver.CleanGrassAndSnow(gameObject);
+
                         // Network
 
                         break;
@@ -81,6 +84,9 @@ namespace WirelessSignals.Mono
                         // Setup Debug UI
                         Prefab.WirelessTransmitterSwitch.CreateDebugUi(gameObject, true);
 
+                        // Setup Grass And Snow Remover
+                        WirelessSignals.transmitterSwitch.CleanGrassAndSnow(gameObject);
+
                         // Network
 
                         break;
@@ -95,6 +101,9 @@ namespace WirelessSignals.Mono
 
                         // Setup Debug UI
                         Prefab.TransmitterDetector.CreateDebugUi(gameObject, true);
+
+                        // Setup Grass And Snow Remover
+                        WirelessSignals.transmitterDetector.CleanGrassAndSnow(gameObject);
 
                         // Network
 

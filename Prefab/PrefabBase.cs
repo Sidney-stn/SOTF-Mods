@@ -8,7 +8,7 @@ namespace WirelessSignals.Prefab
         internal virtual GameObject gameObjectWithComps { get; set; }
         public virtual Dictionary<string, GameObject> spawnedGameObjects { get; set; } = new Dictionary<string, GameObject>(); // UniqueId, GameObject
 
-        internal virtual GameObject SetupPrefab(GameObject goToInstantiate, List<Il2CppSystem.Type> componentsToAdd, Action<GameObject> configureComponents = null)  // Returns Complete Prefab Thas Setup
+        internal virtual GameObject SetupPrefab(GameObject goToInstantiate, List<Il2CppSystem.Type> componentsToAdd, Action<GameObject> configureComponents = null, bool addGrassAndSnowRemover = false)  // Returns Complete Prefab Thas Setup
         {
             if (goToInstantiate == null) { throw new ArgumentNullException("[SetupPrefab] goToInstantiate Is Null!"); }
 
@@ -27,6 +27,10 @@ namespace WirelessSignals.Prefab
             // Configure components if provided
             configureComponents?.Invoke(gameObjectWithComps);
 
+            if (addGrassAndSnowRemover)
+            {
+                CleanGrassAndSnow();
+            }
 
             return gameObjectWithComps;
 
@@ -80,6 +84,47 @@ namespace WirelessSignals.Prefab
             if (spawnedObject != null)
             {
                 ApplySaveDataToGameObject(spawnedObject, data);
+            }
+        }
+
+        internal virtual void CleanGrassAndSnow(GameObject addToObj = null)
+        {
+            if (addToObj == null) { addToObj = gameObjectWithComps; }
+            if (gameObjectWithComps == null) { Misc.Msg("[PrefabBase] [CleanGrassAndSnow] Can't add to null object"); return; }
+            Bolt.PrefabId prefabId = BoltPrefabs.StorageFirewoodStructure;  // Find StorageFirewoodStructure PrefabId for copying GameObjects
+            Bolt.PrefabId nullId = new Bolt.PrefabId(0);
+            if (prefabId == nullId) { Misc.Msg("[PrefabBase] [CleanGrassAndSnow] Can't find prefabId"); return; }
+            GameObject obj = Bolt.PrefabDatabase.Find(prefabId);  // Find StorageFirewoodStructure GameObject for copying GameObjects
+            if (obj == null) { Misc.Msg("[PrefabBase] [CleanGrassAndSnow] Can't find prefabId"); return; }
+            GameObject grassRemover = obj.transform.FindChild("GrassRemover").gameObject;  // Find GrassRemover GameObject
+            if (grassRemover != null)
+            {
+                GameObject grassRemoverCopy = GameObject.Instantiate(grassRemover);  // Copy GrassRemover GameObject
+                grassRemoverCopy.SetParent(addToObj.transform);  // Set GrassRemover GameObject as child of addToObj
+            }
+            else
+            {
+                Misc.Msg("[PrefabBase] [CleanGrassAndSnow] Can't find GrassRemover"); return;
+            }
+            GameObject snowRemover = obj.transform.FindChild("SnowRemover").gameObject;  // Find SnowRemover GameObject
+            if (snowRemover != null)
+            {
+                GameObject snowRemoverCopy = GameObject.Instantiate(snowRemover);  // Copy SnowRemover GameObject
+                snowRemoverCopy.SetParent(addToObj.transform);  // Set SnowRemover GameObject as child of addToObj
+            }
+            else
+            {
+                Misc.Msg("[PrefabBase] [CleanGrassAndSnow] Can't find SnowRemover"); return;
+            }
+            GameObject structureEnvironmentCleaner = obj.transform.FindChild("StructureEnvironmentCleaner").gameObject;  // Find StructureEnvironmentCleaner GameObject
+            if (structureEnvironmentCleaner != null)
+            {
+                GameObject structureEnvironmentCleanerCopy = GameObject.Instantiate(structureEnvironmentCleaner);  // Copy StructureEnvironmentCleaner GameObject
+                structureEnvironmentCleanerCopy.SetParent(addToObj.transform);  // Set StructureEnvironmentCleaner GameObject as child of addToObj
+            }
+            else
+            {
+                Misc.Msg("[PrefabBase] [CleanGrassAndSnow] Can't find StructureEnvironmentCleaner"); return;
             }
         }
     }

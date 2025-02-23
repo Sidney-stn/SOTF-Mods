@@ -18,5 +18,11 @@ namespace WirelessSignals
         [AssetReference("ReciverUI")]
         public static GameObject ReciverUI { get; set; }
 
+        [AssetReference("OnOff")]
+        public static Texture2D UIOnOff { get; set; }
+
+        [AssetReference("Adjust")]
+        public static Texture2D UIAdjust { get; set; }
+
     }
 }

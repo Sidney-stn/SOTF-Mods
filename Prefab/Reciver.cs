@@ -19,7 +19,7 @@ namespace WirelessSignals.Prefab
                     Il2CppType.Of<Mono.Reciver>(),
                     //Il2CppType.Of<Construction.DefensiveWallGateControl>(),
                 };
-            SetupPrefab(Assets.Reciver, components, configureComponents: ConfigureComponents);
+            SetupPrefab(Assets.Reciver, components, configureComponents: ConfigureComponents, addGrassAndSnowRemover: true);
         }
 
         internal override void ConfigureComponents(GameObject obj)

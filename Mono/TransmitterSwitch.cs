@@ -55,7 +55,7 @@ namespace WirelessSignals.Mono
             // Link UI
             if (_linkUi == null)
             {
-                _linkUi = UI.LinkUi.CreateLinkUi(gameObject.transform.FindChild("Operation").GetChild(0).gameObject, 2f, null, null, new Vector3(0, 0f, 0), "screen.take");
+                _linkUi = UI.LinkUi.CreateLinkUi(gameObject.transform.FindChild("Operation").GetChild(0).gameObject, 2f, null, Assets.UIOnOff, new Vector3(0, 0f, 0), "screen.take");
             }
 
             if (isOn == true)

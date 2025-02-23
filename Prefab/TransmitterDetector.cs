@@ -18,7 +18,7 @@ namespace WirelessSignals.Prefab
                 {
                     Il2CppType.Of<Mono.TransmitterDetector>(),
                 };
-            SetupPrefab(Assets.TransmitterDetector, components, configureComponents: ConfigureComponents);
+            SetupPrefab(Assets.TransmitterDetector, components, configureComponents: ConfigureComponents, addGrassAndSnowRemover: true);
         }
 
         internal override void ConfigureComponents(GameObject obj)
