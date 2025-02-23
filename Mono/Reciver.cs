@@ -19,10 +19,10 @@ namespace WirelessSignals.Mono
         public LinkUiElement _linkUi = null;
 
         // Settings Menu
-        private bool _linkedReciverObject = false;
+        private bool _linkedReciverObject = false;  // To Trigger Cases On Turn On/Off
         private string _linkedReciverObjectName = null;  // Always lowercase
-        public float objectRange = 1f;
-        private HashSet<GameObject> _objectsInRange = new HashSet<GameObject>();
+        public float objectRange = 1f;  // Range to detect objects, Physics.OverlapSphere
+        private HashSet<GameObject> _objectsInRange = new HashSet<GameObject>(new Tools.GameObjectComparer());  // Objects in range, NOTE: Only Valid Ojbects
 
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
@@ -109,6 +109,16 @@ namespace WirelessSignals.Mono
             else
             {
                 TurnOffLight();
+            }
+            if (_linkedReciverObject)
+            {
+                if (!string.IsNullOrEmpty(_linkedReciverObjectName))
+                {
+                    if (_linkedReciverObjectName == "defensivewallgate")
+                    {
+                        UpdateDefenseWallGate(state);
+                    }
+                }
             }
             UpdateDebugUi();
         }
@@ -256,11 +266,43 @@ namespace WirelessSignals.Mono
                         //Misc.Msg($"Final name: {hitName}");
 
                         bool success = UI.ReciverUI.CheckIfDictContainsKey(hitName);
-                        if (success)
+                        bool success2 = UI.ReciverUI.CheckComponentDictContainsKey(hitName);
+                        if (success && success2)
                         {
-                            // Check if object from hitName has correct component and its not != null
-                            Misc.Msg($"[Reciver] [GetObjectsInRange] Found object: {hitName}");
-                            _objectsInRange.Add(hitCollider.transform.root.gameObject);
+                            // Get expected component type from dictionary
+                            string expectedComponent = UI.ReciverUI.GetComponentTypeFromDict(hitName);
+
+                            // If no component required (null)
+                            if (expectedComponent == null)
+                            {
+                                Misc.Msg($"[Reciver] [GetObjectsInRange] Found object: {hitName} (no component required)");
+                                _objectsInRange.Add(hitCollider.transform.root.gameObject);
+                            }
+                            else
+                            {
+                                var componentType = Il2CppSystem.Type.GetType(expectedComponent);
+                                // Check if we got a valid type
+                                if (componentType != null)
+                                {
+                                    var component = hitCollider.transform.root.gameObject.GetComponent(componentType);
+                                    if (component != null)
+                                    {
+                                        if (!_objectsInRange.Contains(hitCollider.transform.root.gameObject))
+                                        {
+                                            Misc.Msg($"[Reciver] [GetObjectsInRange] Found object: {hitName} with required component");
+                                            _objectsInRange.Add(hitCollider.transform.root.gameObject);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Misc.Msg($"[Reciver] [GetObjectsInRange] Object {hitName} missing required component: {expectedComponent}");
+                                    }
+                                }
+                                else
+                                {
+                                    Misc.Msg($"[Reciver] [GetObjectsInRange] Failed to get type for component: {expectedComponent}");
+                                }
+                            }
                         }
                     }
                 }
@@ -278,6 +320,65 @@ namespace WirelessSignals.Mono
             return _linkedReciverObjectName;
         }
 
+        public void SetLinkedReciverObject(bool state, string name)
+        {
+            _linkedReciverObject = state;
+            _linkedReciverObjectName = name;
+        }
 
+        private void UpdateDefenseWallGate(bool onOff)
+        {
+            Collider[] hitColliders = Physics.OverlapSphere(transform.position, objectRange, LayerMask.GetMask(new string[]
+            {
+                    "Default",
+                    "Prop"
+            }));
+            bool found = false;
+            HashSet<string> hits = new HashSet<string>();
+            foreach (var hitCollider in hitColliders)
+            {
+                if (hitCollider.gameObject != null && hitCollider.gameObject != gameObject)
+                {
+                    // Verify object can be linked
+                    if (hitCollider.transform.root != null
+                        && !string.IsNullOrEmpty(hitCollider.transform.root.name))
+                    {
+                        if (hitCollider.transform.root.gameObject == gameObject)  { continue; }
+                        string hitName = hitCollider.transform.root.name.ToLower();
+                        hitName = Regex.Replace(hitName, @"\s+", "");  // Remove spaces
+                        hitName = Regex.Replace(hitName, @"\d", "");  // Remove numbers
+                        hitName = hitName.Replace("(clone)", "");  // Remove (clone)
+                        hits.Add(hitName);
+                        if (hitName == "defensivewallgate")
+                        {
+                            found = true;
+                            Construction.DefensiveWallGateControl defenseWallGate = hitCollider.transform.root.gameObject.GetComponent<Construction.DefensiveWallGateControl>();
+                            if (defenseWallGate != null)
+                            {
+                                if (onOff)
+                                {
+                                    defenseWallGate.OpenGate();
+                                }
+                                else
+                                {
+                                    defenseWallGate.CloseGate();
+                                }
+                            }
+                            else
+                            {
+                                Misc.Msg("[Reciver] [UpdateDefenseWallGate] defenseWallGate is null");
+                            }
+                        }
+                    }
+                }
+            }
+            if (!found)
+            {
+                Misc.Msg("[Reciver] [UpdateDefenseWallGate] No defense wall gate found");
+                // Log Hits
+                string hitsString = string.Join(", ", hits);
+                Misc.Msg($"[Reciver] [UpdateDefenseWallGate] Hits: {hitsString}");
+            }
+        }
     }
 }

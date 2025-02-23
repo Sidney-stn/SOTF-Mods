@@ -17,6 +17,7 @@ namespace WirelessSignals.Prefab
             var components = new List<Il2CppSystem.Type>
                 {
                     Il2CppType.Of<Mono.Reciver>(),
+                    //Il2CppType.Of<Construction.DefensiveWallGateControl>(),
                 };
             SetupPrefab(Assets.Reciver, components, configureComponents: ConfigureComponents);
         }
@@ -175,7 +176,9 @@ namespace WirelessSignals.Prefab
                 Position = obj.transform.position,
                 Rotation = obj.transform.rotation,
                 IsOn = component.isOn,
-                LinkedToTranmitterSwithUniqueId = component.linkedToTranmitterSwithUniqueId
+                LinkedToTranmitterSwithUniqueId = component.linkedToTranmitterSwithUniqueId,
+                LinkedReciverObject = component.IsLinkedReciverObject(),
+                LinkedReciverObjectName = component.GetLinkedReciverObjectName()
             };
         }
 
@@ -196,7 +199,9 @@ namespace WirelessSignals.Prefab
                 rotation = saveData.Rotation,
                 uniqueId = saveData.UniqueId,
                 isOn = saveData.IsOn,
-                linkedToTranmitterSwithUniqueId = saveData.LinkedToTranmitterSwithUniqueId
+                linkedToTranmitterSwithUniqueId = saveData.LinkedToTranmitterSwithUniqueId,
+                linkedReciverObject = saveData.LinkedReciverObject,
+                linkedReciverObjectName = saveData.LinkedReciverObjectName
             };
         }
 
@@ -211,6 +216,7 @@ namespace WirelessSignals.Prefab
                 component.uniqueId = saveData.UniqueId;
                 component.isOn = saveData.IsOn;
                 component.linkedToTranmitterSwithUniqueId = saveData.LinkedToTranmitterSwithUniqueId;
+                component.SetLinkedReciverObject(saveData.LinkedReciverObject, saveData.LinkedReciverObjectName);
             }
         }
 
@@ -237,6 +243,8 @@ namespace WirelessSignals.Prefab
             public Quaternion Rotation;
             public bool? IsOn;
             public string LinkedToTranmitterSwithUniqueId;
+            public bool LinkedReciverObject;
+            public string LinkedReciverObjectName;
         }
 
     }
@@ -246,6 +254,8 @@ namespace WirelessSignals.Prefab
         public bool raiseNetworkEvent = false;
         public bool? isOn = null;
         public string linkedToTranmitterSwithUniqueId = null;
+        public bool linkedReciverObject = false;
+        public string linkedReciverObjectName = null;
     }
 
     

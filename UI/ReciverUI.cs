@@ -32,7 +32,13 @@ namespace WirelessSignals.UI
             "DefensiveWallGate".ToLower()
         };  // Only LowerCase Allowed Here
         private static Dictionary<string, string> dropdownValueMapping = new Dictionary<string, string>();  // Gameobject Name Without Clone And Space (CleanName), DisplayName
-        public static Dictionary<string, Il2CppType> componentCheck = new Dictionary<string, Il2CppType>();
+        public static Dictionary<string, string> componentRequirements = new Dictionary<string, string>
+        {
+            { "defensivewallgate", "Construction.DefensiveWallGateControl" },
+            //{ "otheritem", null },  // Example of item with no required component
+            // Add other objects...
+        };
+
 
         internal static void SetupUI()
         {
@@ -101,9 +107,39 @@ namespace WirelessSignals.UI
                         return;
 
                     }
-
                     Mono.Reciver controller = activeReciverPrefab.GetComponent<Mono.Reciver>();
-                    //controller._linked
+                    if (controller == null)
+                    {
+                        Misc.Msg("[ReciverUI] [OnUpdateButtonPress] Could not save, No Reciver Component Found");
+                        SonsTools.ShowMessage("Could not save, No Reciver Component Found");
+                        return;
+                    }
+
+                    string selectedVal = linkElementDropdown.options[linkElementDropdown.value].text;
+                    if (selectedVal == "None")
+                    {
+                        controller.SetLinkedReciverObject(false, null);
+                        SetUiFromObj();
+                        Misc.Msg("[ReciverUI] [OnUpdateButtonPress] Unlinked Object");
+                        SonsTools.ShowMessage("Unlinked Object");
+                        //Misc.Msg("[ReciverUI] [OnUpdateButtonPress] Could not save, No Object Selected");
+                        //SonsTools.ShowMessage("Could not save, No Object Selected");
+                        // This Case Needs Updated, Float Value Does Change, but rescan should be done
+                        return;
+                    }
+
+                    
+                    
+                    string itemName = GetOriginalName(selectedVal);
+                    if (string.IsNullOrEmpty(itemName))
+                    {
+                        Misc.Msg("[ReciverUI] [OnUpdateButtonPress] Could not save, Item Name Is Null Or Empty");
+                        SonsTools.ShowMessage("Could not save, Item Name Is Null Or Empty");
+                    }
+                    controller.SetLinkedReciverObject(true, itemName);
+
+                    // Update UI
+                    SetUiFromObj();
 
                     // Network
                 };
@@ -167,6 +203,21 @@ namespace WirelessSignals.UI
             }
         }
 
+        internal static void AddNoneToDropDown()
+        {
+            if (linkElementDropdown != null)
+            {
+                // Check if None is already in the dropdown
+                foreach (Dropdown.OptionData option in linkElementDropdown.options)
+                {
+                    if (option.text == "None") { return; }
+                }
+                Il2CppSystem.Collections.Generic.List<Dropdown.OptionData> options = new Il2CppSystem.Collections.Generic.List<Dropdown.OptionData>();
+                options.Add(new Dropdown.OptionData("None"));
+                linkElementDropdown.AddOptions(options);
+            }
+        }
+
         internal static void SetUiFromObj()
         {
             if (activeReciverPrefab == null)
@@ -194,6 +245,11 @@ namespace WirelessSignals.UI
             }
             if (linkElementDropdown != null)  // Set Dropdown Options (Link Element Dropdown)
             {
+                if (linkElementDropdown.options.Count > 0)
+                {
+                    linkElementDropdown.ClearOptions();
+                }
+                AddNoneToDropDown();
                 bool isAlreadyLinked = controller.IsLinkedReciverObject();
                 HashSet<GameObject> objectsInRange = controller.GetObjectsInRange();
                 foreach (GameObject obj in objectsInRange)
@@ -217,7 +273,8 @@ namespace WirelessSignals.UI
                         continue;
                     }
 
-                    allowedObjectsInDropdown.Add(dropdownValueMapping[cleanName]);
+                    //allowedObjectsInDropdown.Add(dropdownValueMapping[cleanName]);  // Not sure why i added this here
+                    
                     Dropdown.OptionData option = new Dropdown.OptionData(dropdownValueMapping[cleanName]);
                     linkElementDropdown.options.Add(option);
                 }
@@ -312,6 +369,20 @@ namespace WirelessSignals.UI
                 CloseUI();
                 return;
             } 
+        }
+
+        public static bool CheckComponentDictContainsKey(string key)
+        {
+            return componentRequirements.ContainsKey(key);
+        }
+
+        public static string GetComponentTypeFromDict(string key)
+        {
+            if (componentRequirements.TryGetValue(key, out string componentType))
+            {
+                return componentType;  // Will return null if no component required
+            }
+            return null;
         }
 
     }
