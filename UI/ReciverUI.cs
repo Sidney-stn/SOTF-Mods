@@ -1,8 +1,11 @@
-﻿using RedLoader;
+﻿using Il2CppInterop.Runtime;
+using RedLoader;
 using Sons.Input;
 using SonsSdk;
+using System.Text.RegularExpressions;
 using TheForest.Utils;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 
@@ -26,9 +29,10 @@ namespace WirelessSignals.UI
         public static Dropdown linkElementDropdown = null;
         public static HashSet<string> allowedObjectsInDropdown = new HashSet<string>
         {
-            ""
+            "DefensiveWallGate".ToLower()
         };  // Only LowerCase Allowed Here
-        private static Dictionary<string, string> dropdownValueMapping = new Dictionary<string, string>();
+        private static Dictionary<string, string> dropdownValueMapping = new Dictionary<string, string>();  // Gameobject Name Without Clone And Space (CleanName), DisplayName
+        public static Dictionary<string, Il2CppType> componentCheck = new Dictionary<string, Il2CppType>();
 
         internal static void SetupUI()
         {
@@ -59,7 +63,30 @@ namespace WirelessSignals.UI
             if (linkedToObjTxt == null) { linkedToObjTxt = UiElement.transform.FindDeepChild("LinkedTxt").GetComponent<Text>(); linkedToObjTxt.text = "Linked To Object: Unkown"; }  // Linked To Object Value Text
             if (rangeSlider == null) { rangeSlider = UiElement.transform.FindDeepChild("RangeSlider").GetComponent<Slider>(); }  // Range Slider
             if (rangeSliderValueTxt == null) { rangeSliderValueTxt = UiElement.transform.FindDeepChild("RangeVal").GetComponent<Text>(); rangeSliderValueTxt.text = "?"; }  // Range Slider Value Text
-            if (linkElementDropdown == null) { linkElementDropdown = UiElement.transform.FindDeepChild("InRangeDropdown").GetComponent<Dropdown>(); }  // Link Element Dropdown
+            if (linkElementDropdown == null) { linkElementDropdown = UiElement.transform.FindDeepChild("InRangeDropdown").GetComponent<Dropdown>(); linkElementDropdown.ClearOptions(); }  // Link Element Dropdown
+            if (rangeSlider != null)
+            {
+                rangeSlider.onValueChanged.RemoveAllListeners();
+
+                // Create an Il2CppSystem.Collections.Generic.List for the UnityEvent
+                var callbacks = new Il2CppSystem.Collections.Generic.List<UnityEngine.Events.UnityAction<float>>();
+
+                // Create the callback
+                UnityEngine.Events.UnityAction<float> callback = DelegateSupport.ConvertDelegate<UnityEngine.Events.UnityAction<float>>(
+                    (float val) =>
+                    {
+                        if (activeReciverPrefab == null) { return; }
+                        Mono.Reciver controller = activeReciverPrefab.GetComponent<Mono.Reciver>();
+                        if (controller == null) { return; }
+                        // Round the val to max 2 decimals
+                        val = Mathf.Round(val * 100f) / 100f;
+                        controller.objectRange = val;  // Set Range On Reciver
+                        rangeSliderValueTxt.text = val.ToString();  // Update Range Text
+                    });
+
+                callbacks.Add(callback);
+                rangeSlider.onValueChanged.AddListener(callback);
+            }
 
             if (updateBtn == null)
             {
@@ -98,6 +125,7 @@ namespace WirelessSignals.UI
 
             // Add Mapping Values
             dropdownValueMapping.Add("None", "None");
+            dropdownValueMapping.Add("DefensiveWallGate".ToLower(), "Wall Gate");
         }
 
         internal static void SetToDefault()
@@ -164,35 +192,90 @@ namespace WirelessSignals.UI
             {
                 rangeSliderValueTxt.text = controller.objectRange.ToString();
             }
-            if (linkElementDropdown != null)
+            if (linkElementDropdown != null)  // Set Dropdown Options (Link Element Dropdown)
             {
                 bool isAlreadyLinked = controller.IsLinkedReciverObject();
-                List<GameObject> objectsInRange = controller.GetObjectsInRange();
+                HashSet<GameObject> objectsInRange = controller.GetObjectsInRange();
                 foreach (GameObject obj in objectsInRange)
                 {
                     if (obj == null) { continue; }
 
                     // Clean up the name by removing whitespace and (Clone)
-                    string cleanName = obj.name
-                        .Replace("(Clone)", "") // Remove all instances of (Clone)
-                        .Trim() // Remove leading and trailing whitespace
-                        .ToLower(); // Make it lowercase
+                    string cleanName = obj.name.ToLower(); // Make it lowercase
 
-                    // Skip if this name is already in the dropdown
-                    if (allowedObjectsInDropdown.Contains(cleanName)) { continue; }
+                    cleanName = Regex.Replace(cleanName, @"\s+", "");  // Remove spaces
+                    cleanName = Regex.Replace(cleanName, @"\d", "");  // Remove numbers
+                    cleanName = cleanName.Replace("(clone)", "");  // Remove (clone)
 
-                    allowedObjectsInDropdown.Add(cleanName);
-                    Dropdown.OptionData option = new Dropdown.OptionData(cleanName);
+                    // Skip if this name isn't in our mapping or is already in dropdown
+                    if (!dropdownValueMapping.ContainsKey(cleanName)) {
+                        Misc.Msg($"[ReciverUI] [SetUiFromObj] Skipping {cleanName} because it's not in the mapping");
+                        continue;
+                    }
+                    if (allowedObjectsInDropdown.Contains(dropdownValueMapping[cleanName])) {
+                        Misc.Msg($"[ReciverUI] [SetUiFromObj] Skipping {cleanName} because it's already in the dropdown");
+                        continue;
+                    }
+
+                    allowedObjectsInDropdown.Add(dropdownValueMapping[cleanName]);
+                    Dropdown.OptionData option = new Dropdown.OptionData(dropdownValueMapping[cleanName]);
                     linkElementDropdown.options.Add(option);
                 }
                 if (isAlreadyLinked)
                 {
                     string linkedName = controller.GetLinkedReciverObjectName();
+                    // Clean the linked name the same way as we did for other names
+                    string cleanLinkedName = linkedName
+                        .Replace("(Clone)", "")
+                        .Trim()
+                        .ToLower();
+
+                    // Only proceed if we have a mapping for this name
+                    if (dropdownValueMapping.ContainsKey(cleanLinkedName))
+                    {
+                        // Get the display name from the mapping
+                        string displayName = dropdownValueMapping[cleanLinkedName];
+
+                        // Find the index by looping through options
+                        for (int i = 0; i < linkElementDropdown.options.Count; i++)
+                        {
+                            if (linkElementDropdown.options[i].text == displayName)
+                            {
+                                linkElementDropdown.value = i;
+                                linkElementDropdown.RefreshShownValue();
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (objectsInRange.Count == 0)
+                {
+                    SetDropDownOptionsToNone();
                 }
             }
         }
 
-        public static void ToggleUi()  // Not In Use
+        //string displayName = linkElementDropdown.options[linkElementDropdown.value].text;
+        //string originalName = GetOriginalName(displayName);
+
+        // To get original name from display name, you'll need to search the dictionary
+        public static string GetOriginalName(string displayName)
+        {
+            // Look for the key (original name) that maps to this display name
+            foreach (var pair in dropdownValueMapping)
+            {
+                if (pair.Value == displayName)
+                    return pair.Key;
+            }
+            return null; // or return displayName if no mapping found
+        }
+
+        public static bool CheckIfDictContainsKey(string key)
+        {
+            return dropdownValueMapping.ContainsKey(key);
+        }
+
+        public static void ToggleUi()  // Not In Use, Needs Rework To Make It Usable
         {
             if (UiElement != null)
             {
@@ -205,6 +288,7 @@ namespace WirelessSignals.UI
             if (UiElement != null)
             {
                 if (activeReciverPrefab == null) { return; }
+                SetUiFromObj();
                 if (!UiElement.active) { UiElement.SetActive(true); }
             }
             if (messageText != null)

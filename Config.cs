@@ -9,7 +9,7 @@ public static class Config
 
     public static ConfigEntry<bool> DebugLogging { get; private set; }
     public static ConfigEntry<bool> VisualRayCast { get; private set; }
-
+    public static KeybindConfigEntry CloseUiKey { get; private set; }
     public static KeybindConfigEntry InteractKey { get; private set; }
 
     public static void Init()
@@ -30,7 +30,7 @@ public static class Config
             "Enables Debug Logs of the game to the console.");
 
         InteractKey = Category.CreateKeybindEntry(
-            "menu_key_shops",
+            "menu_key_wireless",
             "e",
             "Interact Key",
             "Interact Key (DEFAULT E).");
@@ -38,6 +38,23 @@ public static class Config
         InteractKey.Notify(() =>
         {
             UI.LinkUi.TryInteractWithUi();
+        });
+
+        CloseUiKey = Category.CreateKeybindEntry(
+            "esc_key_wireless",
+            "escape",
+            "Ui Close",
+            "Close Open Ui Key (DEFAULT ESC).");
+        CloseUiKey.DefaultValue = "e";
+        CloseUiKey.Notify(() =>
+        {
+            if (UI.ReciverUI.UiElement != null)
+            {
+                if (UI.ReciverUI.UiElement.active)
+                {
+                    UI.ReciverUI.UiElement.SetActive(false);
+                }
+            }
         });
     }
 

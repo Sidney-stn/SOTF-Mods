@@ -1,6 +1,7 @@
 ﻿using RedLoader;
 using Sons.Gui.Input;
 using SonsSdk;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,7 +22,7 @@ namespace WirelessSignals.Mono
         private bool _linkedReciverObject = false;
         private string _linkedReciverObjectName = null;  // Always lowercase
         public float objectRange = 1f;
-        private List<GameObject> _objectsInRange = new List<GameObject>();
+        private HashSet<GameObject> _objectsInRange = new HashSet<GameObject>();
 
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
@@ -221,8 +222,49 @@ namespace WirelessSignals.Mono
             return transform.rotation;
         }
 
-        public List<GameObject> GetObjectsInRange()
+        public HashSet<GameObject> GetObjectsInRange()
         {
+            _objectsInRange.Clear();
+
+            Collider[] hitColliders = Physics.OverlapSphere(transform.position, objectRange, LayerMask.GetMask(new string[]
+            {
+                    "Default",
+                    "Prop"
+            }));
+            foreach (var hitCollider in hitColliders)
+            {
+                if (hitCollider.gameObject != null && hitCollider.gameObject != gameObject)
+                {
+                    // Verify object can be linked
+                    if (hitCollider.transform.root != null
+                        && !string.IsNullOrEmpty(hitCollider.transform.root.name))
+                    {
+                        if (hitCollider.transform.root.gameObject == gameObject)
+                        {
+                            continue;
+                        }
+                        string hitName = hitCollider.transform.root.name.ToLower();
+                        //Misc.Msg($"Original name: {hitName}");
+
+                        hitName = Regex.Replace(hitName, @"\s+", "");  // Remove spaces
+                        //Misc.Msg($"After space removal: {hitName}");
+
+                        hitName = Regex.Replace(hitName, @"\d", "");  // Remove numbers
+                        //Misc.Msg($"After number removal: {hitName}");
+
+                        hitName = hitName.Replace("(clone)", "");  // Remove (clone)
+                        //Misc.Msg($"Final name: {hitName}");
+
+                        bool success = UI.ReciverUI.CheckIfDictContainsKey(hitName);
+                        if (success)
+                        {
+                            // Check if object from hitName has correct component and its not != null
+                            Misc.Msg($"[Reciver] [GetObjectsInRange] Found object: {hitName}");
+                            _objectsInRange.Add(hitCollider.transform.root.gameObject);
+                        }
+                    }
+                }
+            }
             return _objectsInRange;
         }
 
