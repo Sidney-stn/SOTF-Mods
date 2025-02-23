@@ -184,7 +184,8 @@ namespace WirelessSignals.Prefab
                 Position = obj.transform.position,
                 Rotation = obj.transform.rotation,
                 IsOn = component.isOn,
-                LinkedUniqueIdsRecivers = component.linkedUniqueIdsRecivers
+                LinkedUniqueIdsRecivers = component.linkedUniqueIdsRecivers,
+                OwnerSteamId = component.ownerSteamId
             };
         }
 
@@ -205,7 +206,8 @@ namespace WirelessSignals.Prefab
                 rotation = saveData.Rotation,
                 uniqueId = saveData.UniqueId,
                 isOn = saveData.IsOn,
-                linkedUniqueIdsRecivers = saveData.LinkedUniqueIdsRecivers
+                linkedUniqueIdsRecivers = saveData.LinkedUniqueIdsRecivers,
+                ownerSteamId = saveData.OwnerSteamId
             };
         }
 
@@ -220,6 +222,7 @@ namespace WirelessSignals.Prefab
                 component.uniqueId = saveData.UniqueId;
                 component.isOn = saveData.IsOn;
                 component.linkedUniqueIdsRecivers = saveData.LinkedUniqueIdsRecivers;
+                component.ownerSteamId = saveData.OwnerSteamId;
             }
         }
 
@@ -245,6 +248,7 @@ namespace WirelessSignals.Prefab
             public Quaternion Rotation;
             public bool? IsOn;
             public HashSet<string> LinkedUniqueIdsRecivers;
+            public string OwnerSteamId;
         }
 
     }
@@ -254,5 +258,6 @@ namespace WirelessSignals.Prefab
         public bool raiseNetworkEvent = false;
         public bool? isOn = null;
         public HashSet<string> linkedUniqueIdsRecivers = null;
+        public string ownerSteamId = null;
     }
 }

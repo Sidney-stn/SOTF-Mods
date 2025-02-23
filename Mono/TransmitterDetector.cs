@@ -16,6 +16,7 @@ namespace WirelessSignals.Mono
         public bool? isOn = false;
         public bool isSetupPrefab;
         public HashSet<string> linkedUniqueIdsRecivers = new HashSet<string>();
+        public string ownerSteamId = null;  // If owner is null, then it's public
 
         public bool foundObject;
         public string foundObjectName;

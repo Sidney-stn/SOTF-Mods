@@ -60,6 +60,7 @@ namespace WirelessSignals.Mono
                         if (string.IsNullOrEmpty(uniqueId)) { Misc.Msg("[PlaceStructure] [Start] uniqueId Is Null Or Empty!"); return; }
                         Mono.Reciver reciverController = gameObject.AddComponent<Mono.Reciver>();
                         reciverController.uniqueId = uniqueId;
+                        reciverController.ownerSteamId = Misc.GetMySteamId();
                         WirelessSignals.reciver.spawnedGameObjects.Add(uniqueId, gameObject);
                         Misc.Msg($"[PlaceStructure] [Start] Reciver Set UniqueId {uniqueId}");
 
@@ -78,6 +79,7 @@ namespace WirelessSignals.Mono
                         if (string.IsNullOrEmpty(uniqueId1)) { Misc.Msg("[PlaceStructure] [Start] uniqueId Is Null Or Empty!"); return; }
                         Mono.TransmitterSwitch transmitterController = gameObject.AddComponent<Mono.TransmitterSwitch>();
                         transmitterController.uniqueId = uniqueId1;
+                        transmitterController.ownerSteamId = Misc.GetMySteamId();
                         WirelessSignals.transmitterSwitch.spawnedGameObjects.Add(uniqueId1, gameObject);
                         Misc.Msg($"[PlaceStructure] [Start] TransmitterSwitch Set UniqueId {uniqueId1}");
 
@@ -96,6 +98,7 @@ namespace WirelessSignals.Mono
                         if (string.IsNullOrEmpty(uniqueId2)) { Misc.Msg("[PlaceStructure] [Start] uniqueId Is Null Or Empty!"); return; }
                         Mono.TransmitterDetector transmitterDetectorController = gameObject.AddComponent<Mono.TransmitterDetector>();
                         transmitterDetectorController.uniqueId = uniqueId2;
+                        transmitterDetectorController.ownerSteamId = Misc.GetMySteamId();
                         WirelessSignals.transmitterDetector.spawnedGameObjects.Add(uniqueId2, gameObject);
                         Misc.Msg($"[PlaceStructure] [Start] TransmitterDetector Set UniqueId {uniqueId2}");
 

@@ -171,5 +171,9 @@ namespace WirelessSignals
                 return ((ulong)mySteamId, mySteamId.ToString());
             }
         }
+        public static string GetMySteamId()
+        {
+            return MySteamId().Item2;
+        }
     }
 }

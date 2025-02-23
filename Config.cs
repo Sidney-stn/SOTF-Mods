@@ -6,9 +6,9 @@ namespace WirelessSignals;
 public static class Config
 {
     public static ConfigCategory Category { get; private set; }
-
     public static ConfigEntry<bool> DebugLogging { get; private set; }
     public static ConfigEntry<bool> VisualRayCast { get; private set; }
+    public static ConfigEntry<bool> OwnerToEdit { get; private set; }
     public static KeybindConfigEntry CloseUiKey { get; private set; }
     public static KeybindConfigEntry InteractKey { get; private set; }
 
@@ -16,18 +16,26 @@ public static class Config
     {
         Category = ConfigSystem.CreateCategory("wirelessSignals", "WirelessSignals");
 
+        OwnerToEdit = Category.CreateEntry(
+            "owner_to_edit_wireless",
+            true,
+            "Creator For Changing Items",
+            "[NOT IMPLEMENTED] If true, you must be creator of structure for linking and editing it [For Host Only] and [Multiplayer Only]");
+        OwnerToEdit.DefaultValue = true;
+
         VisualRayCast = Category.CreateEntry(
             "enable_visual_raycast_wireless",
             false,
             "Enable Visual Raycast",
             "Shows RayCast Lines");
-
+        VisualRayCast.DefaultValue = false;
 
         DebugLogging = Category.CreateEntry(
             "enable_logging_wireless",
             false,
             "Enable Debug Logs",
             "Enables Debug Logs of the game to the console.");
+        DebugLogging.DefaultValue = false;
 
         InteractKey = Category.CreateKeybindEntry(
             "menu_key_wireless",
@@ -44,7 +52,7 @@ public static class Config
             "esc_key_wireless",
             "escape",
             "Ui Close",
-            "Close Open Ui Key (DEFAULT ESC).");
+            "Close Ui Key (DEFAULT ESC).");
         CloseUiKey.DefaultValue = "e";
         CloseUiKey.Notify(() =>
         {
@@ -61,5 +69,6 @@ public static class Config
     // Same as the callback in "CreateSettings". Called when the settings ui is closed.
     public static void OnSettingsUiClosed()
     {
+        Tools.CreatorSettings.OnCloseSettingsForUpdate();
     }
 }

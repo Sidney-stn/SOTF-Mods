@@ -14,6 +14,7 @@ namespace WirelessSignals.Mono
         public bool? isOn = false;
         public bool isSetupPrefab;
         public string linkedToTranmitterSwithUniqueId = null;
+        public string ownerSteamId = null;  // If owner is null, then it's public
 
         // Link Ui Menu
         public LinkUiElement _linkUi = null;
@@ -69,7 +70,18 @@ namespace WirelessSignals.Mono
 
             if (_linkUi == null)
             {
-                _linkUi = UI.LinkUi.CreateLinkUi(gameObject, 2f, null, Assets.UIAdjust, new Vector3(0, 0f, 0), "screen.take");
+                if (Tools.CreatorSettings.lastState)  // If true, means we need to check if we are owner to create link ui
+                {
+                    if (ownerSteamId == null || ownerSteamId == Misc.GetMySteamId())
+                    {
+                        _linkUi = UI.LinkUi.CreateLinkUi(gameObject, 2f, null, Assets.UIAdjust, new Vector3(0, 0f, 0), "screen.take");
+                        Misc.Msg("[Reciver] [Start] CreatorSettings.lastState is true - Created LinkUi");
+                    }
+                }
+                else
+                {
+                    Misc.Msg("[Reciver] [Start] CreatorSettings.lastState is false - Skipped Creating LinkUi");
+                }
             }
 
         }

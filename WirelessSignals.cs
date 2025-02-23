@@ -108,6 +108,9 @@ public class WirelessSignals : SonsMod
 
         linkingCotroller = LocalPlayer.GameObject.AddComponent<Linking.LineRenderer>();
 
+        // Set Last State For CreatorSettings
+        Tools.CreatorSettings.lastState = Config.OwnerToEdit.Value;
+
         // Mark the world as ready for loading
         prefabSaveManager.SetWorldReady();
     }

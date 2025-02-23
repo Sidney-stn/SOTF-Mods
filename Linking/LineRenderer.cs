@@ -17,7 +17,7 @@ namespace WirelessSignals.Linking
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Most Likley to be used later")]
         private bool isRepairToolInHand = false;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Awake Do Get Called When Script Is Added To Go")]
         private void Awake()
         {
             if (lineMaterial != null) { return; }
@@ -35,6 +35,15 @@ namespace WirelessSignals.Linking
             // If neither transmitter switch nor detector hit is stored, unlink the receiver
             if (!hitObjects.ContainsKey("TransmitterSwitch") && !hitObjects.ContainsKey("TransmitterDetector"))
             {
+                // If CreatorSettings.lastState Is True, Only Owner Can Change The Linking
+                if (Tools.CreatorSettings.lastState && !Tools.CreatorSettings.IsOwner(go.GetComponent<Mono.Reciver>().ownerSteamId))
+                {
+                    Misc.Msg("[LineRenderer] [HitReciver]: You Must Be The Owner To Link");
+                    SonsTools.ShowMessage("You Must Be The Owner Edit Linking");
+                    hitObjects.Clear();
+                    return;
+                }
+
                 hitObjects.Clear();  // Clear if it has another Receiver Stored
                 hitObjects["Reciver"] = go;  // Store the receiver hit
 
@@ -105,10 +114,42 @@ namespace WirelessSignals.Linking
                     Misc.Msg("[LineRenderer] [HitReciver]: Reciver controller is null");
                     return;
                 }
+                // If CreatorSettings.lastState Is True, Only Owner Can Change The Linking
+                if (Tools.CreatorSettings.lastState && !Tools.CreatorSettings.IsOwner(controller.ownerSteamId))
+                {
+                    Misc.Msg("[LineRenderer] [HitReciver]: You Must Be The Owner To Link");
+                    SonsTools.ShowMessage("You Must Be The Owner Edit Linking");
+                    hitObjects.Clear();
+                    DestoryActiveLineRenderer();
+                    shouldUpdateRun = false;
+                    return;
+                }
+
+                // Check If Reciver Is Already Linked
+                if (!string.IsNullOrEmpty(controller.linkedToTranmitterSwithUniqueId))
+                {
+                    shouldUpdateRun = false;
+                    hitObjects.Clear(); // Clear the stored hit objects
+                    DestoryActiveLineRenderer();
+                    Misc.Msg("[LineRenderer] [HitReciver]: Reciver Already Linked");
+                    SonsTools.ShowMessage("Receiver Already Linked");
+                    return;
+                }
+
                 Mono.TransmitterSwitch transmitterController = hitObjects["TransmitterSwitch"].GetComponent<Mono.TransmitterSwitch>();
                 if (transmitterController == null)
                 {
                     Misc.Msg("[LineRenderer] [HitReciver]: Transmitter controller is null");
+                    return;
+                }
+                // If CreatorSettings.lastState Is True, Only Owner Can Change The Linking
+                if (Tools.CreatorSettings.lastState && !Tools.CreatorSettings.IsOwner(transmitterController.ownerSteamId))
+                {
+                    Misc.Msg("[LineRenderer] [HitReciver]: You Must Be The Owner To Link");
+                    SonsTools.ShowMessage("You Must Be The Owner Edit Linking");
+                    hitObjects.Clear();
+                    shouldUpdateRun = false;
+                    DestoryActiveLineRenderer();
                     return;
                 }
                 if (transmitterController.linkedUniqueIdsRecivers.Contains(controller.uniqueId))  // If receiver is already linked to transmitter switch
@@ -125,7 +166,7 @@ namespace WirelessSignals.Linking
                     DestoryActiveLineRenderer();
                     return;
                 }
-                else // Link Receiver
+                else // Link Receiver, Case Cant Be Triggers If Not LastState Is False or Owner is true
                 {
                     shouldUpdateRun = false;
                     CreateLineRenderer(activeLineRenderer.GetPosition(0), activeLineRenderer.GetPosition(1), true, controller.uniqueId);
@@ -143,6 +184,7 @@ namespace WirelessSignals.Linking
             {
                 // Link the receiver
                 Mono.Reciver controller = go.GetComponent<Mono.Reciver>();
+
                 if (controller == null)
                 {
                     Misc.Msg("[LineRenderer] [HitReciver]: Reciver controller is null");
@@ -150,6 +192,18 @@ namespace WirelessSignals.Linking
                     hitObjects["Reciver"] = go;  // Store the receiver hit
                     return;
                 }
+
+                // If CreatorSettings.lastState Is True, Only Owner Can Change The Linking
+                if (Tools.CreatorSettings.lastState && !Tools.CreatorSettings.IsOwner(controller.ownerSteamId))
+                {
+                    Misc.Msg("[LineRenderer] [HitReciver]: You Must Be The Owner To Link");
+                    SonsTools.ShowMessage("You Must Be The Owner Edit Linking");
+                    hitObjects.Clear();
+                    DestoryActiveLineRenderer();
+                    shouldUpdateRun = false;
+                    return;
+                }
+
                 if (string.IsNullOrEmpty(controller.uniqueId))
                 {
                     RLog.Warning("[LineRenderer] [HitReciver]: Reciver UniqueId is null");
@@ -157,12 +211,35 @@ namespace WirelessSignals.Linking
                     hitObjects["Reciver"] = go;  // Store the receiver hit
                     return;
                 }
+
+                // Check If Reciver Is Already Linked
+                if (!string.IsNullOrEmpty(controller.linkedToTranmitterSwithUniqueId))
+                {
+                    shouldUpdateRun = false;
+                    hitObjects.Clear(); // Clear the stored hit objects
+                    DestoryActiveLineRenderer();
+                    Misc.Msg("[LineRenderer] [HitReciver]: Reciver Already Linked");
+                    SonsTools.ShowMessage("Receiver Already Linked");
+                    return;
+                }
+
                 Mono.TransmitterDetector transmitterController = hitObjects["TransmitterDetector"].GetComponent<Mono.TransmitterDetector>();
                 if (transmitterController == null)
                 {
                     Misc.Msg("[LineRenderer] [HitReciver]: TransmitterDetector controller is null");
                     return;
                 }
+                // If CreatorSettings.lastState Is True, Only Owner Can Change The Linking
+                if (Tools.CreatorSettings.lastState && !Tools.CreatorSettings.IsOwner(transmitterController.ownerSteamId))
+                {
+                    Misc.Msg("[LineRenderer] [HitReciver]: You Must Be The Owner To Link");
+                    SonsTools.ShowMessage("You Must Be The Owner Edit Linking");
+                    hitObjects.Clear();
+                    DestoryActiveLineRenderer();
+                    shouldUpdateRun = false;
+                    return;
+                }
+
                 if (transmitterController.linkedUniqueIdsRecivers.Contains(controller.uniqueId))  // If receiver is already linked to transmitter detector
                 {
                     Misc.Msg("[LineRenderer] [HitReciver]: Reciver Already Linked");
@@ -201,6 +278,14 @@ namespace WirelessSignals.Linking
                 Misc.Msg("[LineRenderer] [HitTransmitterSwitch]: GameObject is null");
                 return;
             }
+            // If CreatorSettings.lastState Is True, Only Owner Can Change The Linking
+            if (Tools.CreatorSettings.lastState && !Tools.CreatorSettings.IsOwner(go.GetComponent<Mono.TransmitterSwitch>().ownerSteamId))
+            {
+                Misc.Msg("[LineRenderer] [HitTransmitterSwitch]: You Must Be The Owner To Link");
+                SonsTools.ShowMessage("You Must Be The Owner Edit Linking");
+                hitObjects.Clear();
+                return;
+            }
             // If nothing is stored, store the transmitter switch hit
             if (!hitObjects.ContainsKey("TransmitterSwitch") && !hitObjects.ContainsKey("TransmitterDetector"))
             {
@@ -234,6 +319,14 @@ namespace WirelessSignals.Linking
             if (go == null)
             {
                 Misc.Msg("[LineRenderer] [HitDetector]: GameObject is null");
+                return;
+            }
+            // If CreatorSettings.lastState Is True, Only Owner Can Change The Linking
+            if (Tools.CreatorSettings.lastState && !Tools.CreatorSettings.IsOwner(go.GetComponent<Mono.TransmitterDetector>().ownerSteamId))
+            {
+                Misc.Msg("[LineRenderer] [HitDetector]: You Must Be The Owner To Link");
+                SonsTools.ShowMessage("You Must Be The Owner Edit Linking");
+                hitObjects.Clear();
                 return;
             }
             // If nothing is stored, store the transmitter switch hit

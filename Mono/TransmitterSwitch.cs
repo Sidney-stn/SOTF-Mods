@@ -15,6 +15,7 @@ namespace WirelessSignals.Mono
         private Animator _animController = null;
         private LinkUiElement _linkUi = null;
         public HashSet<string> linkedUniqueIdsRecivers = new HashSet<string>();
+        public string ownerSteamId = null;  // If owner is null, then it's public
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         private void Start()
