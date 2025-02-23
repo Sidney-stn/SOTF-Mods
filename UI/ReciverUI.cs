@@ -115,7 +115,7 @@ namespace WirelessSignals.UI
                         SonsTools.ShowMessage("Could not save, No Reciver Component Found");
                         return;
                     }
-                    if (showScanLine != null)
+                    if (showScanLine != null)  // Set Scan Lines On Save
                     {
                         controller.ShowScanLines(showScanLine.isOn);
                         controller.SetScanObjectRange(controller.objectRange);
@@ -152,23 +152,27 @@ namespace WirelessSignals.UI
                 updateBtn.onClick.AddListener(updateUi);
             }
 
-            if (inputCursorState == null)
+            
+            if (inputCursorState == null)  // For Locking Cursor when UI is Open
             {
                 inputCursorState = UiElement.AddComponent<InputCursorState>();
                 inputCursorState._enabled = true;
                 inputCursorState._hardwareCursor = true;
                 inputCursorState._priority = 100;
             }
-            if (inputActionMapState == null)
+            if (inputActionMapState == null)  // For Locking Input When UI is Open
             {
                 inputActionMapState = UiElement.AddComponent<InputActionMapState>();
                 inputActionMapState._applyState = InputState.Console;
             }
 
-            if (showScanLine == null)
+            if (showScanLine == null)  // Scan Lines Hor And Vert Direction On Reciver For Showing Scan Area
             {
                 showScanLine = UiElement.transform.FindDeepChild("ShowLinesButton").GetComponent<Toggle>();
                 showScanLine.onValueChanged.RemoveAllListeners();
+
+                // Set Toggle To Default False
+                showScanLine.isOn = false;
 
                 // Create an Il2CppSystem.Collections.Generic.List for the UnityEvent
                 var callbacks = new Il2CppSystem.Collections.Generic.List<UnityEngine.Events.UnityAction<bool>>();
