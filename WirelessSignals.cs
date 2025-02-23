@@ -199,7 +199,7 @@ public class WirelessSignals : SonsMod
                 Misc.Msg("[WirelessCmd] Removing RayCast Lines");
                 Debug.RayCast.RemoveLines();
                 break;
-            case "debug":
+            case "debug":  // Normal Visual Debug
                 Misc.Msg("[WirelessCmd] Debugging");
                 if (Debug.VisualData.GetDebugMode())
                 {
@@ -209,7 +209,17 @@ public class WirelessSignals : SonsMod
                 {
                     Debug.VisualData.SetDebugMode(true);
                 }
-
+                break;
+            case "debuga":  // Advanced Visual Debug
+                Misc.Msg("[WirelessCmd] Advanced Debugging");
+                if (Debug.VisualData.GetDebugMode())
+                {
+                    Debug.VisualData.SetDebugMode(false, true);
+                }
+                else
+                {
+                    Debug.VisualData.SetDebugMode(true, true);
+                }
                 break;
         }
         

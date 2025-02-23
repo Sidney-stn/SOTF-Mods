@@ -380,5 +380,33 @@ namespace WirelessSignals.Mono
                 Misc.Msg($"[Reciver] [UpdateDefenseWallGate] Hits: {hitsString}");
             }
         }
+
+        public void ShowScanLines(bool state)
+        {
+            Mono.OverlapSphereVisualizer visualizer = gameObject.GetComponent<Mono.OverlapSphereVisualizer>();
+            if (!state)
+            {
+                if (visualizer != null)
+                {
+                    Destroy(visualizer);
+                }
+            }
+            else
+            {
+                if (visualizer == null)
+                {
+                    gameObject.AddComponent<Mono.OverlapSphereVisualizer>();
+                }
+            }
+        }
+
+        public void SetScanObjectRange(float range)
+        {
+            Mono.OverlapSphereVisualizer visualizer = gameObject.GetComponent<Mono.OverlapSphereVisualizer>();
+            if (visualizer != null)
+            {
+                visualizer.objectRange = range;
+            }
+        }
     }
 }

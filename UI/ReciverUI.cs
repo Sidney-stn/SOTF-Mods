@@ -27,6 +27,7 @@ namespace WirelessSignals.UI
         public static Slider rangeSlider = null;
         public static Text rangeSliderValueTxt = null;
         public static Dropdown linkElementDropdown = null;
+        public static Toggle showScanLine = null;
         public static HashSet<string> allowedObjectsInDropdown = new HashSet<string>
         {
             "DefensiveWallGate".ToLower()
@@ -114,6 +115,11 @@ namespace WirelessSignals.UI
                         SonsTools.ShowMessage("Could not save, No Reciver Component Found");
                         return;
                     }
+                    if (showScanLine != null)
+                    {
+                        controller.ShowScanLines(showScanLine.isOn);
+                        controller.SetScanObjectRange(controller.objectRange);
+                    }
 
                     string selectedVal = linkElementDropdown.options[linkElementDropdown.value].text;
                     if (selectedVal == "None")
@@ -157,6 +163,28 @@ namespace WirelessSignals.UI
             {
                 inputActionMapState = UiElement.AddComponent<InputActionMapState>();
                 inputActionMapState._applyState = InputState.Console;
+            }
+
+            if (showScanLine == null)
+            {
+                showScanLine = UiElement.transform.FindDeepChild("ShowLinesButton").GetComponent<Toggle>();
+                showScanLine.onValueChanged.RemoveAllListeners();
+
+                // Create an Il2CppSystem.Collections.Generic.List for the UnityEvent
+                var callbacks = new Il2CppSystem.Collections.Generic.List<UnityEngine.Events.UnityAction<bool>>();
+
+                // Create the callback
+                UnityEngine.Events.UnityAction<bool> callback = DelegateSupport.ConvertDelegate<UnityEngine.Events.UnityAction<bool>>(
+                    (bool val) =>
+                    {
+                        if (activeReciverPrefab == null) { return; }
+                        Mono.Reciver controller = activeReciverPrefab.GetComponent<Mono.Reciver>();
+                        if (controller == null) { return; }
+                        controller.ShowScanLines(val);
+                    });
+
+                callbacks.Add(callback);
+                showScanLine.onValueChanged.AddListener(callback);
             }
 
             // Add Mapping Values
