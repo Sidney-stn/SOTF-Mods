@@ -23,6 +23,7 @@ namespace WirelessSignals.Mono
         private string _linkedReciverObjectName = null;  // Always lowercase
         public float objectRange = 1f;  // Range to detect objects, Physics.OverlapSphere
         private HashSet<GameObject> _objectsInRange = new HashSet<GameObject>(new Tools.GameObjectComparer());  // Objects in range, NOTE: Only Valid Ojbects
+        public bool _revertOutput = false;  // Revert output for linked objects
 
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
@@ -355,13 +356,27 @@ namespace WirelessSignals.Mono
                             Construction.DefensiveWallGateControl defenseWallGate = hitCollider.transform.root.gameObject.GetComponent<Construction.DefensiveWallGateControl>();
                             if (defenseWallGate != null)
                             {
-                                if (onOff)
+                                if (!_revertOutput)
                                 {
-                                    defenseWallGate.OpenGate();
+                                    if (onOff)
+                                    {
+                                        defenseWallGate.OpenGate();
+                                    }
+                                    else
+                                    {
+                                        defenseWallGate.CloseGate();
+                                    }
                                 }
-                                else
+                                else if (_revertOutput)
                                 {
-                                    defenseWallGate.CloseGate();
+                                    if (onOff)
+                                    {
+                                        defenseWallGate.CloseGate();
+                                    }
+                                    else
+                                    {
+                                        defenseWallGate.OpenGate();
+                                    }
                                 }
                             }
                             else
@@ -407,6 +422,12 @@ namespace WirelessSignals.Mono
             {
                 visualizer.objectRange = range;
             }
+        }
+
+        public bool IsScanLinesShown()
+        {
+            Mono.OverlapSphereVisualizer visualizer = gameObject.GetComponent<Mono.OverlapSphereVisualizer>();
+            return visualizer != null;
         }
     }
 }

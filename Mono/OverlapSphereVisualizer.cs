@@ -1,4 +1,5 @@
 ﻿using RedLoader;
+using TheForest.Utils;
 using UnityEngine;
 namespace WirelessSignals.Mono
 {
@@ -25,14 +26,13 @@ namespace WirelessSignals.Mono
             verticalObj.transform.SetParent(transform);
             verticalLine = verticalObj.AddComponent<LineRenderer>();
             SetupLineRenderer(verticalLine);
-            verticalObj.transform.rotation = Quaternion.Euler(0, 0, 90);
         }
 
         void SetupLineRenderer(LineRenderer line)
         {
             line.material = visualMaterial;
             line.positionCount = segments + 1;
-            line.useWorldSpace = true; // Changed to true
+            line.useWorldSpace = true;
             line.startWidth = 0.1f;
             line.endWidth = 0.1f;
         }
@@ -40,18 +40,40 @@ namespace WirelessSignals.Mono
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         void Update()
         {
-            DrawCircle(horizontalLine, transform.position, transform.rotation);
-            DrawCircle(verticalLine, transform.position, transform.rotation * Quaternion.Euler(0, 0, 90));
+            // Draw horizontal circle (XZ plane)
+            DrawCircle(horizontalLine, transform.position, Vector3.up);
+
+            // Draw vertical circle (XY plane)
+            DrawCircle(verticalLine, transform.position, Vector3.forward);
+
+            // Every 60 frames, check range
+            if (Time.frameCount % 60 == 0)
+            {
+                // Check PlayerRange, If Player Is In Range, Do Nothing
+                if (Vector3.Distance(transform.position, LocalPlayer.Transform.position) > 50f)
+                {
+                    // Destroy Script If Player Is Out Of Range
+                    Destroy(this);
+                }
+            }
         }
 
-        void DrawCircle(LineRenderer line, Vector3 center, Quaternion rotation)
+        void DrawCircle(LineRenderer line, Vector3 center, Vector3 normal)
         {
+            Vector3 forward = normal;
+            Vector3 right = Vector3.Cross(normal, Vector3.up).normalized;
+            if (right == Vector3.zero)
+            {
+                right = Vector3.Cross(normal, Vector3.forward).normalized;
+            }
+            Vector3 up = Vector3.Cross(right, forward);
+
             float angle = 0f;
             for (int i = 0; i <= segments; i++)
             {
-                float x = Mathf.Sin(Mathf.Deg2Rad * angle) * objectRange;
-                float y = Mathf.Cos(Mathf.Deg2Rad * angle) * objectRange;
-                Vector3 pos = rotation * new Vector3(x, y, 0) + center;
+                float x = Mathf.Cos(Mathf.Deg2Rad * angle);
+                float y = Mathf.Sin(Mathf.Deg2Rad * angle);
+                Vector3 pos = center + (right * x + up * y) * objectRange;
                 line.SetPosition(i, pos);
                 angle += (360f / segments);
             }

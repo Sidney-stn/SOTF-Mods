@@ -28,6 +28,7 @@ namespace WirelessSignals.UI
         public static Text rangeSliderValueTxt = null;
         public static Dropdown linkElementDropdown = null;
         public static Toggle showScanLine = null;
+        public static Toggle revertOutput = null;
         public static HashSet<string> allowedObjectsInDropdown = new HashSet<string>
         {
             "DefensiveWallGate".ToLower()
@@ -120,6 +121,10 @@ namespace WirelessSignals.UI
                         controller.ShowScanLines(showScanLine.isOn);
                         controller.SetScanObjectRange(controller.objectRange);
                     }
+                    if (revertOutput != null)  // Set Revert Output On Save
+                    {
+                        controller._revertOutput = revertOutput.isOn;
+                    }
 
                     string selectedVal = linkElementDropdown.options[linkElementDropdown.value].text;
                     if (selectedVal == "None")
@@ -191,6 +196,27 @@ namespace WirelessSignals.UI
                 showScanLine.onValueChanged.AddListener(callback);
             }
 
+            if (revertOutput == null)
+            {
+                revertOutput = UiElement.transform.FindDeepChild("RevertOutputToggle").GetComponent<Toggle>();
+                revertOutput.onValueChanged.RemoveAllListeners();
+                // Set Toggle To Default False
+                revertOutput.isOn = false;
+                // Create an Il2CppSystem.Collections.Generic.List for the UnityEvent
+                var callbacks = new Il2CppSystem.Collections.Generic.List<UnityEngine.Events.UnityAction<bool>>();
+                // Create the callback
+                UnityEngine.Events.UnityAction<bool> callback = DelegateSupport.ConvertDelegate<UnityEngine.Events.UnityAction<bool>>(
+                    (bool val) =>
+                    {
+                        if (activeReciverPrefab == null) { return; }
+                        Mono.Reciver controller = activeReciverPrefab.GetComponent<Mono.Reciver>();
+                        if (controller == null) { return; }
+                        controller._revertOutput = val;
+                    });
+                callbacks.Add(callback);
+                revertOutput.onValueChanged.AddListener(callback);
+            }
+
             // Add Mapping Values
             dropdownValueMapping.Add("None", "None");
             dropdownValueMapping.Add("DefensiveWallGate".ToLower(), "Wall Gate");
@@ -218,6 +244,14 @@ namespace WirelessSignals.UI
             if (rangeSliderValueTxt != null)
             {
                 rangeSliderValueTxt.text = "?";
+            }
+            if (showScanLine != null)
+            {
+                showScanLine.isOn = false;
+            }
+            if (revertOutput != null)
+            {
+                revertOutput.isOn = false;
             }
             SetDropDownOptionsToNone();
         }
@@ -341,6 +375,14 @@ namespace WirelessSignals.UI
                 {
                     SetDropDownOptionsToNone();
                 }
+            }
+            if (showScanLine != null)  // Set Scan Lines Toggle (Show Scan Lines)
+            {
+                showScanLine.isOn = controller.IsScanLinesShown();
+            }
+            if (revertOutput != null)  // Set Revert Output Toggle (Revert Output)
+            {
+                revertOutput.isOn = controller._revertOutput;
             }
         }
 

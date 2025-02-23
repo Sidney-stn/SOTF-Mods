@@ -178,7 +178,8 @@ namespace WirelessSignals.Prefab
                 IsOn = component.isOn,
                 LinkedToTranmitterSwithUniqueId = component.linkedToTranmitterSwithUniqueId,
                 LinkedReciverObject = component.IsLinkedReciverObject(),
-                LinkedReciverObjectName = component.GetLinkedReciverObjectName()
+                LinkedReciverObjectName = component.GetLinkedReciverObjectName(),
+                RevertOutput = component._revertOutput
             };
         }
 
@@ -201,7 +202,8 @@ namespace WirelessSignals.Prefab
                 isOn = saveData.IsOn,
                 linkedToTranmitterSwithUniqueId = saveData.LinkedToTranmitterSwithUniqueId,
                 linkedReciverObject = saveData.LinkedReciverObject,
-                linkedReciverObjectName = saveData.LinkedReciverObjectName
+                linkedReciverObjectName = saveData.LinkedReciverObjectName,
+                revertOutput = saveData.RevertOutput
             };
         }
 
@@ -245,6 +247,7 @@ namespace WirelessSignals.Prefab
             public string LinkedToTranmitterSwithUniqueId;
             public bool LinkedReciverObject;
             public string LinkedReciverObjectName;
+            public bool RevertOutput;
         }
 
     }
@@ -256,6 +259,7 @@ namespace WirelessSignals.Prefab
         public string linkedToTranmitterSwithUniqueId = null;
         public bool linkedReciverObject = false;
         public string linkedReciverObjectName = null;
+        public bool revertOutput = false;
     }
 
     
