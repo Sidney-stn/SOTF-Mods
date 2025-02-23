@@ -14,7 +14,7 @@ namespace WirelessSignals.Structure
         {
             structureId = 751122;
             blueprintName = "TransmitterSwitch";
-            bookPage = null;
+            bookPage = Assets.BookPageSwitch;
             //placerComponent = Il2CppType.Of<Mono.TransmitterSwitch>();
             placerComponent = Il2CppType.Of<Mono.PlaceStructure>();
             SetupStructure(Assets.TransmitterSwitch, completeSetup: CompleteSetup);

@@ -15,7 +15,7 @@ namespace WirelessSignals.Structure
         {
             structureId = 751124;
             blueprintName = "TransmitterDetector";
-            bookPage = null;
+            bookPage = Assets.BookPageDetector;
             placerComponent = Il2CppType.Of<Mono.PlaceStructure>();
             SetupStructure(Assets.TransmitterDetector, completeSetup: CompleteSetup);
         }

@@ -24,5 +24,14 @@ namespace WirelessSignals
         [AssetReference("Adjust")]
         public static Texture2D UIAdjust { get; set; }
 
+        [AssetReference("WirelessSwitchBookPage")]
+        public static Texture2D BookPageSwitch { get; set; }
+
+        [AssetReference("WirelessReciverBookPage")]
+        public static Texture2D BookPageReciver { get; set; }
+
+        [AssetReference("WirelessDetectorBookPage")]
+        public static Texture2D BookPageDetector { get; set; }
+
     }
 }

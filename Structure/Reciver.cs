@@ -12,7 +12,7 @@ namespace WirelessSignals.Structure
         {
             structureId = 751120;
             blueprintName = "Reciver";
-            bookPage = null;
+            bookPage = Assets.BookPageReciver;
             //placerComponent = Il2CppType.Of<Mono.Reciver>();
             placerComponent = Il2CppType.Of<Mono.PlaceStructure>();
             SetupStructure(Assets.Reciver, completeSetup: CompleteSetup);
