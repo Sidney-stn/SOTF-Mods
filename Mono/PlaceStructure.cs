@@ -1,5 +1,6 @@
 ﻿using RedLoader;
 using Sons.Crafting.Structures;
+using SonsSdk;
 using UnityEngine;
 
 
@@ -88,6 +89,9 @@ namespace WirelessSignals.Mono
 
                         // Setup Grass And Snow Remover
                         WirelessSignals.transmitterSwitch.CleanGrassAndSnow(gameObject);
+
+                        // Add Sound To GameObject
+                        var soundPlayer = gameObject.AddComponent<SoundPlayer>();
 
                         // Network
 

@@ -116,6 +116,7 @@ namespace WirelessSignals.UI
                             Mono.TransmitterSwitch controller = open.GetComponent<TransmitterSwitch>();
                             if (controller != null)
                             {
+                                if (!controller.IsLoadedIn()) { return; }
                                 controller.Toggle();
 
                                 // Clean up line renderers before returning
@@ -136,6 +137,7 @@ namespace WirelessSignals.UI
                             Mono.Reciver controller = open.GetComponent<Reciver>();
                             if (controller != null)
                             {
+                                if (!controller.IsLoadedIn()) { return; }
                                 LinkUiElement linkUi = controller._linkUi;
                                 if (linkUi == null) { return; }
                                 if (linkUi.IsActive)

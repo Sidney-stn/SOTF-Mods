@@ -1,6 +1,7 @@
 ﻿using RedLoader;
 using Sons.Gui.Input;
 using SonsSdk;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,6 +17,10 @@ namespace WirelessSignals.Mono
         private LinkUiElement _linkUi = null;
         public HashSet<string> linkedUniqueIdsRecivers = new HashSet<string>();
         public string ownerSteamId = null;  // If owner is null, then it's public
+
+        // Load In Delay. Makes so you do not crash if you try to open the ui on the same frame as the object is created
+        private float _loadInDelay = 1f;
+        private bool _loadedIn = false;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         private void Start()
@@ -75,6 +80,20 @@ namespace WirelessSignals.Mono
                 SetDebugUi(true);
             }
 
+            LoadInDelay().RunCoro();
+
+        }
+
+        private IEnumerator LoadInDelay()
+        {
+            yield return new WaitForSeconds(_loadInDelay);
+            _loadedIn = true;
+            yield break;
+        }
+
+        public bool IsLoadedIn()
+        {
+            return _loadedIn;
         }
 
         public void TurnOnLight()
@@ -140,6 +159,20 @@ namespace WirelessSignals.Mono
                 }
             }
             UpdateDebugUi();
+
+            // Play Sound
+            var soundPlayer = gameObject.GetComponent<SoundPlayer>();
+            if (soundPlayer != null)
+            {
+                if (soundPlayer.Sound == null)
+                {
+                    soundPlayer.Sound = SoundTools.GetSound("LeverSound");
+                }
+                soundPlayer.ChannelDistance = (6, 10);
+                if (soundPlayer.Sound != null) { soundPlayer.Play(); }
+                else { RLog.Warning("[TransmitterSwitch] [Toggle] Sound Is Null!"); }
+            }
+            
         }
 
         public void UnlinkReciver(string reciverUniqueId)

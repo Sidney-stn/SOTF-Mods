@@ -166,7 +166,7 @@ namespace WirelessSignals.Linking
                     DestoryActiveLineRenderer();
                     return;
                 }
-                else // Link Receiver, Case Cant Be Triggers If Not LastState Is False or Owner is true
+                else // Link Receiver, Case Cant Be Triggerd If Not LastState Is False or Owner is true
                 {
                     shouldUpdateRun = false;
                     CreateLineRenderer(activeLineRenderer.GetPosition(0), activeLineRenderer.GetPosition(1), true, controller.uniqueId);

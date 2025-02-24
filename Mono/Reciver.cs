@@ -1,6 +1,7 @@
 ﻿using RedLoader;
 using Sons.Gui.Input;
 using SonsSdk;
+using System.Collections;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,6 +26,10 @@ namespace WirelessSignals.Mono
         public float objectRange = 1f;  // Range to detect objects, Physics.OverlapSphere
         private HashSet<GameObject> _objectsInRange = new HashSet<GameObject>(new Tools.GameObjectComparer());  // Objects in range, NOTE: Only Valid Ojbects
         public bool _revertOutput = false;  // Revert output for linked objects
+
+        // Load In Delay. Makes so you do not crash if you try to open the ui on the same frame as the object is created
+        private float _loadInDelay = 1f;
+        private bool _loadedIn = false;
 
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
@@ -72,7 +77,7 @@ namespace WirelessSignals.Mono
             {
                 if (Tools.CreatorSettings.lastState)  // If true, means we need to check if we are owner to create link ui
                 {
-                    if (ownerSteamId == null || ownerSteamId == Misc.GetMySteamId())
+                    if (Tools.CreatorSettings.IsOwner(ownerSteamId))
                     {
                         _linkUi = UI.LinkUi.CreateLinkUi(gameObject, 2f, null, Assets.UIAdjust, new Vector3(0, 0f, 0), "screen.take");
                         Misc.Msg("[Reciver] [Start] CreatorSettings.lastState is true - Created LinkUi");
@@ -84,6 +89,20 @@ namespace WirelessSignals.Mono
                 }
             }
 
+            LoadInDelay().RunCoro();
+
+        }
+
+        private IEnumerator LoadInDelay()
+        {
+            yield return new WaitForSeconds(_loadInDelay);
+            _loadedIn = true;
+            yield break;
+        }
+
+        public bool IsLoadedIn()
+        {
+            return _loadedIn;
         }
 
         private void TurnOnLight()

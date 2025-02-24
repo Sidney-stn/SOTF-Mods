@@ -67,7 +67,6 @@ namespace WirelessSignals.Mono
             {
                 SetDebugUi(true);
             }
-
         }
 
         private void TryFindObject()

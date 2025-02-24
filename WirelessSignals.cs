@@ -61,6 +61,7 @@ public class WirelessSignals : SonsMod
         // Register with SonsSaveTools
         SonsSaveTools.Register(prefabSaveManager);
         Misc.Msg("[OnSdkInitialized] Complete - Creating PrefabSaveManager");
+
     }
 
     protected override void OnGameStart()
@@ -85,6 +86,9 @@ public class WirelessSignals : SonsMod
     internal static void OnEnterWorld()
     {
         Misc.Msg("OnEnterWorld");
+        // Register Sound
+        Sound.Lever.Register();
+
         Misc.Msg("[OnEnterWorld] Creating WirelessTransmitterSwitch");
         transmitterSwitch = new WirelessTransmitterSwitch();
         transmitterSwitch.Setup();

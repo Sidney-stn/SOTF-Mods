@@ -29,6 +29,9 @@ namespace WirelessSignals.Prefab
             mainComponent.isSetupPrefab = true;
 
             CreateDebugUi(obj);
+
+            // Add Sound Component To GameObject -> Sound Not Loaded At This Point
+            var soundPlayer = obj.AddComponent<SoundPlayer>();
         }
 
         internal static void CreateDebugUi(GameObject obj, bool lower = false)
