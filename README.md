@@ -2,6 +2,10 @@
 
 ### Information:
 - Singleplayer only as of `24.02.2025`
+- Youtube Preview: [Click Here](https://youtu.be/Hwry7umVms8)
+
+[![Watch the video](https://img.youtube.com/vi/Hwry7umVms8/default.jpg)](https://youtu.be/Hwry7umVms8)
+  
 #### New Structures:
 All Structures Are Crafted In The `Book`. Each Structure Has It's Own Book Page, and requires items to be crafted.
 - ### **`Wireless Switch`**
