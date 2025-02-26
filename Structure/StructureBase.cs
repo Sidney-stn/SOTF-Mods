@@ -2,6 +2,7 @@
 using Sons.Crafting.Structures;
 using SonsSdk;
 using SonsSdk.Building;
+using SonsSdk.Networking;
 using UnityEngine;
 
 namespace WirelessSignals.Structure
@@ -13,6 +14,7 @@ namespace WirelessSignals.Structure
         internal virtual string blueprintName { get; set; }
         internal virtual Texture2D bookPage { get; set; }
         internal virtual Il2CppSystem.Type placerComponent { get; set; }
+        internal virtual bool setupBoltEntity { get; set; }
         internal virtual void OnCraftingNodeCreated(StructureCraftingNode arg1)
         {
             if (arg1.Recipe.Id == structureId)
@@ -28,6 +30,10 @@ namespace WirelessSignals.Structure
                     dynamic dynamicComponent = placerComponentVar;
                     dynamicComponent.isSetupPrefab = true;
                     dynamicComponent.structureName = blueprintName;
+                    if (!setupBoltEntity)
+                    {
+                        dynamicComponent.destroyBoltEntity = true;
+                    }
 
                 }
 
@@ -63,7 +69,13 @@ namespace WirelessSignals.Structure
                 allPlacableChilds[i].gameObject.AddComponent<StructureCraftingNodeIngredient>().SetId(id);  // Set ID dynamically
             }
 
-            
+            if (setupBoltEntity)
+            {
+                BoltEntity boltEntity = setupGameObject.AddComponent<BoltEntity>();
+                boltEntity.Init(structureId, BoltFactories.RigidbodyState);
+                EntityManager.RegisterPrefab(boltEntity);
+                Misc.Msg("[StructureBase] [Setup] BoltEntity Component Added", true);
+            }
 
             // Configure components if provided
             completeSetup?.Invoke(setupGameObject);

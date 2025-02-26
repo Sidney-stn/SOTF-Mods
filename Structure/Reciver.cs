@@ -13,8 +13,8 @@ namespace WirelessSignals.Structure
             structureId = 751120;
             blueprintName = "Reciver";
             bookPage = Assets.BookPageReciver;
-            //placerComponent = Il2CppType.Of<Mono.Reciver>();
             placerComponent = Il2CppType.Of<Mono.PlaceStructure>();
+            setupBoltEntity = true;
             SetupStructure(Assets.Reciver, completeSetup: CompleteSetup);
         }
         internal override void CompleteSetup(GameObject obj)

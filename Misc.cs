@@ -13,11 +13,18 @@ namespace WirelessSignals
 {
     internal class Misc
     {
-        internal static void Msg(string msg)
+        internal static void Msg(string msg, bool network = false)
         {
             if (Config.DebugLogging.Value)
             {
-                RLog.Msg($"[WirelessSignals] {msg}");
+                if (!network)
+                {
+                    RLog.Msg($"[WirelessSignals] {msg}");
+                }
+                else
+                {
+                    RLog.Msg(ConsoleColor.Green, $"[WirelessSignals] [Network] {msg}");
+                }
             }
 
         }
@@ -93,20 +100,6 @@ namespace WirelessSignals
             AddOnQuitWorld();
 
             WirelessSignals.OnEnterWorld();
-            //Network.Manager.RegisterEvents();
-
-            //// Process all deferred load data
-            //while (Saving.Load.deferredLoadQueue.Count > 0)
-            //{
-            //    var obj = Saving.Load.deferredLoadQueue.Dequeue();
-            //    Saving.Load.ProcessLoadData(obj);
-            //}
-
-            //// Add Host Player To System
-            //LiveData.Host.AddHostPlayerToSystem();
-
-            //// Trigger Event For Host Mode Gotten
-            //API.SubscribableEvents.TriggerOnJoinWorld();
         }
 
         public static GameObject FindObjectInSpecificScene(string sceneName = "SonsMain", string objectName = "ModalDialogManager") // ModalDialogManager as Standard

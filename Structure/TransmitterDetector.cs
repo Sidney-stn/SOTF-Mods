@@ -17,6 +17,7 @@ namespace WirelessSignals.Structure
             blueprintName = "TransmitterDetector";
             bookPage = Assets.BookPageDetector;
             placerComponent = Il2CppType.Of<Mono.PlaceStructure>();
+            setupBoltEntity = true;
             SetupStructure(Assets.TransmitterDetector, completeSetup: CompleteSetup);
         }
         internal override void CompleteSetup(GameObject obj)

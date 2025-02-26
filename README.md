@@ -29,7 +29,7 @@ All Structures Are Crafted In The `Book`. Each Structure Has It's Own Book Page,
     - Stick Holder - *Sends Signal When Full*
     - Rock Storage - *Sends Signal When Full*
     - Bone Holder - *Sends Signal When Full*
-    - Fish Trap - *Sends Signal When Fish Is Catched*
+    - Fish Trap - *Sends Signal When Fish Is Catched And Stays On Until Fish Is Collected*
     - More To Be Added - *Suggest In Discord*
   - **Can Be Linked To:** `Wireless Receiver` **NOTE**: Can Be Linked To Multiple Receivers
 <figure>

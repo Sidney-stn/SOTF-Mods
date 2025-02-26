@@ -15,8 +15,8 @@ namespace WirelessSignals.Structure
             structureId = 751122;
             blueprintName = "TransmitterSwitch";
             bookPage = Assets.BookPageSwitch;
-            //placerComponent = Il2CppType.Of<Mono.TransmitterSwitch>();
             placerComponent = Il2CppType.Of<Mono.PlaceStructure>();
+            setupBoltEntity = true;
             SetupStructure(Assets.TransmitterSwitch, completeSetup: CompleteSetup);
         }
         internal override void CompleteSetup(GameObject obj)

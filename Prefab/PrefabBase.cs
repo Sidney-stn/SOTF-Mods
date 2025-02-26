@@ -1,4 +1,6 @@
-﻿using SonsSdk;
+﻿using Il2CppInterop.Runtime;
+using SonsSdk;
+using SonsSdk.Networking;
 using UnityEngine;
 
 namespace WirelessSignals.Prefab
@@ -7,6 +9,7 @@ namespace WirelessSignals.Prefab
     {
         internal virtual GameObject gameObjectWithComps { get; set; }
         public virtual Dictionary<string, GameObject> spawnedGameObjects { get; set; } = new Dictionary<string, GameObject>(); // UniqueId, GameObject
+        internal virtual int structureId { get; set; }
 
         internal virtual GameObject SetupPrefab(GameObject goToInstantiate, List<Il2CppSystem.Type> componentsToAdd, Action<GameObject> configureComponents = null, bool addGrassAndSnowRemover = false)  // Returns Complete Prefab Thas Setup
         {
@@ -20,7 +23,37 @@ namespace WirelessSignals.Prefab
             {
                 foreach (var componentType in componentsToAdd)
                 {
-                    gameObjectWithComps.AddComponent(componentType);
+                    // First Check If Its BoltEntity Component
+                    if (componentType == Il2CppType.Of<BoltEntity>())
+                    {
+                        if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
+                        {
+                            if (structureId != 0)
+                            {
+                                BoltEntity boltEntity = gameObjectWithComps.AddComponent<BoltEntity>();
+                                boltEntity.Init(structureId, BoltFactories.RigidbodyState);
+                                Misc.Msg("[PrefabBase] [SetupPrefab] BoltEntity Component Added In Multiplayer Mode");
+                                //EntityManager.RegisterPrefab(boltEntity);
+                                continue;
+                            }
+                            else
+                            {
+                                Misc.Msg("[PrefabBase] [SetupPrefab] StructureId Is 0, Can't Add BoltEntity Component In Multiplayer Mode");
+                                continue;
+                            }
+
+                        }
+                        else
+                        {
+                            Misc.Msg("[PrefabBase] [SetupPrefab] BoltEntity Component Not Added In SinglePlayer Mode");
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        Misc.Msg($"[PrefabBase] [SetupPrefab] Adding Component {componentType}");
+                        gameObjectWithComps.AddComponent(componentType);
+                    }
                 }
             }
 

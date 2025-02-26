@@ -13,11 +13,12 @@ namespace WirelessSignals.Prefab
 
         internal override void Setup()
         {
+            structureId = WirelessSignals.reciverStructure.structureId;
             // Get IL2CPP types for your components
-            var components = new List<Il2CppSystem.Type>
+            var components = new List<Il2CppSystem.Type>  // If Adding BoltEntity, Add It Last
                 {
                     Il2CppType.Of<Mono.Reciver>(),
-                    //Il2CppType.Of<Construction.DefensiveWallGateControl>(),
+                    Il2CppType.Of<BoltEntity>(),
                 };
             SetupPrefab(Assets.Reciver, components, configureComponents: ConfigureComponents, addGrassAndSnowRemover: true);
         }
@@ -135,7 +136,16 @@ namespace WirelessSignals.Prefab
                 Vector3 position = reciverParams.position;
                 if (position == Vector3.zero) { Misc.Msg("[Spawn] [ReciverSpawnParameters] Invalid Position"); throw new ArgumentException("[ReciverSpawnParameters] Invalid Position!"); }
                 Quaternion rotation = reciverParams.rotation;
-                GameObject spawnedObject = GameObject.Instantiate(gameObjectWithComps, position, rotation);
+                GameObject spawnedObject = null;
+                if (Misc.hostMode == Misc.SimpleSaveGameType.SinglePlayer)
+                {
+                    spawnedObject = GameObject.Instantiate(gameObjectWithComps, position, rotation);
+                } else if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
+                {
+                    spawnedObject = BoltNetwork.Instantiate(gameObjectWithComps, position, rotation);
+                }
+                else { Misc.Msg("[Spawn] [ReciverSpawnParameters] Invalid Host Mode"); throw new InvalidOperationException("[ReciverSpawnParameters] Invalid Host Mode!"); }
+
                 if (spawnedObject == null) { Misc.Msg("[Spawn] [ReciverSpawnParameters] SpawnedObject Is Null"); throw new InvalidOperationException("[ReciverSpawnParameters] spawnedObject Is Null!"); }
                 Mono.Reciver controller = spawnedObject.GetComponent<Mono.Reciver>();
                 controller.uniqueId = uniqueId;

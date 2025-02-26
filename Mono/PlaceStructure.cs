@@ -11,6 +11,7 @@ namespace WirelessSignals.Mono
     {
         public bool isSetupPrefab;
         public string structureName;
+        public bool destroyBoltEntity;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         private void Start()
@@ -39,11 +40,19 @@ namespace WirelessSignals.Mono
             BoltEntity bolt = gameObject.GetComponent<BoltEntity>();
             if (bolt != null)
             {
+                Misc.Msg("[PlaceStructure] [Start] BoltEntity Found For Deletion");
                 if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
                 {
-                    bolt.Entity.Detach();
+                    if (destroyBoltEntity)
+                    {
+                        bolt.Entity.Detach();
+                    }
                 }
-                DestroyImmediate(bolt);
+                if (destroyBoltEntity)
+                {
+                    DestroyImmediate(bolt);
+                }
+                
                 Misc.Msg("[PlaceStructure] [Start] BoltEntity Deleted");
             }
             else { Misc.Msg("[PlaceStructure] [Start] BoltEntity Not Found For Deletion!"); }

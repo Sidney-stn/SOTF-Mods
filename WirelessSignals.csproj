@@ -101,6 +101,12 @@
     <Reference Include="Sons.Input">
       <HintPath>$(GameDir)\_RedLoader\Game\Sons.Input.dll</HintPath>
     </Reference>
+    <Reference Include="udpkit">
+      <HintPath>$(GameDir)\_RedLoader\Game\udpkit.dll</HintPath>
+    </Reference>
+    <Reference Include="udpkit.common">
+      <HintPath>$(GameDir)\_RedLoader\Game\udpkit.common.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Update="manifest.json">

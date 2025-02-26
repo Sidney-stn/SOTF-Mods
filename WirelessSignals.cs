@@ -31,6 +31,9 @@ public class WirelessSignals : SonsMod
     {
         // Do your early mod initialization which doesn't involve game or sdk references here
         Config.Init();
+
+        // Register Network Events
+        Network.Manager.Register();
     }
 
     protected override void OnSdkInitialized()
@@ -72,6 +75,8 @@ public class WirelessSignals : SonsMod
         SonsSdk.SdkEvents.OnInWorldUpdate.Subscribe(Misc.CheckHostModeOnWorldUpdate);
         Misc.OnHostModeGotten += Misc.OnHostModeGottenCorrectly;
 
+        // Register Network Event Handlers
+        Network.Manager.RegisterEventHandlers();
     }
 
     internal static void OnLeaveWorld()
