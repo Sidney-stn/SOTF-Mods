@@ -22,6 +22,7 @@ public static class Config
             "Creator For Changing Items",
             "[NOT IMPLEMENTED] If true, you must be creator of structure for linking and editing it [For Host Only] and [Multiplayer Only]");
         OwnerToEdit.DefaultValue = true;
+        OwnerToEdit.OnValueChanged.Subscribe(OnOwnerToEditChanged);
 
         VisualRayCast = Category.CreateEntry(
             "enable_visual_raycast_wireless",
@@ -70,5 +71,22 @@ public static class Config
     public static void OnSettingsUiClosed()
     {
         Tools.CreatorSettings.OnCloseSettingsForUpdate();
+    }
+
+    // Event handler method
+    private static void OnOwnerToEditChanged(bool oldValue, bool newValue)
+    {
+        // Handle the value change here
+        Misc.Msg($"OwnerToEdit setting changed from {oldValue} to {newValue}");
+
+        // Add any additional logic you need when this value changes
+        // For example, update permissions, refresh UI, etc.
+        if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer)
+        {
+            Misc.Msg("Sending OwnerToEdit state to all clients", true);
+            Network.Joining.JoiningEvent.Instance.SendInfoToAll();
+        }
+
+        
     }
 }

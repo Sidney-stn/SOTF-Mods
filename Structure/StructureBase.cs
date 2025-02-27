@@ -1,4 +1,5 @@
-﻿using RedLoader;
+﻿using Il2CppInterop.Runtime;
+using RedLoader;
 using Sons.Crafting.Structures;
 using SonsSdk;
 using SonsSdk.Building;
@@ -14,6 +15,8 @@ namespace WirelessSignals.Structure
         internal virtual string blueprintName { get; set; }
         internal virtual Texture2D bookPage { get; set; }
         internal virtual Il2CppSystem.Type placerComponent { get; set; }
+        internal virtual List<Il2CppSystem.Type> boltComponentsToAdd { get; set; }  // For Adding Multiple Components
+        internal virtual Il2CppSystem.Type boltComponentToAdd { get; set; }  // For Adding Single Component
         internal virtual bool setupBoltEntity { get; set; }
         internal virtual void OnCraftingNodeCreated(StructureCraftingNode arg1)
         {
@@ -71,10 +74,25 @@ namespace WirelessSignals.Structure
 
             if (setupBoltEntity)
             {
+                
+                if (boltComponentsToAdd != null)
+                {
+                    foreach (var componentType in boltComponentsToAdd)
+                    {
+                        setupGameObject.AddComponent(componentType);
+                    }
+                }
+                if (boltComponentToAdd != null)
+                {
+                    setupGameObject.AddComponent(boltComponentToAdd);
+                }
+                Misc.Msg($"[StructureBase] [Setup] {blueprintName} - BoltEntity Custom Components Added");
                 BoltEntity boltEntity = setupGameObject.AddComponent<BoltEntity>();
                 boltEntity.Init(structureId, BoltFactories.RigidbodyState);
                 EntityManager.RegisterPrefab(boltEntity);
-                Misc.Msg("[StructureBase] [Setup] BoltEntity Component Added", true);
+                Misc.Msg($"[StructureBase] [Setup] {blueprintName} BoltEntity Component Added", true);
+                
+                
             }
 
             // Configure components if provided

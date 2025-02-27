@@ -7,23 +7,23 @@ namespace WirelessSignals.Network.Reciver;
 
 public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
 {
-    private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
 
-    private Material _material;
-
-    private void Awake()
+    public void SendLampState(bool onOff)
     {
-        _material = GetComponent<MeshRenderer>().sharedMaterial;
-    }
-
-    public void SetColor(Color color)
-    {
-        _material.SetColor(BaseColor, color);
+        var comp = gameObject.GetComponent<Mono.Reciver>();
+        if (comp == null)
+        {
+            RLog.Error("[Network] [ReciverSetter] [SendLampState] Reciver component not found");
+            return;
+        }
+        comp.TestLampLight(onOff);
     }
 
     public void ReadPacket(UdpPacket packet, BoltConnection fromConnection)
     {
-        SetColor(packet.ReadColorRGB());
-        RLog.Msg(System.Drawing.Color.Gray, "Read packet and set color");
+        bool state = packet.ReadBool();
+        Misc.Msg($"Received state of Lamp: {state}", true);
+        SendLampState(state);
+        
     }
 }

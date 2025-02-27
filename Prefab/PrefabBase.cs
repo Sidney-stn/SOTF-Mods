@@ -88,9 +88,9 @@ namespace WirelessSignals.Prefab
 
         internal virtual GameObject FindByUniqueId(string uniqueId)
         {
-            if (spawnedGameObjects.TryGetValue(uniqueId, out GameObject sign))
+            if (spawnedGameObjects.TryGetValue(uniqueId, out GameObject go))
             {
-                return sign;
+                return go;
             }
             else
             {
@@ -98,6 +98,77 @@ namespace WirelessSignals.Prefab
                 return null;
             }
         }
+        
+        internal virtual GameObject FindByBoltEntity(BoltEntity boltEntity)
+        {
+            if (boltEntity == null) { return null; }
+            foreach (var item in spawnedGameObjects)
+            {
+                if (item.Value.GetComponent<BoltEntity>() == boltEntity)
+                {
+                    return item.Value;
+                }
+            }
+            return null;
+        }
+
+        internal virtual BoltEntity FindBoltEntityByUniqueId(string uniqueId)
+        {
+            if (spawnedGameObjects.TryGetValue(uniqueId, out GameObject go))
+            {
+                return go.GetComponent<BoltEntity>();
+            }
+            else
+            {
+                Misc.Msg($"GameObject with unique ID {uniqueId} not found.");
+                return null;
+            }
+        }
+
+        internal virtual void RemoveByUniqueId(string uniqueId)
+        {
+            if (spawnedGameObjects.TryGetValue(uniqueId, out GameObject go))
+            {
+                GameObject.Destroy(go);
+                spawnedGameObjects.Remove(uniqueId);
+            }
+            else
+            {
+                Misc.Msg($"GameObject with unique ID {uniqueId} not found.");
+            }
+        }
+
+        internal virtual void FindUniqueIdByGameObject(GameObject obj)
+        {
+            if (obj == null) { return; }
+            foreach (var item in spawnedGameObjects)
+            {
+                if (item.Value == obj)
+                {
+                    Misc.Msg($"GameObject with unique ID {item.Key} found.");
+                    return;
+                }
+            }
+            Misc.Msg($"GameObject with unique ID not found.");
+        }
+
+        internal virtual BoltEntity FindBoltEntityByGameObject(GameObject obj)
+        {
+            if (obj == null) { return null; }
+            return obj.GetComponent<BoltEntity>();
+        }
+
+        internal virtual void AddBoltEntityToDictionary(string uniqueId, BoltEntity obj)
+        {
+            if (obj == null) { return; }
+            if (spawnedGameObjects.ContainsKey(uniqueId))
+            {
+                Misc.Msg($"GameObject with unique ID {uniqueId} already exists.");
+                return;
+            }
+            spawnedGameObjects.Add(uniqueId, obj.gameObject);
+        }
+
         internal abstract void Setup();
 
         // Abstract methods for save/load operations

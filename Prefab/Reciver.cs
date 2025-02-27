@@ -18,6 +18,7 @@ namespace WirelessSignals.Prefab
             var components = new List<Il2CppSystem.Type>  // If Adding BoltEntity, Add It Last
                 {
                     Il2CppType.Of<Mono.Reciver>(),
+                    Il2CppType.Of<Network.Reciver.ReciverSetter>(),
                     Il2CppType.Of<BoltEntity>(),
                 };
             SetupPrefab(Assets.Reciver, components, configureComponents: ConfigureComponents, addGrassAndSnowRemover: true);

@@ -14,6 +14,7 @@ namespace WirelessSignals.Structure
             blueprintName = "Reciver";
             bookPage = Assets.BookPageReciver;
             placerComponent = Il2CppType.Of<Mono.PlaceStructure>();
+            boltComponentToAdd = Il2CppType.Of<Network.Reciver.ReciverSetter>();
             setupBoltEntity = true;
             SetupStructure(Assets.Reciver, completeSetup: CompleteSetup);
         }

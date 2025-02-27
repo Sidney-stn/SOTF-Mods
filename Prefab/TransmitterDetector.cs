@@ -14,9 +14,10 @@ namespace WirelessSignals.Prefab
         internal override void Setup()
         {
             // Get IL2CPP types for your components
-            var components = new List<Il2CppSystem.Type>
+            var components = new List<Il2CppSystem.Type>  // If Adding BoltEntity, Add It Last
                 {
                     Il2CppType.Of<Mono.TransmitterDetector>(),
+                    Il2CppType.Of<BoltEntity>(),
                 };
             SetupPrefab(Assets.TransmitterDetector, components, configureComponents: ConfigureComponents, addGrassAndSnowRemover: true);
         }

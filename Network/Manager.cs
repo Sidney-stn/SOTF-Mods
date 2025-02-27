@@ -1,6 +1,8 @@
 ﻿
 using Il2CppInterop.Runtime.Injection;
+using WirelessSignals.Network.Joining;
 using WirelessSignals.Network.Reciver;
+using WirelessSignals.Network.SyncLists;
 
 namespace WirelessSignals.Network
 {
@@ -15,6 +17,9 @@ namespace WirelessSignals.Network
 
             ReciverSyncEvent.Register();
             ClassInjector.RegisterTypeInIl2Cpp<ReciverSetter>();
+
+            JoiningEvent.Register();
+            UniqueIdSync.Register();
 
         }
 

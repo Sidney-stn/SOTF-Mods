@@ -1,6 +1,7 @@
 ﻿using Bolt;
 using RedLoader;
 using UnityEngine;
+using WirelessSignals.Network.Joining;
 using Color = System.Drawing.Color;
 
 namespace WirelessSignals;
@@ -19,12 +20,18 @@ public class CustomEventHandler : GlobalEventListener
         if (Instance)
             return;
         
-        Instance = new GameObject("EventTestEventHandler").AddComponent<CustomEventHandler>();
+        Instance = new GameObject("CustomEventHandler").AddComponent<CustomEventHandler>();
     }
     
     public override void Connected(BoltConnection connection)
     {
         Misc.Msg("[CustomEventHandler] [Connected] Player connected", true);
         //JoiningEvent.Instance.RequestInfo(connection);
+
+        // Send State of OwnerToEdit to the new player
+        if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer)
+        {
+            JoiningEvent.Instance.SendInfo(connection);
+        }
     }
 }

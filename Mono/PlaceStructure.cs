@@ -71,6 +71,7 @@ namespace WirelessSignals.Mono
                         Mono.Reciver reciverController = gameObject.AddComponent<Mono.Reciver>();
                         reciverController.uniqueId = uniqueId;
                         reciverController.ownerSteamId = Misc.GetMySteamId();
+                        reciverController.loadedFromSave = false;
                         WirelessSignals.reciver.spawnedGameObjects.Add(uniqueId, gameObject);
                         Misc.Msg($"[PlaceStructure] [Start] Reciver Set UniqueId {uniqueId}");
 

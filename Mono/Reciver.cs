@@ -16,6 +16,7 @@ namespace WirelessSignals.Mono
         public bool isSetupPrefab;
         public string linkedToTranmitterSwithUniqueId = null;
         public string ownerSteamId = null;  // If owner is null, then it's public
+        public bool? loadedFromSave = null;
 
         // Link Ui Menu
         public LinkUiElement _linkUi = null;
@@ -81,11 +82,15 @@ namespace WirelessSignals.Mono
                     {
                         _linkUi = UI.LinkUi.CreateLinkUi(gameObject, 2f, null, Assets.UIAdjust, new Vector3(0, 0f, 0), "screen.take");
                         Misc.Msg("[Reciver] [Start] CreatorSettings.lastState is true - Created LinkUi");
+                    } else
+                    {
+                        Misc.Msg("[Reciver] [Start] CreatorSettings.lastState is true - Not Owner, No LinkUi");
                     }
                 }
                 else
                 {
-                    Misc.Msg("[Reciver] [Start] CreatorSettings.lastState is false - Skipped Creating LinkUi");
+                    Misc.Msg("[Reciver] [Start] CreatorSettings.lastState is false - Creating LinkUi [Everyone can change]");
+                    _linkUi = UI.LinkUi.CreateLinkUi(gameObject, 2f, null, Assets.UIAdjust, new Vector3(0, 0f, 0), "screen.take");
                 }
             }
 
@@ -116,6 +121,7 @@ namespace WirelessSignals.Mono
             {
                 Misc.Msg("[Reciver] [TurnOnLight] Can't Turn On Lights, Null!");
             }
+            // Network
         }
         private void TurnOffLight()
         {
@@ -127,6 +133,19 @@ namespace WirelessSignals.Mono
             else
             {
                 Misc.Msg("[Reciver] [TurnOffLight] Can't Turn Off Lights, Null!");
+            }
+            // Network
+        }
+        public void TestLampLight(bool state)
+        {
+            GameObject lights = transform.FindChild("Light").gameObject;
+            if (lights != null)
+            {
+                lights.SetActive(state);
+            }
+            else
+            {
+                Misc.Msg("[Reciver] [TestLampLight] Can't Turn On Lights, Null!");
             }
         }
 

@@ -7,10 +7,21 @@ namespace WirelessSignals.Tools
 {
     internal class CreatorSettings
     {
-        internal static bool lastState = false;  // Updated From Host Owner The Network
+        private static bool _lastState = false;
+        internal static bool lastState // Updated From Host Owner The Network
+        { 
+            get { return _lastState; } 
+            set 
+            {
+                Misc.Msg($"[CreatorSettings] [lastState] Set To {value}");
+                _lastState = value;
+                UpdateStateOfObjecs();
+            } 
+        }
 
         public static void OnCloseSettingsForUpdate()
         {
+            Misc.Msg("[CreatorSettings] [OnCloseSettingsForUpdate] Called");
             if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer)
             {
                 if (lastState == Config.OwnerToEdit.Value)
@@ -25,7 +36,7 @@ namespace WirelessSignals.Tools
                 // Raise NetWork Event To Sync LastState
             }
         }
-        
+
         internal static void UpdateStateOfObjecs()
         {
             // No need to update if on singleplayer
@@ -74,6 +85,10 @@ namespace WirelessSignals.Tools
                     }
                 }
                 // More Prefabs Can Be Added Here
+            }
+            else
+            {
+                Misc.Msg("[CreatorSettings] [OnCloseSettingsForUpdate] LastState Not Updated, Not In Multiplayer");
             }
         }
 
