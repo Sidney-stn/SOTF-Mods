@@ -565,40 +565,57 @@ namespace WirelessSignals.Network.SyncLists
                 return;
             }
 
-            using (MemoryStream ms = new MemoryStream())
+            // Create memory stream
+            MemoryStream ms = new MemoryStream();
+            BinaryWriter writer = new BinaryWriter(ms);
+
+            try
             {
-                using (BinaryWriter writer = new BinaryWriter(ms))
+                writer.Write(spawnedRecivers.Count);
+
+                foreach (var kvp in spawnedRecivers)
                 {
-                    writer.Write(spawnedRecivers.Count);
+                    string key = kvp.Key;
+                    GameObject go = kvp.Value;
 
-                    foreach (var kvp in spawnedRecivers)
+                    if (string.IsNullOrEmpty(key) || go == null)
                     {
-                        string key = kvp.Key;
-                        GameObject go = kvp.Value;
-
-                        if (string.IsNullOrEmpty(key) || go == null)
-                        {
-                            continue;
-                        }
-
-                        BoltEntity entity = go.GetComponent<BoltEntity>();
-                        if (entity == null)
-                        {
-                            continue;
-                        }
-
-                        string networkId = entity.networkId.ToString();
-                        if (!Tools.BoltIdTool.IsInputStringValid(networkId))
-                        {
-                            continue;
-                        }
-
-                        writer.Write(key);
-                        writer.Write(networkId);
+                        continue;
                     }
+
+                    BoltEntity entity = go.GetComponent<BoltEntity>();
+                    if (entity == null)
+                    {
+                        continue;
+                    }
+
+                    string networkId = entity.networkId.ToString();
+                    if (!Tools.BoltIdTool.IsInputStringValid(networkId))
+                    {
+                        continue;
+                    }
+
+                    writer.Write(key);
+                    writer.Write(networkId);
                 }
 
-                packet.Packet.WriteByteArrayLengthPrefixed(ms.ToArray(), (int)ms.Length + 10);
+                // Get the byte array before closing the stream
+                byte[] dataBytes = ms.ToArray();
+
+                // Write to packet
+                packet.Packet.WriteByteArrayLengthPrefixed(dataBytes, dataBytes.Length + 10);
+            }
+            catch (System.Exception ex)
+            {
+                Misc.Msg($"[UniqueIdSync] [SerializeRecivers] Error: {ex.Message}", true);
+                // Write empty array on error
+                packet.Packet.WriteByteArrayLengthPrefixed(new byte[0], 10);
+            }
+            finally
+            {
+                // Clean up resources
+                writer.Dispose();
+                ms.Dispose();
             }
         }
 
@@ -612,40 +629,57 @@ namespace WirelessSignals.Network.SyncLists
                 return;
             }
 
-            using (MemoryStream ms = new MemoryStream())
+            // Create memory stream
+            MemoryStream ms = new MemoryStream();
+            BinaryWriter writer = new BinaryWriter(ms);
+
+            try
             {
-                using (BinaryWriter writer = new BinaryWriter(ms))
+                writer.Write(spawnedSwitches.Count);
+
+                foreach (var kvp in spawnedSwitches)
                 {
-                    writer.Write(spawnedSwitches.Count);
+                    string key = kvp.Key;
+                    GameObject go = kvp.Value;
 
-                    foreach (var kvp in spawnedSwitches)
+                    if (string.IsNullOrEmpty(key) || go == null)
                     {
-                        string key = kvp.Key;
-                        GameObject go = kvp.Value;
-
-                        if (string.IsNullOrEmpty(key) || go == null)
-                        {
-                            continue;
-                        }
-
-                        BoltEntity entity = go.GetComponent<BoltEntity>();
-                        if (entity == null)
-                        {
-                            continue;
-                        }
-
-                        string networkId = entity.networkId.ToString();
-                        if (!Tools.BoltIdTool.IsInputStringValid(networkId))
-                        {
-                            continue;
-                        }
-
-                        writer.Write(key);
-                        writer.Write(networkId);
+                        continue;
                     }
+
+                    BoltEntity entity = go.GetComponent<BoltEntity>();
+                    if (entity == null)
+                    {
+                        continue;
+                    }
+
+                    string networkId = entity.networkId.ToString();
+                    if (!Tools.BoltIdTool.IsInputStringValid(networkId))
+                    {
+                        continue;
+                    }
+
+                    writer.Write(key);
+                    writer.Write(networkId);
                 }
 
-                packet.Packet.WriteByteArrayLengthPrefixed(ms.ToArray(), (int)ms.Length + 10);
+                // Get the byte array before closing the stream
+                byte[] dataBytes = ms.ToArray();
+
+                // Write to packet
+                packet.Packet.WriteByteArrayLengthPrefixed(dataBytes, dataBytes.Length + 10);
+            }
+            catch (System.Exception ex)
+            {
+                Misc.Msg($"[UniqueIdSync] [SerializeSwitches] Error: {ex.Message}", true);
+                // Write empty array on error
+                packet.Packet.WriteByteArrayLengthPrefixed(new byte[0], 10);
+            }
+            finally
+            {
+                // Clean up resources
+                writer.Dispose();
+                ms.Dispose();
             }
         }
 
@@ -659,45 +693,84 @@ namespace WirelessSignals.Network.SyncLists
                 return;
             }
 
-            using (MemoryStream ms = new MemoryStream())
+            // Create memory stream
+            MemoryStream ms = new MemoryStream();
+            BinaryWriter writer = new BinaryWriter(ms);
+
+            try
             {
-                using (BinaryWriter writer = new BinaryWriter(ms))
+                writer.Write(spawnedDetectors.Count);
+
+                foreach (var kvp in spawnedDetectors)
                 {
-                    writer.Write(spawnedDetectors.Count);
+                    string key = kvp.Key;
+                    GameObject go = kvp.Value;
 
-                    foreach (var kvp in spawnedDetectors)
+                    if (string.IsNullOrEmpty(key) || go == null)
                     {
-                        string key = kvp.Key;
-                        GameObject go = kvp.Value;
-
-                        if (string.IsNullOrEmpty(key) || go == null)
-                        {
-                            continue;
-                        }
-
-                        BoltEntity entity = go.GetComponent<BoltEntity>();
-                        if (entity == null)
-                        {
-                            continue;
-                        }
-
-                        string networkId = entity.networkId.ToString();
-                        if (!Tools.BoltIdTool.IsInputStringValid(networkId))
-                        {
-                            continue;
-                        }
-
-                        writer.Write(key);
-                        writer.Write(networkId);
+                        continue;
                     }
+
+                    BoltEntity entity = go.GetComponent<BoltEntity>();
+                    if (entity == null)
+                    {
+                        continue;
+                    }
+
+                    string networkId = entity.networkId.ToString();
+                    if (!Tools.BoltIdTool.IsInputStringValid(networkId))
+                    {
+                        continue;
+                    }
+
+                    writer.Write(key);
+                    writer.Write(networkId);
                 }
 
-                packet.Packet.WriteByteArrayLengthPrefixed(ms.ToArray(), (int)ms.Length + 10);
+                // Get the byte array before closing the stream
+                byte[] dataBytes = ms.ToArray();
+
+                // Write to packet
+                packet.Packet.WriteByteArrayLengthPrefixed(dataBytes, dataBytes.Length + 10);
+            }
+            catch (System.Exception ex)
+            {
+                Misc.Msg($"[UniqueIdSync] [SerializeDetectors] Error: {ex.Message}", true);
+                // Write empty array on error
+                packet.Packet.WriteByteArrayLengthPrefixed(new byte[0], 10);
+            }
+            finally
+            {
+                // Clean up resources
+                writer.Dispose();
+                ms.Dispose();
             }
         }
 
         private void SerializeAll(Packets.EventPacket packet)
         {
+            // Add additional safeguards for null reference checks
+            if (WirelessSignals.reciver == null)
+            {
+                Misc.Msg("[UniqueIdSync] [SerializeAll] WirelessSignals.reciver is null", true);
+                packet.Packet.WriteByteArrayLengthPrefixed(new byte[0], 10);
+                return;
+            }
+
+            if (WirelessSignals.transmitterDetector == null)
+            {
+                Misc.Msg("[UniqueIdSync] [SerializeAll] WirelessSignals.transmitterDetector is null", true);
+                packet.Packet.WriteByteArrayLengthPrefixed(new byte[0], 10);
+                return;
+            }
+
+            if (WirelessSignals.transmitterSwitch == null)
+            {
+                Misc.Msg("[UniqueIdSync] [SerializeAll] WirelessSignals.transmitterSwitch is null", true);
+                packet.Packet.WriteByteArrayLengthPrefixed(new byte[0], 10);
+                return;
+            }
+
             var spawnedReciversAll = WirelessSignals.reciver.spawnedGameObjects;
             var spawnedDetectorsAll = WirelessSignals.transmitterDetector.spawnedGameObjects;
             var spawnedSwitchesAll = WirelessSignals.transmitterSwitch.spawnedGameObjects;
@@ -709,48 +782,56 @@ namespace WirelessSignals.Network.SyncLists
                 return;
             }
 
-            using (MemoryStream ms = new MemoryStream())
+            // Create memory stream
+            MemoryStream ms = new MemoryStream();
+            BinaryWriter writer = new BinaryWriter(ms);
+
+            try
             {
-                using (BinaryWriter writer = new BinaryWriter(ms))
+                // Write receivers
+                int validReceivers = CountValidEntities(spawnedReciversAll);
+                writer.Write(validReceivers);
+
+                foreach (var kvp in spawnedReciversAll)
                 {
-                    // Write receivers
-                    int validReceivers = CountValidEntities(spawnedReciversAll);
-                    writer.Write(validReceivers);
-
-                    foreach (var kvp in spawnedReciversAll)
-                    {
-                        if (!WriteEntityIfValid(writer, kvp.Key, kvp.Value, (byte)UniqueIdListType.Reciver))
-                        {
-                            continue;
-                        }
-                    }
-
-                    // Write detectors
-                    int validDetectors = CountValidEntities(spawnedDetectorsAll);
-                    writer.Write(validDetectors);
-
-                    foreach (var kvp in spawnedDetectorsAll)
-                    {
-                        if (!WriteEntityIfValid(writer, kvp.Key, kvp.Value, (byte)UniqueIdListType.TransmitterDetector))
-                        {
-                            continue;
-                        }
-                    }
-
-                    // Write switches
-                    int validSwitches = CountValidEntities(spawnedSwitchesAll);
-                    writer.Write(validSwitches);
-
-                    foreach (var kvp in spawnedSwitchesAll)
-                    {
-                        if (!WriteEntityIfValid(writer, kvp.Key, kvp.Value, (byte)UniqueIdListType.TransmitterSwitch))
-                        {
-                            continue;
-                        }
-                    }
+                    WriteEntityIfValid(writer, kvp.Key, kvp.Value, (byte)UniqueIdListType.Reciver);
                 }
 
-                packet.Packet.WriteByteArrayLengthPrefixed(ms.ToArray(), (int)ms.Length + 10);
+                // Write detectors
+                int validDetectors = CountValidEntities(spawnedDetectorsAll);
+                writer.Write(validDetectors);
+
+                foreach (var kvp in spawnedDetectorsAll)
+                {
+                    WriteEntityIfValid(writer, kvp.Key, kvp.Value, (byte)UniqueIdListType.TransmitterDetector);
+                }
+
+                // Write switches
+                int validSwitches = CountValidEntities(spawnedSwitchesAll);
+                writer.Write(validSwitches);
+
+                foreach (var kvp in spawnedSwitchesAll)
+                {
+                    WriteEntityIfValid(writer, kvp.Key, kvp.Value, (byte)UniqueIdListType.TransmitterSwitch);
+                }
+
+                // Get the byte array before closing the stream
+                byte[] dataBytes = ms.ToArray();
+
+                // Write to packet
+                packet.Packet.WriteByteArrayLengthPrefixed(dataBytes, dataBytes.Length + 10);
+            }
+            catch (System.Exception ex)
+            {
+                Misc.Msg($"[UniqueIdSync] [SerializeAll] Error: {ex.Message}", true);
+                // Write empty array on error
+                packet.Packet.WriteByteArrayLengthPrefixed(new byte[0], 10);
+            }
+            finally
+            {
+                // Clean up resources
+                writer.Dispose();
+                ms.Dispose();
             }
         }
 

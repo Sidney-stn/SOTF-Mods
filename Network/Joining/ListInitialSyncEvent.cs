@@ -68,9 +68,14 @@ namespace WirelessSignals.Network.Joining
         {
             try
             {
-                // Send a minimal valid response
-                var packet = NewPacket(4, connection);
-                packet.Packet.WriteBool(false);
+                // Send a minimal valid response with clear information
+                var packet = NewPacket(128, connection);
+                packet.Packet.WriteBool(false);  // Flag indicating this is an empty response
+                packet.Packet.WriteString("EMPTY_SYNC_RESPONSE");  // Clear identifier
+
+                // Add empty collections to satisfy any parsing expectations
+                packet.Packet.WriteByteArrayLengthPrefixed(new byte[0], 10);
+
                 Send(packet);
                 Misc.Msg("[ListInitialSyncEvent] [SendEmptyResponse] Sent empty response instead", true);
             }
@@ -86,21 +91,46 @@ namespace WirelessSignals.Network.Joining
             // This method would handle responses if needed
             if (packet.ReadBool() == false)
             {
-                Misc.Msg($"[ListInitialSyncEvent] [ReadMessageClient] Received ListInitialSyncEvent RESPONSE: Something went wrong!", true);
-                SonsTools.ShowMessage("Something went wrong while syncing the initial data with server, please rejoin", 5f);
-                return;
+                if (packet.ReadString() == "EMPTY_SYNC_RESPONSE")
+                {
+                    Misc.Msg($"[ListInitialSyncEvent] [ReadMessageClient] Received ListInitialSyncEvent RESPONSE: Empty response received", true);
+                    return;
+                }
+                else
+                {
+                    Misc.Msg($"[ListInitialSyncEvent] [ReadMessageClient] Received ListInitialSyncEvent RESPONSE: Something went wrong!", true);
+                    SonsTools.ShowMessage("Something went wrong while syncing the initial data with server, please rejoin", 5f);
+                    return;
+                }
             }
         }
 
-        /// For sending from the server
+        /// For sending to the server
         private void SendServerResponse()
         {
             Misc.Msg($"Sending ListInitialSyncEvent REQUEST", true);
             try
             {
-                var packet = NewPacket(4, GlobalTargets.OnlyServer);
+                // Check if BoltNetwork is running before sending
+                if (!BoltNetwork.isRunning)
+                {
+                    Misc.Msg("[ListInitialSyncEvent] [SendServerResponse] BoltNetwork is not running", true);
+                    return;
+                }
+
+                // Check if we have a valid server to send to
+                if (BoltNetwork.server == null)
+                {
+                    Misc.Msg("[ListInitialSyncEvent] [SendServerResponse] BoltNetwork.server is null", true);
+                    return;
+                }
+
+                var packet = NewPacket(64, GlobalTargets.OnlyServer);
                 packet.Packet.WriteBool(true);
+                packet.Packet.WriteString("REQUEST_SYNC");  // Add some context to the request
                 Send(packet);
+
+                Misc.Msg("[ListInitialSyncEvent] [SendServerResponse] Successfully sent request to server", true);
             }
             catch (System.Exception ex)
             {
