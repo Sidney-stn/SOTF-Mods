@@ -13,6 +13,7 @@ namespace WirelessSignals.Network.Joining
             Misc.Msg($"Received state of OwnerToEdit: {state}", true);
             Config.OwnerToEdit.Value = state;
             Tools.CreatorSettings.lastState = state;
+
         }
 
         /// For sending from the server

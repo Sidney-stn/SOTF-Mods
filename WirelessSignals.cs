@@ -125,6 +125,9 @@ public class WirelessSignals : SonsMod
 
         // Mark the world as ready for loading
         prefabSaveManager.SetWorldReady();
+
+        // For Synicng UniqueIds Lists
+        CustomEventHandler.Instance.OnEnterWorld();
     }
     // Saving System
     private static PrefabSaveManager prefabSaveManager;

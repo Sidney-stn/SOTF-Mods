@@ -19,6 +19,7 @@ namespace WirelessSignals.Network
             ClassInjector.RegisterTypeInIl2Cpp<ReciverSetter>();
 
             JoiningEvent.Register();
+            ListInitialSyncEvent.Register();
             UniqueIdSync.Register();
 
         }

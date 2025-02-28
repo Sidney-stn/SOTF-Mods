@@ -7,6 +7,7 @@ public static class Config
 {
     public static ConfigCategory Category { get; private set; }
     public static ConfigEntry<bool> DebugLogging { get; private set; }
+    public static ConfigEntry<bool> NetworkLogging { get; private set; }
     public static ConfigEntry<bool> VisualRayCast { get; private set; }
     public static ConfigEntry<bool> OwnerToEdit { get; private set; }
     public static KeybindConfigEntry CloseUiKey { get; private set; }
@@ -37,6 +38,13 @@ public static class Config
             "Enable Debug Logs",
             "Enables Debug Logs of the game to the console.");
         DebugLogging.DefaultValue = false;
+
+        NetworkLogging = Category.CreateEntry(
+            "enable_network_logging_wireless",
+            false,
+            "Enable Network Logs",
+            "Enables Network Logs of the game to the console.");
+        NetworkLogging.DefaultValue = false;
 
         InteractKey = Category.CreateKeybindEntry(
             "menu_key_wireless",

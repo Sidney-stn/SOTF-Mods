@@ -72,7 +72,18 @@ namespace WirelessSignals.Mono
                         reciverController.uniqueId = uniqueId;
                         reciverController.ownerSteamId = Misc.GetMySteamId();
                         reciverController.loadedFromSave = false;
+
+                        // Add To Spawned Game Objects
                         WirelessSignals.reciver.spawnedGameObjects.Add(uniqueId, gameObject);
+                        // Sync To Network
+                        Network.SyncLists.UniqueIdSync.Instance.SendUniqueIdEvent(
+                            forPrefab: Network.SyncLists.UniqueIdSync.UniqueIdListType.Reciver,
+                            toDo: Network.SyncLists.UniqueIdSync.UniqueIdListOptions.Add,
+                            toPlayer: Network.SyncLists.UniqueIdSync.UniqueIdTo.All,
+                            conn: null,
+                            ids: new string[] { uniqueId }
+                        );
+
                         Misc.Msg($"[PlaceStructure] [Start] Reciver Set UniqueId {uniqueId}");
 
                         // Setup Debug UI
@@ -91,7 +102,18 @@ namespace WirelessSignals.Mono
                         Mono.TransmitterSwitch transmitterController = gameObject.AddComponent<Mono.TransmitterSwitch>();
                         transmitterController.uniqueId = uniqueId1;
                         transmitterController.ownerSteamId = Misc.GetMySteamId();
+
+                        // Add To Spawned Game Objects
                         WirelessSignals.transmitterSwitch.spawnedGameObjects.Add(uniqueId1, gameObject);
+                        // Sync To Network
+                        Network.SyncLists.UniqueIdSync.Instance.SendUniqueIdEvent(
+                            forPrefab: Network.SyncLists.UniqueIdSync.UniqueIdListType.TransmitterSwitch,
+                            toDo: Network.SyncLists.UniqueIdSync.UniqueIdListOptions.Add,
+                            toPlayer: Network.SyncLists.UniqueIdSync.UniqueIdTo.All,
+                            conn: null,
+                            ids: new string[] { uniqueId1 }
+                        );
+
                         Misc.Msg($"[PlaceStructure] [Start] TransmitterSwitch Set UniqueId {uniqueId1}");
 
                         // Setup Debug UI
@@ -113,7 +135,17 @@ namespace WirelessSignals.Mono
                         Mono.TransmitterDetector transmitterDetectorController = gameObject.AddComponent<Mono.TransmitterDetector>();
                         transmitterDetectorController.uniqueId = uniqueId2;
                         transmitterDetectorController.ownerSteamId = Misc.GetMySteamId();
+                        // Add To Spawned Game Objects
                         WirelessSignals.transmitterDetector.spawnedGameObjects.Add(uniqueId2, gameObject);
+                        // Sync To Network
+                        Network.SyncLists.UniqueIdSync.Instance.SendUniqueIdEvent(
+                            forPrefab: Network.SyncLists.UniqueIdSync.UniqueIdListType.TransmitterDetector,
+                            toDo: Network.SyncLists.UniqueIdSync.UniqueIdListOptions.Add,
+                            toPlayer: Network.SyncLists.UniqueIdSync.UniqueIdTo.All,
+                            conn: null,
+                            ids: new string[] { uniqueId2 }
+                        );
+
                         Misc.Msg($"[PlaceStructure] [Start] TransmitterDetector Set UniqueId {uniqueId2}");
 
                         // Setup Debug UI

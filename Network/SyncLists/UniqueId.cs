@@ -1,4 +1,5 @@
-﻿using RedLoader;
+﻿using Bolt;
+using RedLoader;
 using UdpKit;
 using UnityEngine;
 
@@ -14,13 +15,20 @@ namespace WirelessSignals.Network.SyncLists
             SetAll = 3,
             Set = 4,
         }
-
         public enum UniqueIdListType : byte
         {
             Reciver = 0,
             TransmitterSwitch = 1,
             TransmitterDetector = 2,
             All = 3,
+        }
+
+        public enum UniqueIdTo : byte
+        {
+            All = 0,
+            Host = 1,
+            Clients = 2,
+            BoltConnection = 3,
         }
 
         /// Read message on the client
@@ -102,6 +110,184 @@ namespace WirelessSignals.Network.SyncLists
                     }
                     break;
                 case UniqueIdListOptions.SetAll:
+                    switch (forPrefab)
+                    {
+                        case UniqueIdListType.Reciver:
+                            byte[] reciverData = packet.ReadByteArrayWithPrefix();
+                            using (MemoryStream ms = new MemoryStream(reciverData))
+                            using (BinaryReader reader = new BinaryReader(ms))
+                            {
+                                int count = reader.ReadInt32();
+                                for (int i = 0; i < count; i++)
+                                {
+                                    string uniqueId = reader.ReadString();
+                                    string networkIdStr = reader.ReadString();
+
+                                    if (string.IsNullOrEmpty(uniqueId))
+                                    {
+                                        Misc.Msg("[UniqueIdSync] [ReadMessageClient] Unique ID is null or empty", true);
+                                        continue;
+                                    }
+
+                                    if (!Tools.BoltIdTool.IsInputStringValid(networkIdStr))
+                                    {
+                                        Misc.Msg("[UniqueIdSync] [ReadMessageClient] Network ID is not valid", true);
+                                        continue;
+                                    }
+
+                                    NetworkId networkId = Tools.BoltIdTool.StringToBoltNetworkId(networkIdStr);
+                                    BoltEntity entity = BoltNetwork.FindEntity(networkId);
+
+                                    if (entity == null)
+                                    {
+                                        Misc.Msg($"[UniqueIdSync] [ReadMessageClient] Could not find entity with NetworkID {networkIdStr}", true);
+                                        continue;
+                                    }
+
+                                    WirelessSignals.reciver.AddBoltEntityToDictionary(uniqueId, entity);
+                                }
+                            }
+                            break;
+
+                        case UniqueIdListType.TransmitterSwitch:
+                            byte[] switchData = packet.ReadByteArrayWithPrefix();
+                            using (MemoryStream ms = new MemoryStream(switchData))
+                            using (BinaryReader reader = new BinaryReader(ms))
+                            {
+                                int count = reader.ReadInt32();
+                                for (int i = 0; i < count; i++)
+                                {
+                                    string uniqueId = reader.ReadString();
+                                    string networkIdStr = reader.ReadString();
+
+                                    if (string.IsNullOrEmpty(uniqueId))
+                                    {
+                                        Misc.Msg("[UniqueIdSync] [ReadMessageClient] Unique ID is null or empty", true);
+                                        continue;
+                                    }
+                                    if (Tools.BoltIdTool.IsInputStringValid(networkIdStr) == false)
+                                    {
+                                        Misc.Msg("[UniqueIdSync] [ReadMessageClient] Network ID is not valid", true);
+                                        continue;
+                                    }
+
+                                    NetworkId networkId = Tools.BoltIdTool.StringToBoltNetworkId(networkIdStr);
+                                    BoltEntity entity = BoltNetwork.FindEntity(networkId);
+
+                                    if (entity == null)
+                                    {
+                                        Misc.Msg($"[UniqueIdSync] [ReadMessageClient] Could not find entity with NetworkID {networkIdStr}", true);
+                                        continue;
+                                    }
+
+                                    WirelessSignals.transmitterSwitch.AddBoltEntityToDictionary(uniqueId, entity);
+                                }
+                            }
+                            break;
+
+                        case UniqueIdListType.TransmitterDetector:
+                            byte[] detectorData = packet.ReadByteArrayWithPrefix();
+                            using (MemoryStream ms = new MemoryStream(detectorData))
+                            using (BinaryReader reader = new BinaryReader(ms))
+                            {
+                                int count = reader.ReadInt32();
+                                for (int i = 0; i < count; i++)
+                                {
+                                    string uniqueId = reader.ReadString();
+                                    string networkIdStr = reader.ReadString();
+
+                                    if (string.IsNullOrEmpty(uniqueId))
+                                    {
+                                        Misc.Msg("[UniqueIdSync] [ReadMessageClient] Unique ID is null or empty", true);
+                                        continue;
+                                    }
+
+                                    if (Tools.BoltIdTool.IsInputStringValid(networkIdStr) == false)
+                                    {
+                                        Misc.Msg("[UniqueIdSync] [ReadMessageClient] Network ID is not valid", true);
+                                        continue;
+                                    }
+
+                                    NetworkId networkId = Tools.BoltIdTool.StringToBoltNetworkId(networkIdStr);
+                                    BoltEntity entity = BoltNetwork.FindEntity(networkId);
+
+                                    if (entity == null)
+                                    {
+                                        Misc.Msg($"[UniqueIdSync] [ReadMessageClient] Could not find entity with NetworkID {networkIdStr}", true);
+                                        continue;
+                                    }
+
+                                    WirelessSignals.transmitterDetector.AddBoltEntityToDictionary(uniqueId, entity);
+                                }
+                            }
+                            break;
+
+                        case UniqueIdListType.All:
+                            byte[] allData = packet.ReadByteArrayWithPrefix();
+                            using (MemoryStream ms = new MemoryStream(allData))
+                            using (BinaryReader reader = new BinaryReader(ms))
+                            {
+                                // Read receivers
+                                int receiversCount = reader.ReadInt32();
+                                for (int i = 0; i < receiversCount; i++)
+                                {
+                                    byte type = reader.ReadByte();  // Should be UniqueIdListType.Reciver
+                                    string uniqueId = reader.ReadString();
+                                    string networkIdStr = reader.ReadString();
+
+                                    if (string.IsNullOrEmpty(uniqueId)) continue;
+                                    if (!Tools.BoltIdTool.IsInputStringValid(networkIdStr)) continue;
+
+                                    NetworkId networkId = Tools.BoltIdTool.StringToBoltNetworkId(networkIdStr);
+                                    BoltEntity entity = BoltNetwork.FindEntity(networkId);
+
+                                    if (entity == null) continue;
+
+                                    WirelessSignals.reciver.AddBoltEntityToDictionary(uniqueId, entity);
+                                }
+
+                                // Read detectors
+                                int detectorsCount = reader.ReadInt32();
+                                for (int i = 0; i < detectorsCount; i++)
+                                {
+                                    byte type = reader.ReadByte();  // Should be UniqueIdListType.TransmitterDetector
+                                    string uniqueId = reader.ReadString();
+                                    string networkIdStr = reader.ReadString();
+
+                                    if (string.IsNullOrEmpty(uniqueId)) continue;
+                                    if (string.IsNullOrEmpty(networkIdStr) || networkIdStr == "0" ||
+                                        networkIdStr.ToLower() == "NetworkID 00-00-00-00-00-00-00-00") continue;
+
+                                    NetworkId networkId = Tools.BoltIdTool.StringToBoltNetworkId(networkIdStr);
+                                    BoltEntity entity = BoltNetwork.FindEntity(networkId);
+
+                                    if (entity == null) continue;
+
+                                    WirelessSignals.transmitterDetector.AddBoltEntityToDictionary(uniqueId, entity);
+                                }
+
+                                // Read switches
+                                int switchesCount = reader.ReadInt32();
+                                for (int i = 0; i < switchesCount; i++)
+                                {
+                                    byte type = reader.ReadByte();  // Should be UniqueIdListType.TransmitterSwitch
+                                    string uniqueId = reader.ReadString();
+                                    string networkIdStr = reader.ReadString();
+
+                                    if (string.IsNullOrEmpty(uniqueId)) continue;
+                                    if (string.IsNullOrEmpty(networkIdStr) || networkIdStr == "0" ||
+                                        networkIdStr.ToLower() == "NetworkID 00-00-00-00-00-00-00-00") continue;
+
+                                    NetworkId networkId = Tools.BoltIdTool.StringToBoltNetworkId(networkIdStr);
+                                    BoltEntity entity = BoltNetwork.FindEntity(networkId);
+
+                                    if (entity == null) continue;
+
+                                    WirelessSignals.transmitterSwitch.AddBoltEntityToDictionary(uniqueId, entity);
+                                }
+                            }
+                            break;
+                    }
                     break;
             }
 
@@ -118,11 +304,46 @@ namespace WirelessSignals.Network.SyncLists
 
         }
 
-        /// For sending from the server
-        private void SendServerResponseToAll(UniqueIdListType forPrefab, UniqueIdListOptions toDo, params string[] ids)  // Only Host can send this
+        /// For sending from the server or client, client is limited
+        private void SendUpdateEvent(UniqueIdListType forPrefab, UniqueIdListOptions toDo, UniqueIdTo toPlayer, BoltConnection _ = null, params string[] ids)  // Only Host can send this
         {
-            if (!BoltNetwork.isServer) { return; }
-            var packet = NewPacket(128, Bolt.GlobalTargets.Everyone);
+            Misc.Msg($"[UniqueIdSync] [SendUpdateEvent] Sending {toDo} {forPrefab} To {toPlayer}");
+            bool useConnection = false;
+            bool useGlobalTargets = false;
+            Bolt.GlobalTargets target = Bolt.GlobalTargets.OnlySelf;
+            switch (toPlayer)
+            {
+                case UniqueIdTo.All:
+                    useGlobalTargets = true;
+                    target = Bolt.GlobalTargets.Everyone;
+                    break;
+                case UniqueIdTo.Host:
+                    useGlobalTargets = true;
+                    target = Bolt.GlobalTargets.OnlyServer;
+                    break;
+                case UniqueIdTo.Clients:
+                    useGlobalTargets = true;
+                    target = Bolt.GlobalTargets.AllClients;
+                    break;
+                case UniqueIdTo.BoltConnection:
+                    useConnection = true;
+                    break;
+            }
+            var packet = NewPacket(128, _);
+            if (useGlobalTargets && !useConnection)
+            {
+                packet = NewPacket(128, target);
+            }
+            else if (useConnection && !useGlobalTargets)
+            {
+                // Do Nothing
+            }
+            else
+            {
+                RLog.Warning("[UniqueIdSync] [SendUpdateEvent] Invalid UniqueIdTo");
+                return;
+            }
+
             packet.Packet.WriteByte((byte)toDo);  // Add, Remove, Clear, Set
             packet.Packet.WriteByte((byte)forPrefab);  // Reciver, TransmitterSwitch, TransmitterDetector, All
             string steamId = Misc.GetMySteamId();
@@ -179,72 +400,95 @@ namespace WirelessSignals.Network.SyncLists
                     packet.Packet.WriteString("Clear");
                     break;
                 case UniqueIdListOptions.SetAll:
+                    if (!BoltNetwork.isServer) { return; }
                     switch (forPrefab)
                     {
                         case UniqueIdListType.Reciver:
                             Dictionary<string, GameObject> spawnedRecivers = WirelessSignals.reciver.spawnedGameObjects;
-                            WirelessSignals.reciver.FindBoltEntityByUniqueId("string from dict (key)").networkId.ToString();
-                            List<string> keys = new List<string>(spawnedRecivers.Keys);
                             using (MemoryStream ms = new MemoryStream())
                             {
                                 using (BinaryWriter writer = new BinaryWriter(ms))
                                 {
                                     // Write the count first
-                                    writer.Write(keys.Count);
+                                    writer.Write(spawnedRecivers.Count);
 
-                                    // Write each string
-                                    foreach (string key in keys)
+                                    // Write each string and its networkId
+                                    foreach (string key in spawnedRecivers.Keys)
                                     {
                                         writer.Write(key);
+                                        string networkId = WirelessSignals.reciver.FindBoltEntityByUniqueId(key).networkId.ToString();
+                                        if (Tools.BoltIdTool.IsInputStringValid(networkId) == false)
+                                        {
+                                            Misc.Msg("[UniqueIdSync] [SendServerResponseToAll] NetworkId is not valid", true);
+                                            packet.Packet.Dispose();
+                                            return;
+                                        }
+                                        writer.Write(networkId);
                                     }
                                 }
 
                                 // Write the entire byte array to the packet
-                                packet.Packet.WriteByteArray(ms.ToArray());
+                                packet.Packet.WriteByteArrayLengthPrefixed(ms.ToArray(), (int)ms.Length + 10);  // 10 For Safety
                             }
                             break;
+
                         case UniqueIdListType.TransmitterSwitch:
-                            Dictionary<string, GameObject> spawnedDetectors = WirelessSignals.transmitterDetector.spawnedGameObjects;
-                            List<string> keysDetector = new List<string>(spawnedDetectors.Keys);
-                            using (MemoryStream ms = new MemoryStream())
-                            {
-                                using (BinaryWriter writer = new BinaryWriter(ms))
-                                {
-                                    // Write the count first
-                                    writer.Write(keysDetector.Count);
-
-                                    // Write each string
-                                    foreach (string key in keysDetector)
-                                    {
-                                        writer.Write(key);
-                                    }
-                                }
-
-                                // Write the entire byte array to the packet
-                                packet.Packet.WriteByteArray(ms.ToArray());
-                            }
-                            break;
-                        case UniqueIdListType.TransmitterDetector:
                             Dictionary<string, GameObject> spawnedSwitches = WirelessSignals.transmitterSwitch.spawnedGameObjects;
-                            List<string> keysSwitch = new List<string>(spawnedSwitches.Keys);
                             using (MemoryStream ms = new MemoryStream())
                             {
                                 using (BinaryWriter writer = new BinaryWriter(ms))
                                 {
                                     // Write the count first
-                                    writer.Write(keysSwitch.Count);
+                                    writer.Write(spawnedSwitches.Count);
 
-                                    // Write each string
-                                    foreach (string key in keysSwitch)
+                                    // Write each string and its networkId
+                                    foreach (string key in spawnedSwitches.Keys)
                                     {
                                         writer.Write(key);
+                                        string networkId = WirelessSignals.transmitterSwitch.FindBoltEntityByUniqueId(key).networkId.ToString();
+                                        if (Tools.BoltIdTool.IsInputStringValid(networkId) == false)
+                                        {
+                                            Misc.Msg("[UniqueIdSync] [SendServerResponseToAll] NetworkId is not valid", true);
+                                            packet.Packet.Dispose();
+                                            return;
+                                        }
+                                        writer.Write(networkId);
                                     }
                                 }
 
                                 // Write the entire byte array to the packet
-                                packet.Packet.WriteByteArray(ms.ToArray());
+                                packet.Packet.WriteByteArrayLengthPrefixed(ms.ToArray(), (int)ms.Length + 10);  // 10 For Safety
                             }
                             break;
+
+                        case UniqueIdListType.TransmitterDetector:
+                            Dictionary<string, GameObject> spawnedDetectors = WirelessSignals.transmitterDetector.spawnedGameObjects;
+                            using (MemoryStream ms = new MemoryStream())
+                            {
+                                using (BinaryWriter writer = new BinaryWriter(ms))
+                                {
+                                    // Write the count first
+                                    writer.Write(spawnedDetectors.Count);
+
+                                    // Write each string and its networkId
+                                    foreach (string key in spawnedDetectors.Keys)
+                                    {
+                                        writer.Write(key);
+                                        string networkId = WirelessSignals.transmitterDetector.FindBoltEntityByUniqueId(key).networkId.ToString();
+                                        if (Tools.BoltIdTool.IsInputStringValid(networkId) == false)
+                                        {
+                                            Misc.Msg("[UniqueIdSync] [SendServerResponseToAll] NetworkId is not valid", true);
+                                            packet.Packet.Dispose();
+                                            return;
+                                        }
+                                        writer.Write(networkId);
+                                    }
+                                }
+
+                                // Write the entire byte array to the packet
+                                packet.Packet.WriteByteArrayLengthPrefixed(ms.ToArray(), (int)ms.Length + 10);  // 10 For Safety                            }
+                                break;
+                            }
                         case UniqueIdListType.All:
                             Dictionary<string, GameObject> spawnedReciversAll = WirelessSignals.reciver.spawnedGameObjects;
                             Dictionary<string, GameObject> spawnedDetectorsAll = WirelessSignals.transmitterDetector.spawnedGameObjects;
@@ -272,7 +516,7 @@ namespace WirelessSignals.Network.SyncLists
                                         writer.Write((byte)UniqueIdListType.TransmitterDetector);
                                         writer.Write(key);
                                         string networkId = WirelessSignals.transmitterDetector.FindBoltEntityByUniqueId(key).networkId.ToString();
-                                        if (string.IsNullOrEmpty(networkId) || networkId == "0" || networkId.ToLower() == "NetworkID 00-00-00-00-00-00-00-00") { Misc.Msg("[UniqueIdSync] [SendServerResponseToAll] NetworkId is null or empty", true); packet.Packet.Dispose(); return; }
+                                        if (Tools.BoltIdTool.IsInputStringValid(networkId) == false) { Misc.Msg("[UniqueIdSync] [SendServerResponseToAll] NetworkId is not valid", true); packet.Packet.Dispose(); return; }
                                         writer.Write(networkId);
                                     }
 
@@ -283,13 +527,13 @@ namespace WirelessSignals.Network.SyncLists
                                         writer.Write((byte)UniqueIdListType.TransmitterSwitch);
                                         writer.Write(key);
                                         string networkId = WirelessSignals.transmitterSwitch.FindBoltEntityByUniqueId(key).networkId.ToString();
-                                        if (string.IsNullOrEmpty(networkId) || networkId == "0" || networkId.ToLower() == "NetworkID 00-00-00-00-00-00-00-00") { Misc.Msg("[UniqueIdSync] [SendServerResponseToAll] NetworkId is null or empty", true); packet.Packet.Dispose(); return; }
+                                        if (Tools.BoltIdTool.IsInputStringValid(networkId) == false) { Misc.Msg("[UniqueIdSync] [SendServerResponseToAll] NetworkId is not valid", true); packet.Packet.Dispose(); return; }
                                         writer.Write(networkId);
                                     }
                                 }
 
                                 // Write the entire byte array to the packet
-                                packet.Packet.WriteByteArray(ms.ToArray());
+                                packet.Packet.WriteByteArrayLengthPrefixed(ms.ToArray(), (int)ms.Length + 10);  // 10 For Safety
                             }
                             break;
                     }
@@ -325,12 +569,18 @@ namespace WirelessSignals.Network.SyncLists
                     }
                     break;
             }
-            Misc.Msg($"[UniqueIdSync] [SendServerResponseToAll] UniqueIdListType: {forPrefab}, UniqueIdListOptions: {toDo}, Params Length: {ids.Length}", true);
+            
             Send(packet);
+            Misc.Msg($"[UniqueIdSync] [SendUpdateEvent] Sent {toDo} {forPrefab} To {toPlayer}");
         }
 
         public void SendInfo(BoltConnection connection) => SendServerResponse(connection);
 
-        public void SendUniqueIdEvent(UniqueIdListType forPrefab, UniqueIdListOptions toDo, params string[] ids) => SendServerResponseToAll(forPrefab, toDo, ids);
+        public void SendUniqueIdEvent(UniqueIdListType forPrefab, UniqueIdListOptions toDo, UniqueIdTo toPlayer, BoltConnection conn = null, params string[] ids)
+        {
+            // Check If BoltNetwork Is Running
+            if (!BoltNetwork.isRunning) { return; }
+            SendUpdateEvent(forPrefab, toDo, toPlayer, conn, ids);
+        }
     }
 }

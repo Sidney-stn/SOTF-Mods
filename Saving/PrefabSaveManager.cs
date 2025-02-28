@@ -65,6 +65,13 @@ namespace WirelessSignals.Saving
 
         private void ProcessLoadData(AllPrefabsData data)
         {
+            // On Host This Works Perfect, On Client I Want To Skip This (On Client now i get Object Referecne error)
+            // Check If data is null
+            if (data == null)
+            {
+                Misc.Msg("[Loading] Data Is Null");
+                return;
+            }
             if (prefabManagers.TryGetValue("Receiver", out var receiverManager))
             {
                 foreach (var item in data.SaveData.ReceiverItems)
