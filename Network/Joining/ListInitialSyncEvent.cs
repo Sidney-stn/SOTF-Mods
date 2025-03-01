@@ -18,6 +18,14 @@ namespace WirelessSignals.Network.Joining
 
             try
             {
+                // Check if Network classes are properly initialized
+                if (Network.SyncLists.UniqueIdSync.Instance == null)
+                {
+                    Misc.Msg("[ListInitialSyncEvent] [ReadMessageServer] UniqueIdSync.Instance is null", true);
+                    SendEmptyResponse(fromConnection);
+                    return;
+                }
+
                 // Check if the collections are valid before sending
                 bool collectionsValid = true;
 
@@ -26,11 +34,19 @@ namespace WirelessSignals.Network.Joining
                     Misc.Msg("[ListInitialSyncEvent] [ReadMessageServer] WirelessSignals.reciver or its spawnedGameObjects is null", true);
                     collectionsValid = false;
                 }
+                else
+                {
+                    Misc.Msg($"[ListInitialSyncEvent] [ReadMessageServer] Reciver items count: {WirelessSignals.reciver.spawnedGameObjects.Count}", true);
+                }
 
                 if (WirelessSignals.transmitterSwitch == null || WirelessSignals.transmitterSwitch.spawnedGameObjects == null)
                 {
                     Misc.Msg("[ListInitialSyncEvent] [ReadMessageServer] WirelessSignals.transmitterSwitch or its spawnedGameObjects is null", true);
                     collectionsValid = false;
+                }
+                else
+                {
+                    Misc.Msg($"[ListInitialSyncEvent] [ReadMessageServer] TransmitterSwitch items count: {WirelessSignals.transmitterSwitch.spawnedGameObjects.Count}", true);
                 }
 
                 if (WirelessSignals.transmitterDetector == null || WirelessSignals.transmitterDetector.spawnedGameObjects == null)
@@ -38,11 +54,25 @@ namespace WirelessSignals.Network.Joining
                     Misc.Msg("[ListInitialSyncEvent] [ReadMessageServer] WirelessSignals.transmitterDetector or its spawnedGameObjects is null", true);
                     collectionsValid = false;
                 }
+                else
+                {
+                    Misc.Msg($"[ListInitialSyncEvent] [ReadMessageServer] TransmitterDetector items count: {WirelessSignals.transmitterDetector.spawnedGameObjects.Count}", true);
+                }
 
                 if (!collectionsValid)
                 {
                     Misc.Msg("[ListInitialSyncEvent] [ReadMessageServer] One or more collections is invalid, not sending sync data", true);
                     // Send a small valid response instead
+                    SendEmptyResponse(fromConnection);
+                    return;
+                }
+
+                // Check if we have any data to send - if all collections are empty, just send an empty response
+                if (WirelessSignals.reciver.spawnedGameObjects.Count == 0 &&
+                    WirelessSignals.transmitterSwitch.spawnedGameObjects.Count == 0 &&
+                    WirelessSignals.transmitterDetector.spawnedGameObjects.Count == 0)
+                {
+                    Misc.Msg("[ListInitialSyncEvent] [ReadMessageServer] All collections are empty, sending empty response", true);
                     SendEmptyResponse(fromConnection);
                     return;
                 }

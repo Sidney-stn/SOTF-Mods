@@ -19,6 +19,24 @@ namespace WirelessSignals.Mono
             if (isSetupPrefab) { return; }
 
             Misc.Msg("[PlaceStructure] Start");
+
+            if (BoltNetwork.isRunning)
+            {
+                if (BoltNetwork.isServer)
+                {
+                    Misc.Msg("[PlaceStructure] [Start] IsServer");
+                }
+                else if (BoltNetwork.isClient)
+                {
+                    Misc.Msg("[PlaceStructure] [Start] IsClient - Only Host Can Place Out Items");
+                    return;
+                }
+                else
+                {
+                    Misc.Msg("[PlaceStructure] [Start] IsNotServerOrClient");
+                }
+            }
+
             if (structureName == null)
             {
                 if (gameObject.name.ToLower().Contains("reciver"))
@@ -70,19 +88,29 @@ namespace WirelessSignals.Mono
                         if (string.IsNullOrEmpty(uniqueId)) { Misc.Msg("[PlaceStructure] [Start] uniqueId Is Null Or Empty!"); return; }
                         Mono.Reciver reciverController = gameObject.AddComponent<Mono.Reciver>();
                         reciverController.uniqueId = uniqueId;
-                        reciverController.ownerSteamId = Misc.GetMySteamId();
+                        if (BoltNetwork.isRunning)
+                        {
+                            reciverController.ownerSteamId = null;
+                            Mono.NetworkOwner networkOwner = gameObject.AddComponent<Mono.NetworkOwner>();
+                            networkOwner.isSetupPrefab = false;
+                        }
+                        else
+                        {
+                            reciverController.ownerSteamId = Misc.GetMySteamId();
+                            // Add To Spawned Game Objects
+                            WirelessSignals.reciver.spawnedGameObjects.Add(uniqueId, gameObject);
+                        }
                         reciverController.loadedFromSave = false;
 
-                        // Add To Spawned Game Objects
-                        WirelessSignals.reciver.spawnedGameObjects.Add(uniqueId, gameObject);
+                        
                         // Sync To Network
-                        Network.SyncLists.UniqueIdSync.Instance.SendUniqueIdEvent(
-                            forPrefab: Network.SyncLists.UniqueIdSync.UniqueIdListType.Reciver,
-                            toDo: Network.SyncLists.UniqueIdSync.UniqueIdListOptions.Add,
-                            toPlayer: Network.SyncLists.UniqueIdSync.UniqueIdTo.All,
-                            conn: null,
-                            ids: new string[] { uniqueId }
-                        );
+                        //Network.SyncLists.UniqueIdSync.Instance.SendUniqueIdEvent(
+                        //    forPrefab: Network.SyncLists.UniqueIdSync.UniqueIdListType.Reciver,
+                        //    toDo: Network.SyncLists.UniqueIdSync.UniqueIdListOptions.Add,
+                        //    toPlayer: Network.SyncLists.UniqueIdSync.UniqueIdTo.All,
+                        //    conn: null,
+                        //    ids: new string[] { uniqueId }
+                        //);
 
                         Misc.Msg($"[PlaceStructure] [Start] Reciver Set UniqueId {uniqueId}");
 

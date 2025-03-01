@@ -32,6 +32,8 @@ namespace WirelessSignals
 
         [AssetReference("WirelessDetectorBookPage")]
         public static Texture2D BookPageDetector { get; set; }
-
+        [AssetReference("TakeOwner")]
+        public static Texture2D UITakeOwner { get; set; }
+        
     }
 }

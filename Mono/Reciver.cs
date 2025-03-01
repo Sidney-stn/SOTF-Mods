@@ -40,10 +40,28 @@ namespace WirelessSignals.Mono
             {
                 return;
             }
-            if (string.IsNullOrEmpty(uniqueId))
+            if (string.IsNullOrEmpty(uniqueId) && !BoltNetwork.isRunning)
             {
-                RLog.Warning("[Mono] [Reciver]: uniqueId is null! Shound Never be");
+                RLog.Warning("[Mono] [Reciver] [Start]: uniqueId is null! Shound Never be");
                 SonsTools.ShowMessage("Something went wrong when placing down structure!");
+            }
+
+            if (BoltNetwork.isRunning)
+            {
+                // Make So We Can Take Ownership
+                if (BoltNetwork.isServer)
+                {
+                    Misc.Msg("[Mono] [Reciver] [Start] IsServer");
+                }
+                else if (BoltNetwork.isClient)
+                {
+                    Misc.Msg("[Mono] [Reciver] [Start] IsClient - Only Host Can Place Out Items");
+                    return;
+                }
+                else
+                {
+                    Misc.Msg("[Mono] [Reciver] [Start] IsNotServerOrClient");
+                }
             }
 
             // Light
@@ -72,6 +90,16 @@ namespace WirelessSignals.Mono
             if (Debug.VisualData.GetDebugMode())
             {
                 SetDebugUi(true);
+            }
+
+            if (BoltNetwork.isRunning)
+            {
+                if (ownerSteamId == null)
+                {
+                    //RLog.Warning("[Mono] [Reciver] [Start] OwnerSteamId Must Be Assigned In Multiplayer");
+                    Misc.Msg("[Mono] [Reciver] [Start] OwnerSteamId Must Be Assigned", true);
+                }
+                return;
             }
 
             if (_linkUi == null)
@@ -478,6 +506,66 @@ namespace WirelessSignals.Mono
         {
             Mono.OverlapSphereVisualizer visualizer = gameObject.GetComponent<Mono.OverlapSphereVisualizer>();
             return visualizer != null;
+        }
+
+        public void OnMultiplayerAssignOwner(string inputOwnerSteamId)
+        {
+            if (!BoltNetwork.isRunning) { Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] BoltNetwork is not running"); return; }
+            ownerSteamId = inputOwnerSteamId;
+            if (_linkUi == null && !SonsSdk.Networking.NetUtils.IsDedicatedServer)
+            {
+                if (Tools.CreatorSettings.lastState)  // If true, means we need to check if we are owner to create link ui
+                {
+                    if (Tools.CreatorSettings.IsOwner(ownerSteamId))
+                    {
+                        _linkUi = UI.LinkUi.CreateLinkUi(gameObject, 2f, null, Assets.UIAdjust, new Vector3(0, 0f, 0), "screen.take");
+                        Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] CreatorSettings.lastState is true - Created LinkUi");
+                    }
+                    else
+                    {
+                        Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] CreatorSettings.lastState is true - Not Owner, No LinkUi");
+                    }
+                }
+                else
+                {
+                    Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] CreatorSettings.lastState is false - Creating LinkUi [Everyone can change]");
+                    _linkUi = UI.LinkUi.CreateLinkUi(gameObject, 2f, null, Assets.UIAdjust, new Vector3(0, 0f, 0), "screen.take");
+                }
+            }
+
+            if (BoltNetwork.isServer || BoltNetwork.isClient)
+            {
+                // Sync State To Rest Of Players/Clients
+                string generatedUniqueId = Guid.NewGuid().ToString();
+                if (string.IsNullOrEmpty(uniqueId)) { Misc.Msg("[PlaceStructure] [OnMultiplayerAssignOwner] uniqueId Is Null Or Empty!"); return; }
+                uniqueId = generatedUniqueId;
+
+                BoltEntity bolt = gameObject.GetComponent<BoltEntity>();
+                if (bolt != null)
+                {
+                    // Delete NetworkOwner Component On Rest Of Network
+                    Network.Sync.NetworkOwnerSyncEvent.SendState(bolt, Network.Sync.NetworkOwnerSyncEvent.SyncType.RemoveFromBoltEntity);
+                    Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] Sent Sync [RemoveFromBoltEntity] Event", true);
+
+                    // Sync To Network (UniqueId, OwnerSteamId)
+                    Network.Reciver.ReciverSyncEvent.SendState(bolt, Network.Reciver.ReciverSyncEvent.ReciverSyncType.UniqueId);
+                    Network.Reciver.ReciverSyncEvent.SendState(bolt, Network.Reciver.ReciverSyncEvent.ReciverSyncType.OwnerSteamId);
+                    Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] Sent Sync [UniqueId, OwnerSteamId] Event", true);
+                }
+                else
+                {
+                    RLog.Error("[Reciver] [OnMultiplayerAssignOwner] BoltEntity is null");
+                }
+
+                
+
+                LoadInDelay().RunCoro();  // Set loaded in
+            }
+            else
+            {
+                RLog.Error("[Reciver] [OnMultiplayerAssignOwner] Can't assign owner on unkown Network");
+            }
+
         }
     }
 }

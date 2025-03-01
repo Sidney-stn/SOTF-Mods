@@ -149,7 +149,19 @@ namespace WirelessSignals.UI
                             }
                             else
                             {
-                                Misc.Msg("Controller is null!");
+                                Mono.NetworkOwner networkOwner = open.GetComponent<NetworkOwner>();
+                                if (networkOwner == null)
+                                {
+                                    Misc.Msg("[TryInteractWithUi()] NetworkOwner && Reciver Controller is null!");
+                                    return;
+                                }
+                                LinkUiElement linkUi = networkOwner.LinkUiElement;
+                                if (linkUi == null) { return; }
+                                if (linkUi.IsActive)
+                                {
+                                    networkOwner.TakeOwnerShip();
+                                }
+                                
                             }
 
                         }

@@ -94,8 +94,8 @@ namespace WirelessSignals.Tools
 
         internal static bool IsOwner(string ownerSteamId)
         {
-            if (ownerSteamId == null) { return true; }
-            else if (ownerSteamId == Misc.GetMySteamId()) { return true; }
+            if (BoltNetwork.isRunning == false) { if (ownerSteamId == null) { return true; } }
+            if (ownerSteamId == Misc.GetMySteamId()) { return true; }
             else if (Misc.hostMode == Misc.SimpleSaveGameType.SinglePlayer) { return true; }
             else { return false; }
         }

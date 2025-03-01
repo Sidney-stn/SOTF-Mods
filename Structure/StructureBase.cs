@@ -1,4 +1,5 @@
-﻿using Il2CppInterop.Runtime;
+﻿using Endnight.Types;
+using Il2CppInterop.Runtime;
 using RedLoader;
 using Sons.Crafting.Structures;
 using SonsSdk;
@@ -37,6 +38,9 @@ namespace WirelessSignals.Structure
                     {
                         dynamicComponent.destroyBoltEntity = true;
                     }
+
+                    //arg1.StructureCraftingSystem.OnStructureComplete += DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(
+                    //new System.Action(() => OnStructureCompleted(arg1.gameObject, builtPrefab)));
 
                 }
 
@@ -87,6 +91,12 @@ namespace WirelessSignals.Structure
                     setupGameObject.AddComponent(boltComponentToAdd);
                 }
                 Misc.Msg($"[StructureBase] [Setup] {blueprintName} - BoltEntity Custom Components Added");
+
+                // Add Network Owner Component
+                //setupGameObject.AddComponent<Mono.NetworkOwner>().isSetupPrefab = true;
+                //Misc.Msg($"[StructureBase] [Setup] {blueprintName} NetworkOwner Component Added", true);
+                setupGameObject.AddComponent<Network.Sync.NetworkOwnerSetter>();
+
                 BoltEntity boltEntity = setupGameObject.AddComponent<BoltEntity>();
                 boltEntity.Init(structureId, BoltFactories.RigidbodyState);
                 EntityManager.RegisterPrefab(boltEntity);
@@ -98,6 +108,12 @@ namespace WirelessSignals.Structure
             // Configure components if provided
             completeSetup?.Invoke(setupGameObject);
         }
+
+        //internal virtual void OnStructureCompleted(UnityEngine.GameObject gameObject, GameObject builtPrefab)
+        //{
+        //    Misc.Msg($"OnStructureCompleted for GameObject: {gameObject.name}");
+        //    // You can now access the GameObject and its components here
+        //}
 
         internal abstract void CompleteSetup(GameObject obj);
 
