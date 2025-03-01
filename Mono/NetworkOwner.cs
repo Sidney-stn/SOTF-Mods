@@ -5,7 +5,6 @@ using SonsSdk;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using WirelessSignals.Network.Sync;
 
 namespace WirelessSignals.Mono
 {
@@ -18,132 +17,117 @@ namespace WirelessSignals.Mono
         public LinkUiElement LinkUiElement = null;
         public bool fromNetwork = false;
 
+        private string _typeOfObject = null;
+        private bool _started = false;
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>")]
         private void Start()
         {
-            if (isSetupPrefab) { Misc.Msg("[NetworkOwner] [Awake] SetupPrefab"); return; }
+            if (isSetupPrefab) { Misc.Msg("[NetworkOwner] [Start] SetupPrefab"); return; }
             else
             {
-
-                //if (BoltNetwork.isRunning)
-                //{
-                //    CreateTakeOwnerUi(gameObject, false);
-                //    LinkUiElement = UI.LinkUi.CreateLinkUi(gameObject, 2f, Assets.UITakeOwner, null, new Vector3(0, 0, 0));
-                //    if (fromNetwork == false)
-                //    {
-                //        Misc.Msg("[NetworkOwner] [Awake] FromNetwork");
-                //        //AddComponentOnRestOfPlayers();
-                //        SendAddComponentOnRestOfPlayers().RunCoro();
-                //    }
-                //}
-                //else
-                //{
-                //    Misc.Msg("[NetworkOwner] [Awake] BoltNetwork is not running");
-                //    Destroy(this);
-                //}
                 WaitForSetup().RunCoro();
             }
             
             
         }
 
+        public bool CheckIfSettingsWereSetCorrectly()  // Only used in AddNetworkOwnerComp
+        {
+            if (isSetupPrefab)
+            {
+                return false;
+            }
+            if (!fromNetwork)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public void FixSettings()  // Only used in AddNetworkOwnerComp
+        {
+            isSetupPrefab = false;
+            fromNetwork = true;
+            _started = false;
+            WaitForSetup().RunCoro();
+        }
+
         public void TakeOwnerShip()
         {
             if (isSetupPrefab) { return; }
-            _placerSteamId = Misc.GetMySteamId();
-
-            // Check If Any Of My Scripts Exist
-            List<Il2CppSystem.Type> componentsToMakeStructureWork = new List<Il2CppSystem.Type>
+            if (SonsSdk.Networking.NetUtils.IsDedicatedServer)
             {
-                Il2CppType.Of<Mono.Reciver>(),
-                Il2CppType.Of<Mono.TransmitterDetector>(),
-                Il2CppType.Of<Mono.TransmitterSwitch>(),
-            };
+                Misc.Msg("[NetworkOwner] [TakeOwnerShip] Skip Adding Comp - Recieved On DedicatedServer", true);
+                return;
+            }
+            Misc.Msg("[NetworkOwner] [TakeOwnerShip] Trying To Take Ownership");
 
-            // Check If Type Exists, If Not Add It
-            if (componentsToMakeStructureWork == null)
+            if (LinkUiElement == null) { Misc.Msg("[NetworkOwner] [TakeOwnerShip] Can't Take OwnerShip, LinkUi Is Null"); return; }
+            if (!LinkUiElement.IsActive)
             {
-                Misc.Msg("[NetworkOwner] [TakeOwnerShip] componentsToMakeStructureWork Is Null");
-                DestroyUi();
+                Misc.Msg("[NetworkOwner] [TakeOwnerShip] Can't Take OwnerShip, LinkUi Is Not Active");
                 return;
             }
 
-            List<Il2CppSystem.Type> foundTypes = new List<Il2CppSystem.Type>();
-            foreach (var compType in componentsToMakeStructureWork)
+            _placerSteamId = Misc.GetMySteamId();
+
+            Misc.Msg("[NetworkOwner] [TakeOwnerShip] No Components Adding Them");
+            if (gameObject.name.ToLower().Contains("reciver"))
             {
-                if (gameObject.GetComponent(compType) != null)
+                var type = Il2CppType.Of<Mono.Reciver>();
+                if (gameObject.GetComponent(type) == null)
                 {
-                    foundTypes.Add(compType);
-                }
-            }
-            if (foundTypes.Count == 0)
-            {
-                Misc.Msg("[NetworkOwner] [TakeOwnerShip] No Components Adding Them");
-                if (gameObject.name.ToLower().Contains("reciver"))
-                {
-                    gameObject.AddComponent<Mono.Reciver>();
-                    foundTypes.Add(Il2CppType.Of<Mono.Reciver>());
-                }
-                else if (gameObject.name.ToLower().Contains("transmitterdetector"))
-                {
-                    gameObject.AddComponent<Mono.TransmitterDetector>();
-                    foundTypes.Add(Il2CppType.Of<Mono.TransmitterDetector>());
-                }
-                else if (gameObject.name.ToLower().Contains("transmitterswitch"))
-                {
-                    gameObject.AddComponent<Mono.TransmitterSwitch>();
-                    foundTypes.Add(Il2CppType.Of<Mono.TransmitterSwitch>());
+                    dynamic addedComp = gameObject.AddComponent(type);
+                    addedComp.OnMultiplayerAssignOwner(_placerSteamId);
+                    DestroyUi();
                 }
                 else
                 {
-                    Misc.Msg("[NetworkOwner] [TakeOwnerShip] No Components Adding ??");
+                    dynamic addedComp = gameObject.GetComponent(type);
+                    addedComp.OnMultiplayerAssignOwner(_placerSteamId);
+                    DestroyUi();
+                    Misc.Msg("[NetworkOwner] [TakeOwnerShip] Reciver Component Already Exists");
                 }
-
+                gameObject.AddComponent<Mono.Reciver>();
             }
-            foreach (var compType in foundTypes)
+            else if (gameObject.name.ToLower().Contains("transmitterdetector"))
             {
-                if (gameObject.GetComponent(compType) == null)
+                var type = Il2CppType.Of<Mono.TransmitterDetector>();
+                if (gameObject.GetComponent(type) == null)
                 {
-                    Misc.Msg("[NetworkOwner] [TakeOwnerShip] Component Not Found After Adding");
-                    Destroy(_ui);
-                    Destroy(LinkUiElement);
-                    Destroy(this);
-                    return;
+                    dynamic addedComp = gameObject.AddComponent(type);
+                    //addedComp.OnMultiplayerAssignOwner(_placerSteamId);  // Not Implemented
+                    DestroyUi();
                 }
-                if (compType == Il2CppType.Of<Mono.Reciver>())
+                else
                 {
-                    Misc.Msg("[NetworkOwner] [TakeOwnerShip] Reciver Component Found");
-                    Mono.Reciver reciver = gameObject.GetComponent<Mono.Reciver>();
-                    if (reciver == null)
-                    {
-                        Misc.Msg("[NetworkOwner] [TakeOwnerShip] Reciver Component Is Null");
-                        DestroyUi();
-                    }
-                    reciver.OnMultiplayerAssignOwner(_placerSteamId);
+                    dynamic addedComp = gameObject.GetComponent(type);
+                    //addedComp.OnMultiplayerAssignOwner(_placerSteamId);  // Not Implemented
+                    DestroyUi();
+                    Misc.Msg("[NetworkOwner [TakeOwnerShip] TransmitterDetector Component Already Exists");
                 }
-                else if (compType == Il2CppType.Of<Mono.TransmitterDetector>())
+            }
+            else if (gameObject.name.ToLower().Contains("transmitterswitch"))
+            {
+                var type = Il2CppType.Of<Mono.TransmitterSwitch>();
+                if (gameObject.GetComponent(type) == null)
                 {
-                    Misc.Msg("[NetworkOwner [TakeOwnerShip] TransmitterDetector Component Found");
-                    Mono.TransmitterDetector transmitterDetector = gameObject.GetComponent<Mono.TransmitterDetector>();
-                    if (transmitterDetector == null)
-                    {
-                        Misc.Msg("[NetworkOwner [TakeOwnerShip] TransmitterDetector Component Is Null");
-                        DestroyUi();
-                        return;
-                    }
-                    //transmitterDetector.OnMultiplayerAssignOwner(_placerSteamId);  // Not Implemented
+                    dynamic addedComp = gameObject.AddComponent(type);
+                    //addedComp.OnMultiplayerAssignOwner(_placerSteamId);  // Not Implemented
+                    DestroyUi();
                 }
-                else if (compType == Il2CppType.Of<Mono.TransmitterSwitch>())
+                else
                 {
-                    Misc.Msg("[NetworkOwner] [TakeOwnerShip] TransmitterSwitch Component Found");
-                    Mono.TransmitterSwitch transmitterSwitch = gameObject.GetComponent<Mono.TransmitterSwitch>();
-                    if (transmitterSwitch == null)
-                    {
-                        Misc.Msg("[NetworkOwner [TakeOwnerShip] TransmitterSwitch Component Is Null");
-                        DestroyUi();
-                    }
-                    //transmitterSwitch.OnMultiplayerAssignOwner(_placerSteamId);  // Not Implemented
+                    dynamic addedComp = gameObject.GetComponent(type);
+                    //addedComp.OnMultiplayerAssignOwner(_placerSteamId);  // Not Implemented
+                    DestroyUi();
+                    Misc.Msg("[NetworkOwner [TakeOwnerShip] TransmitterSwitch Component Already Exists");
                 }
+            }
+            else
+            {
+                Misc.Msg("[NetworkOwner] [TakeOwnerShip] No Components Adding ??");
             }
         }
 
@@ -233,21 +217,50 @@ namespace WirelessSignals.Mono
             BoltEntity thisEntity = gameObject.GetComponent<BoltEntity>();
             if (thisEntity == null)
             {
-                Misc.Msg("[NetworkOwner] [AddComponentOnRestOfPlayers] BoltEntity Is Null");
+                Misc.Msg("[NetworkOwner] [AddComponentOnRestOfPlayers] BoltEntity Is Null", true);
                 DestroyUi();
                 return;
             }
+            switch (_typeOfObject)
+            {
+                case null:
+                    Misc.Msg("[NetworkOwner] [AddComponentOnRestOfPlayers] _typeOfObject Is Null", true);
+                    DestroyUi();
+                    return;
+                case "Reciver":
+                    Network.Reciver.ReciverSyncEvent.SendState(thisEntity, Network.Reciver.ReciverSyncEvent.ReciverSyncType.PlaceOnBoltEntity);
+                    break;
+            }
             
-            NetworkOwnerSyncEvent.SendState(thisEntity, NetworkOwnerSyncEvent.SyncType.PlaceOnBoltEntity);
+            //NetworkOwnerSyncEvent.SendState(thisEntity, NetworkOwnerSyncEvent.SyncType.PlaceOnBoltEntity);
+
         }
 
         private IEnumerator WaitForSetup()
         {
             if (isSetupPrefab) { yield break; }
+            _started = true;
             // Wait time in Coroutine before sending
             yield return new WaitForSeconds(1f);
             if (BoltNetwork.isRunning)
             {
+                Misc.Msg("[NetworkOwner] [TakeOwnerShip] No Components Adding Them");
+                if (gameObject.name.ToLower().Contains("reciver"))
+                {
+                    _typeOfObject = "Reciver";
+                }
+                else if (gameObject.name.ToLower().Contains("transmitterdetector"))
+                {
+                    _typeOfObject = "TransmitterDetector";
+                }
+                else if (gameObject.name.ToLower().Contains("transmitterswitch"))
+                {
+                    _typeOfObject = "TransmitterSwitch";
+                }
+                else
+                {
+                    Misc.Msg("[NetworkOwner] [TakeOwnerShip] No Components Adding ??");
+                }
                 CreateTakeOwnerUi(gameObject, false);
                 LinkUiElement = UI.LinkUi.CreateLinkUi(gameObject, 2f, Assets.UITakeOwner, null, new Vector3(0, 0, 0));
                 if (fromNetwork == false)

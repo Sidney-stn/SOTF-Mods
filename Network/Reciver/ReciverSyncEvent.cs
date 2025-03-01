@@ -23,6 +23,8 @@ public class ReciverSyncEvent : RelayEventBase<ReciverSyncEvent, ReciverSetter>
         Position = 9,
         Rotation = 10,
         Transform = 11,
+        PlaceOnBoltEntity = 12,
+        RemoveFromBoltEntity = 13
     }
 
     /// Read message on the server
@@ -183,9 +185,17 @@ public class ReciverSyncEvent : RelayEventBase<ReciverSyncEvent, ReciverSetter>
                 packet.Packet.WriteVector3(position1);
                 packet.Packet.WriteQuaternion(rotation1);
                 break;
+            case ReciverSyncType.PlaceOnBoltEntity:
+                packet.Packet.WriteString("PLACE_NETWORK_OWNER_SCRIPT");
+                break;
+            case ReciverSyncType.RemoveFromBoltEntity:
+                packet.Packet.WriteString("REMOVE_NETWORK_OWNER_SCRIPT");
+                break;
         }
         Send(packet);
     }
+
+
 
     public static void SendState(BoltEntity entity, ReciverSyncType type)
     {

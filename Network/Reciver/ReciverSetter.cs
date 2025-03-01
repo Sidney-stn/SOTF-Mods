@@ -198,6 +198,79 @@ public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
         Misc.Msg($"[Network] [ReciverSyncEvent] [UpdateState] Recived Transform: Position: {position} Rotation: {rotation}", true);
     }
 
+    private void AddNetworkOwnerComp()
+    {
+        var comp = gameObject.GetComponent<Mono.NetworkOwner>();
+        if (comp == null)
+        {
+            if (SonsSdk.Networking.NetUtils.IsDedicatedServer)
+            {
+                Misc.Msg("[ReciverSyncEvent] [AddNetworkOwnerComp] Skip Adding Comp - Recieved On DedicatedServer", true);
+                return;
+            }
+            var addedComp = gameObject.AddComponent<Mono.NetworkOwner>();
+            addedComp.fromNetwork = true;
+            addedComp.isSetupPrefab = false;
+            if (addedComp.CheckIfSettingsWereSetCorrectly() == false)
+            {
+                RLog.Warning("[ReciverSyncEvent] [AddNetworkOwnerComp] Settings Were Not Set Correctly, even tho it was set, trying agian");
+                addedComp.FixSettings();
+                return;
+            }
+            var getToCheck = gameObject.GetComponent<Mono.NetworkOwner>();
+            if (getToCheck != null)
+            {
+                if (getToCheck.CheckIfSettingsWereSetCorrectly() == false)
+                {
+                    RLog.Error("[ReciverSyncEvent] [AddNetworkOwnerComp] Settings Were Not Set Correctly - Deleting");
+                    DestroyImmediate(getToCheck);
+                    return;
+                }
+                Misc.Msg("[ReciverSyncEvent] [AddNetworkOwnerComp] Added NetworkOwner Component", true);
+            } else
+            {
+                RLog.Error("[ReciverSyncEvent] [AddNetworkOwnerComp] Failed To Add NetworkOwner Component");
+            }
+
+            // Add Reciver Controller
+            var reciver = gameObject.GetComponent<Mono.Reciver>();
+            if (reciver != null)
+            {
+                Misc.Msg("[ReciverSyncEvent] [AddNetworkOwnerComp] Reciver Component Already Exists, Setting State", true);
+                reciver.ownerSteamId = null;
+                reciver.uniqueId = null;
+
+            } else
+            {
+                Misc.Msg("[ReciverSyncEvent] [AddNetworkOwnerComp] Reciver Component Does Not Exist, Adding", true);
+                var reciverController = gameObject.AddComponent<Mono.Reciver>();
+                reciverController.uniqueId = null;
+                reciverController.ownerSteamId = null;
+            }
+            
+        }
+        else
+        {
+            Misc.Msg("[ReciverSyncEvent] [AddNetworkOwnerComp] NetworkOwner Component Already Exists", true);
+        }
+    }
+
+    private void RemoveNetworkOwnerComp()
+    {
+        if (SonsSdk.Networking.NetUtils.IsDedicatedServer)
+        {
+            Misc.Msg("[ReciverSyncEvent] [ReadPacket] [RemoveFromBoltEntity] Skip Removing Comp - Recieved On DedicatedServer", true);
+            return;
+        }
+        var comp = gameObject.GetComponent<Mono.NetworkOwner>();
+        if (comp != null)
+        {
+            comp.DestroyUi();
+            DestroyImmediate(comp);
+            Misc.Msg("[ReciverSyncEvent] [RemoveNetworkOwnerComp] Removed NetworkOwner Component", true);
+        }
+    }
+
 
     public void ReadPacket(UdpPacket packet, BoltConnection fromConnection)
     {
@@ -249,6 +322,30 @@ public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
                 break;
             case ReciverSyncType.Transform:
                 SetTransform(packet.ReadVector3(), packet.ReadQuaternion());
+                break;
+            case ReciverSyncType.PlaceOnBoltEntity:
+                string fromNetwork = packet.ReadString();
+                if (fromNetwork == "PLACE_NETWORK_OWNER_SCRIPT")
+                {
+                    AddNetworkOwnerComp();
+                    Misc.Msg("[ReciverSetter] [ReadPacket] [PlaceOnBoltEntity] Added NetworkOwner Component", true);
+                }
+                else
+                {
+                    Misc.Msg($"[ReciverSetter] [ReadPacket] [PlaceOnBoltEntity] Unknown string: {fromNetwork}", true);
+                }
+                break;
+            case ReciverSyncType.RemoveFromBoltEntity:
+                string fromNetworkRemove = packet.ReadString();
+                if (fromNetworkRemove == "REMOVE_NETWORK_OWNER_SCRIPT")
+                {
+                    RemoveNetworkOwnerComp();
+                    Misc.Msg("[ReciverSetter] [ReadPacket] [RemoveFromBoltEntity] Removed NetworkOwner Component", true);
+                }
+                else
+                {
+                    Misc.Msg($"[ReciverSetter] [ReadPacket] [RemoveFromBoltEntity] Unknown string: {fromNetworkRemove}", true);
+                }
                 break;
         }
     }

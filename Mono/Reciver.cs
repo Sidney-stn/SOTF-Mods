@@ -512,6 +512,18 @@ namespace WirelessSignals.Mono
         {
             if (!BoltNetwork.isRunning) { Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] BoltNetwork is not running"); return; }
             ownerSteamId = inputOwnerSteamId;
+
+            // Add To List
+            WirelessSignals.reciver.spawnedGameObjects.Add(uniqueId, gameObject);
+            // Add To Network
+            Network.SyncLists.UniqueIdSync.Instance.SendUniqueIdEvent(
+                    forPrefab: Network.SyncLists.UniqueIdSync.UniqueIdListType.Reciver,
+                    toDo: Network.SyncLists.UniqueIdSync.UniqueIdListOptions.Add,
+                    toPlayer: Network.SyncLists.UniqueIdSync.UniqueIdTo.All,
+                    conn: null,
+                    ids: new string[] { uniqueId }
+                );
+
             if (_linkUi == null && !SonsSdk.Networking.NetUtils.IsDedicatedServer)
             {
                 if (Tools.CreatorSettings.lastState)  // If true, means we need to check if we are owner to create link ui
@@ -544,7 +556,7 @@ namespace WirelessSignals.Mono
                 if (bolt != null)
                 {
                     // Delete NetworkOwner Component On Rest Of Network
-                    Network.Sync.NetworkOwnerSyncEvent.SendState(bolt, Network.Sync.NetworkOwnerSyncEvent.SyncType.RemoveFromBoltEntity);
+                    Network.Reciver.ReciverSyncEvent.SendState(bolt, Network.Reciver.ReciverSyncEvent.ReciverSyncType.RemoveFromBoltEntity);
                     Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] Sent Sync [RemoveFromBoltEntity] Event", true);
 
                     // Sync To Network (UniqueId, OwnerSteamId)

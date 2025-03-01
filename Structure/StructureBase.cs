@@ -95,7 +95,7 @@ namespace WirelessSignals.Structure
                 // Add Network Owner Component
                 //setupGameObject.AddComponent<Mono.NetworkOwner>().isSetupPrefab = true;
                 //Misc.Msg($"[StructureBase] [Setup] {blueprintName} NetworkOwner Component Added", true);
-                setupGameObject.AddComponent<Network.Sync.NetworkOwnerSetter>();
+                //setupGameObject.AddComponent<Network.Sync.NetworkOwnerSetter>();
 
                 BoltEntity boltEntity = setupGameObject.AddComponent<BoltEntity>();
                 boltEntity.Init(structureId, BoltFactories.RigidbodyState);

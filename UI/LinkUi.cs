@@ -134,34 +134,26 @@ namespace WirelessSignals.UI
                         else if (hitName.Contains("Reciver"))  // For Opening Reciver UI
                         {
                             GameObject open = raycastHit.collider.transform.root.gameObject;
-                            Mono.Reciver controller = open.GetComponent<Reciver>();
-                            if (controller != null)
+                            Mono.NetworkOwner networkOwner = open.GetComponent<NetworkOwner>();
+                            if (networkOwner != null)
                             {
-                                if (!controller.IsLoadedIn()) { return; }
-                                LinkUiElement linkUi = controller._linkUi;
-                                if (linkUi == null) { return; }
-                                if (linkUi.IsActive)
-                                {
-                                    UI.ReciverUI.activeReciverPrefab = controller.gameObject;
-                                    UI.ReciverUI.OpenUI();
-                                }
-                                return;
+                                networkOwner.TakeOwnerShip();
                             }
                             else
                             {
-                                Mono.NetworkOwner networkOwner = open.GetComponent<NetworkOwner>();
-                                if (networkOwner == null)
+                                Mono.Reciver controller = open.GetComponent<Reciver>();
+                                if (controller != null)
                                 {
-                                    Misc.Msg("[TryInteractWithUi()] NetworkOwner && Reciver Controller is null!");
+                                    if (!controller.IsLoadedIn()) { return; }
+                                    LinkUiElement linkUi = controller._linkUi;
+                                    if (linkUi == null) { return; }
+                                    if (linkUi.IsActive)
+                                    {
+                                        UI.ReciverUI.activeReciverPrefab = controller.gameObject;
+                                        UI.ReciverUI.OpenUI();
+                                    }
                                     return;
                                 }
-                                LinkUiElement linkUi = networkOwner.LinkUiElement;
-                                if (linkUi == null) { return; }
-                                if (linkUi.IsActive)
-                                {
-                                    networkOwner.TakeOwnerShip();
-                                }
-                                
                             }
 
                         }
