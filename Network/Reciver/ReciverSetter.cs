@@ -269,6 +269,26 @@ public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
             DestroyImmediate(comp);
             Misc.Msg("[ReciverSyncEvent] [RemoveNetworkOwnerComp] Removed NetworkOwner Component", true);
         }
+        var comp2 = gameObject.GetComponent<Mono.PlaceStructure>();
+        if (comp2 != null)
+        {
+            DestroyImmediate(comp2);
+            Misc.Msg("[ReciverSyncEvent] [RemoveNetworkOwnerComp] Removed PlaceStructure Component", true);
+        }
+    }
+
+    private void LinkUiForOwnerOrAll(bool onlyOwner)
+    {
+        var reciver = gameObject.GetComponent<Mono.Reciver>();
+        if (reciver != null)
+        {
+            Misc.Msg("[ReciverSyncEvent] [LinkUiForOwnerOrAll] Linked UI", true);
+            reciver.SetLinkUi(onlyOwner);
+        } 
+        else
+        {
+            RLog.Error("[ReciverSyncEvent] [LinkUiForOwnerOrAll] Reciver Component is null");
+        }
     }
 
 
@@ -346,6 +366,9 @@ public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
                 {
                     Misc.Msg($"[ReciverSetter] [ReadPacket] [RemoveFromBoltEntity] Unknown string: {fromNetworkRemove}", true);
                 }
+                break;
+            case ReciverSyncType.LinkUiSync:
+                LinkUiForOwnerOrAll(packet.ReadBool());
                 break;
         }
     }

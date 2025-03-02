@@ -569,21 +569,48 @@ namespace WirelessSignals.Mono
                     WirelessSignals.reciver.spawnedGameObjects.Add(uniqueId, gameObject);
                 }
 
-                // Add to network
-                if (Network.SyncLists.UniqueIdSync.Instance != null)
+                if (BoltNetwork.isServer)
                 {
-                    Network.SyncLists.UniqueIdSync.Instance.SendUniqueIdEvent(
-                        forPrefab: Network.SyncLists.UniqueIdSync.UniqueIdListType.Reciver,
-                        toDo: Network.SyncLists.UniqueIdSync.UniqueIdListOptions.Add,
-                        toPlayer: Network.SyncLists.UniqueIdSync.UniqueIdTo.All,
-                        conn: null,
-                        ids: new string[] { uniqueId }
-                    );
-                }
+                    // Add to network, sync only to clients
+                    if (Network.SyncLists.UniqueIdSync.Instance != null)
+                    {
+                        Network.SyncLists.UniqueIdSync.Instance.SendUniqueIdEvent(
+                            forPrefab: Network.SyncLists.UniqueIdSync.UniqueIdListType.Reciver,
+                            toDo: Network.SyncLists.UniqueIdSync.UniqueIdListOptions.Add,
+                            toPlayer: Network.SyncLists.UniqueIdSync.UniqueIdTo.Clients,
+                            conn: null,
+                            ids: new string[] { uniqueId }
+                        );
+                    }
+                    else
+                    {
+                        Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] UniqueIdSync.Instance is null", true);
+                    }
+                } 
+                else if (BoltNetwork.isClient)
+                {
+                    // Add to network
+                    if (Network.SyncLists.UniqueIdSync.Instance != null)
+                    {
+                        Network.SyncLists.UniqueIdSync.Instance.SendUniqueIdEvent(
+                            forPrefab: Network.SyncLists.UniqueIdSync.UniqueIdListType.Reciver,
+                            toDo: Network.SyncLists.UniqueIdSync.UniqueIdListOptions.Add,
+                            toPlayer: Network.SyncLists.UniqueIdSync.UniqueIdTo.All,
+                            conn: null,
+                            ids: new string[] { uniqueId }
+                        );
+                    }
+                    else
+                    {
+                        Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] UniqueIdSync.Instance is null", true);
+                    }
+                } 
                 else
                 {
-                    Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] UniqueIdSync.Instance is null", true);
+                    Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] Sync List Network Issue", true);
                 }
+
+                
 
             }
             catch (System.Exception ex)
@@ -637,6 +664,30 @@ namespace WirelessSignals.Mono
             else
             {
                 RLog.Error("[Reciver] [OnMultiplayerAssignOwner] Can't assign owner on unknown Network");
+            }
+        }
+
+        public void SetLinkUi(bool onlyOwner)
+        {
+            if (_linkUi == null && !SonsSdk.Networking.NetUtils.IsDedicatedServer)
+            {
+                if (onlyOwner)  // If true, means we need to check if we are owner to create link ui
+                {
+                    if (Tools.CreatorSettings.IsOwner(ownerSteamId))
+                    {
+                        _linkUi = UI.LinkUi.CreateLinkUi(gameObject, 2f, null, Assets.UIAdjust, new Vector3(0, 0f, 0), "screen.take");
+                        Misc.Msg("[Reciver] [SetLinkUi] CreatorSettings.lastState is true - Created LinkUi");
+                    }
+                    else
+                    {
+                        Misc.Msg("[Reciver] [SetLinkUi] CreatorSettings.lastState is true - Not Owner, No LinkUi");
+                    }
+                }
+                else
+                {
+                    Misc.Msg("[Reciver] [SetLinkUi] CreatorSettings.lastState is false - Creating LinkUi [Everyone can change]");
+                    _linkUi = UI.LinkUi.CreateLinkUi(gameObject, 2f, null, Assets.UIAdjust, new Vector3(0, 0f, 0), "screen.take");
+                }
             }
         }
     }

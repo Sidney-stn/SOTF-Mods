@@ -24,7 +24,8 @@ public class ReciverSyncEvent : RelayEventBase<ReciverSyncEvent, ReciverSetter>
         Rotation = 10,
         Transform = 11,
         PlaceOnBoltEntity = 12,
-        RemoveFromBoltEntity = 13
+        RemoveFromBoltEntity = 13,
+        LinkUiSync = 14,
     }
 
     /// Read message on the server
@@ -190,6 +191,10 @@ public class ReciverSyncEvent : RelayEventBase<ReciverSyncEvent, ReciverSetter>
                 break;
             case ReciverSyncType.RemoveFromBoltEntity:
                 packet.Packet.WriteString("REMOVE_NETWORK_OWNER_SCRIPT");
+                break;
+            case ReciverSyncType.LinkUiSync:
+                bool uiVisibleForOwnerOnly = Tools.CreatorSettings.lastState;
+                packet.Packet.WriteBool(uiVisibleForOwnerOnly);
                 break;
         }
         Send(packet);
