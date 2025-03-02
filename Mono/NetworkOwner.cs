@@ -28,8 +28,6 @@ namespace WirelessSignals.Mono
             {
                 WaitForSetup().RunCoro();
             }
-            
-            
         }
 
         public bool CheckIfSettingsWereSetCorrectly()  // Only used in AddNetworkOwnerComp
@@ -71,25 +69,45 @@ namespace WirelessSignals.Mono
             }
 
             _placerSteamId = Misc.GetMySteamId();
+            if (string.IsNullOrEmpty(_placerSteamId))
+            {
+                Misc.Msg("[NetworkOwner] [TakeOwnerShip] Failed to get valid SteamID");
+                return;
+            }
 
             Misc.Msg("[NetworkOwner] [TakeOwnerShip] No Components Adding Them");
             if (gameObject.name.ToLower().Contains("reciver"))
             {
-                var type = Il2CppType.Of<Mono.Reciver>();
-                if (gameObject.GetComponent(type) == null)
+                try
                 {
-                    dynamic addedComp = gameObject.AddComponent(type);
-                    addedComp.OnMultiplayerAssignOwner(_placerSteamId);
-                    DestroyUi();
+                    var type = Il2CppType.Of<Mono.Reciver>();
+                    if (gameObject.GetComponent(type) == null)
+                    {
+                        // Check if WirelessSignals.reciver is properly initialized before assigning ownership
+                        if (WirelessSignals.reciver == null || WirelessSignals.reciver.spawnedGameObjects == null)
+                        {
+                            Misc.Msg("[NetworkOwner] [TakeOwnerShip] WirelessSignals.reciver not initialized", true);
+                            SonsTools.ShowMessage("Cannot take ownership at this time. Please try again later.", 3f);
+                            return;
+                        }
+
+                        dynamic addedComp = gameObject.AddComponent(type);
+                        addedComp.OnMultiplayerAssignOwner(_placerSteamId);
+                        DestroyUi();
+                    }
+                    else
+                    {
+                        dynamic addedComp = gameObject.GetComponent(type);
+                        addedComp.OnMultiplayerAssignOwner(_placerSteamId);
+                        DestroyUi();
+                        Misc.Msg("[NetworkOwner] [TakeOwnerShip] Reciver Component Already Exists");
+                    }
                 }
-                else
+                catch (System.Exception ex)
                 {
-                    dynamic addedComp = gameObject.GetComponent(type);
-                    addedComp.OnMultiplayerAssignOwner(_placerSteamId);
-                    DestroyUi();
-                    Misc.Msg("[NetworkOwner] [TakeOwnerShip] Reciver Component Already Exists");
+                    Misc.Msg($"[NetworkOwner] [TakeOwnerShip] Error: {ex.Message}", true);
+                    SonsTools.ShowMessage("Failed to take ownership. Please try again later.", 3f);
                 }
-                gameObject.AddComponent<Mono.Reciver>();
             }
             else if (gameObject.name.ToLower().Contains("transmitterdetector"))
             {
@@ -127,7 +145,7 @@ namespace WirelessSignals.Mono
             }
             else
             {
-                Misc.Msg("[NetworkOwner] [TakeOwnerShip] No Components Adding ??");
+                Misc.Msg("[NetworkOwner] [TakeOwnerShip] Unknown object type");
             }
         }
 
@@ -231,9 +249,6 @@ namespace WirelessSignals.Mono
                     Network.Reciver.ReciverSyncEvent.SendState(thisEntity, Network.Reciver.ReciverSyncEvent.ReciverSyncType.PlaceOnBoltEntity);
                     break;
             }
-            
-            //NetworkOwnerSyncEvent.SendState(thisEntity, NetworkOwnerSyncEvent.SyncType.PlaceOnBoltEntity);
-
         }
 
         private IEnumerator WaitForSetup()
@@ -285,8 +300,6 @@ namespace WirelessSignals.Mono
             yield return new WaitForSeconds(1f);
             AddComponentOnRestOfPlayers();
         }
-
-        
 
         public void DestroyUi()
         {

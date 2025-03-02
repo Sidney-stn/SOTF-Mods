@@ -511,18 +511,86 @@ namespace WirelessSignals.Mono
         public void OnMultiplayerAssignOwner(string inputOwnerSteamId)
         {
             if (!BoltNetwork.isRunning) { Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] BoltNetwork is not running"); return; }
+
+            // Check if inputOwnerSteamId is valid
+            if (string.IsNullOrEmpty(inputOwnerSteamId))
+            {
+                Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] inputOwnerSteamId is null or empty", true);
+                return;
+            }
+
             ownerSteamId = inputOwnerSteamId;
 
-            // Add To List
-            WirelessSignals.reciver.spawnedGameObjects.Add(uniqueId, gameObject);
-            // Add To Network
-            Network.SyncLists.UniqueIdSync.Instance.SendUniqueIdEvent(
-                    forPrefab: Network.SyncLists.UniqueIdSync.UniqueIdListType.Reciver,
-                    toDo: Network.SyncLists.UniqueIdSync.UniqueIdListOptions.Add,
-                    toPlayer: Network.SyncLists.UniqueIdSync.UniqueIdTo.All,
-                    conn: null,
-                    ids: new string[] { uniqueId }
-                );
+            // Check if WirelessSignals.reciver and spawnedGameObjects are initialized
+            if (WirelessSignals.reciver == null)
+            {
+                Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] WirelessSignals.reciver is null", true);
+                return;
+            }
+
+            if (WirelessSignals.reciver.spawnedGameObjects == null)
+            {
+                Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] WirelessSignals.reciver.spawnedGameObjects is null", true);
+                return;
+            }
+
+            // Check if uniqueId exists
+            if (string.IsNullOrEmpty(uniqueId))
+            {
+                Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] uniqueId is null, generating a new one", true);
+                uniqueId = Guid.NewGuid().ToString();
+            }
+
+            // Check if the uniqueId already exists in the dictionary to avoid duplicate keys
+            if (WirelessSignals.reciver.spawnedGameObjects.ContainsKey(uniqueId))
+            {
+                Misc.Msg($"[Reciver] [OnMultiplayerAssignOwner] uniqueId {uniqueId} already exists in dictionary", true);
+
+                // Generate a new uniqueId to avoid conflicts
+                string newUniqueId = Guid.NewGuid().ToString();
+                Misc.Msg($"[Reciver] [OnMultiplayerAssignOwner] Generated new uniqueId: {newUniqueId}", true);
+                uniqueId = newUniqueId;
+            }
+
+            try
+            {
+                // Add to list
+                // Check if this uniqueId already exists
+                if (WirelessSignals.reciver.spawnedGameObjects.ContainsKey(uniqueId))
+                {
+                    Misc.Msg($"[Reciver] [OnMultiplayerAssignOwner] uniqueId {uniqueId} already exists, updating entry", true);
+                    // Update existing entry
+                    WirelessSignals.reciver.spawnedGameObjects[uniqueId] = gameObject;
+                }
+                else
+                {
+                    // Add new entry
+                    Misc.Msg($"[Reciver] [OnMultiplayerAssignOwner] Adding uniqueId {uniqueId} to dictionary", true);
+                    WirelessSignals.reciver.spawnedGameObjects.Add(uniqueId, gameObject);
+                }
+
+                // Add to network
+                if (Network.SyncLists.UniqueIdSync.Instance != null)
+                {
+                    Network.SyncLists.UniqueIdSync.Instance.SendUniqueIdEvent(
+                        forPrefab: Network.SyncLists.UniqueIdSync.UniqueIdListType.Reciver,
+                        toDo: Network.SyncLists.UniqueIdSync.UniqueIdListOptions.Add,
+                        toPlayer: Network.SyncLists.UniqueIdSync.UniqueIdTo.All,
+                        conn: null,
+                        ids: new string[] { uniqueId }
+                    );
+                }
+                else
+                {
+                    Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] UniqueIdSync.Instance is null", true);
+                }
+
+            }
+            catch (System.Exception ex)
+            {
+                Misc.Msg($"[Reciver] [OnMultiplayerAssignOwner] Exception: {ex.Message}", true);
+                return;
+            }
 
             if (_linkUi == null && !SonsSdk.Networking.NetUtils.IsDedicatedServer)
             {
@@ -547,11 +615,6 @@ namespace WirelessSignals.Mono
 
             if (BoltNetwork.isServer || BoltNetwork.isClient)
             {
-                // Sync State To Rest Of Players/Clients
-                string generatedUniqueId = Guid.NewGuid().ToString();
-                if (string.IsNullOrEmpty(uniqueId)) { Misc.Msg("[PlaceStructure] [OnMultiplayerAssignOwner] uniqueId Is Null Or Empty!"); return; }
-                uniqueId = generatedUniqueId;
-
                 BoltEntity bolt = gameObject.GetComponent<BoltEntity>();
                 if (bolt != null)
                 {
@@ -569,15 +632,12 @@ namespace WirelessSignals.Mono
                     RLog.Error("[Reciver] [OnMultiplayerAssignOwner] BoltEntity is null");
                 }
 
-                
-
                 LoadInDelay().RunCoro();  // Set loaded in
             }
             else
             {
-                RLog.Error("[Reciver] [OnMultiplayerAssignOwner] Can't assign owner on unkown Network");
+                RLog.Error("[Reciver] [OnMultiplayerAssignOwner] Can't assign owner on unknown Network");
             }
-
         }
     }
 }
