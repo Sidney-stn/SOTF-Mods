@@ -22,6 +22,7 @@ namespace WirelessSignals.Network
             JoiningEvent.Register();
             ListInitialSyncEvent.Register();
             UniqueIdSync.Register();
+            RequestReciverSyncEvent.Register();  // Reciver
 
         }
 

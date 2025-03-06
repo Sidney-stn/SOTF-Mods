@@ -127,7 +127,7 @@ public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
         Misc.Msg($"[Network] [ReciverSyncEvent] [UpdateState] Recived LoadedFromSave: {loadedFromSave}", true);
     }
 
-    private void SetAllData(string uniqueId, bool isOn, string linkedToTranmitterSwithUniqueId, string ownerSteamId, bool linkedReciverObject, string linkedReciverObjectName, float objectRange, bool revertOuput, bool loadedFromSave)
+    private void SetAllData(string uniqueId, bool isOn, string linkedToTranmitterSwithUniqueId, string ownerSteamId, bool linkedReciverObject, string linkedReciverObjectName, float objectRange, bool revertOuput, bool loadedFromSave, bool loadedIn)
     {
         if (string.IsNullOrEmpty(uniqueId))
         {
@@ -155,14 +155,15 @@ public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
             RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] Reciver Component is null");
             return;
         }
-        comp.uniqueId = uniqueId == "None" ? string.Empty : uniqueId;
+        comp.uniqueId = uniqueId.ToLower() == "none" ? string.Empty : uniqueId;
         comp.isOn = isOn;
-        comp.linkedToTranmitterSwithUniqueId = linkedToTranmitterSwithUniqueId == "None" ? string.Empty : linkedToTranmitterSwithUniqueId;
-        comp.ownerSteamId = ownerSteamId == "None" ? string.Empty : ownerSteamId;
-        comp.SetLinkedReciverObject(linkedReciverObject, linkedReciverObjectName == "None" ? string.Empty : linkedReciverObjectName);
+        comp.linkedToTranmitterSwithUniqueId = linkedToTranmitterSwithUniqueId.ToLower() == "none" ? string.Empty : linkedToTranmitterSwithUniqueId;
+        comp.ownerSteamId = ownerSteamId.ToLower() == "none" ? string.Empty : ownerSteamId;
+        comp.SetLinkedReciverObject(linkedReciverObject, linkedReciverObjectName.ToLower() == "none" ? string.Empty : linkedReciverObjectName);
         comp.objectRange = objectRange;
-        comp._revertOutput = revertOuput;
+        comp.SetRevertOutput(revertOuput, runOnNetworkIfMultiplayer: false);
         comp.loadedFromSave = loadedFromSave;
+        comp.SetLoadedInNetwork(loadedIn);
         Misc.Msg($"[Network] [ReciverSyncEvent] [UpdateState] Recived All Data: UniqueId: " +
             $"{uniqueId} IsOn: {isOn} linkedToTranmitterSwithUniqueId: {linkedToTranmitterSwithUniqueId}" +
             $" ownerSteamId: {ownerSteamId} linkedReciverObject: {linkedReciverObject} linkedReciverObjectName:" +
@@ -360,6 +361,104 @@ public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
         Misc.Msg($"[Network] [ReciverSyncEvent] [UpdateState] ShowScanLines", true);
     }
 
+    private void LateJoinSync(
+        string uniqueId,
+        bool isOn,
+        string linkedToTranmitterSwithUniqueId,
+        string ownerSteamId,
+        bool linkedReciverObject,
+        string linkedReciverObjectName,
+        float objectRange,
+        bool revertOuput,
+        bool loadedFromSave,
+        bool showScanLines,
+        bool loadedIn,
+        string syncComp  // Sync PlaceOnBoltEntity or RemoveFromBoltEntity
+        )
+    {
+        if (string.IsNullOrEmpty(uniqueId))
+        {
+            RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] UniqueId is null or empty");
+            return;
+        }
+        if (string.IsNullOrEmpty(linkedToTranmitterSwithUniqueId))
+        {
+            RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] linkedToTranmitterSwithUniqueId is null or empty");
+            return;
+        }
+        if (string.IsNullOrEmpty(ownerSteamId))
+        {
+            RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] ownerSteamId is null or empty");
+            return;
+        }
+        if (string.IsNullOrEmpty(linkedReciverObjectName))
+        {
+            RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] linkedReciverObjectName is null or empty");
+            return;
+        }
+        var comp = gameObject.GetComponent<Mono.Reciver>();
+        if (comp == null)
+        {
+            comp = gameObject.AddComponent<Mono.Reciver>();
+        }
+        if (comp == null)
+        {
+            RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] Reciver Component is null");
+            return;
+        }
+        comp.uniqueId = uniqueId.ToLower() == "none" ? string.Empty : uniqueId;
+        comp.isOn = isOn;
+        comp.linkedToTranmitterSwithUniqueId = linkedToTranmitterSwithUniqueId.ToLower() == "none" ? string.Empty : linkedToTranmitterSwithUniqueId;
+        comp.ownerSteamId = ownerSteamId.ToLower() == "none" ? string.Empty : ownerSteamId;
+        comp.SetLinkedReciverObject(linkedReciverObject, linkedReciverObjectName.ToLower() == "none" ? string.Empty : linkedReciverObjectName, runOnNetworkIfMultiplayer: false);
+        comp.objectRange = objectRange;
+        comp.SetRevertOutput(revertOuput, runOnNetworkIfMultiplayer: false);
+        comp.loadedFromSave = loadedFromSave;
+        comp.SetLoadedInNetwork(loadedIn);
+        comp.ShowScanLines(showScanLines, runOnNetworkIfMultiplayer: false);
+        comp.SetScanObjectRange(objectRange, runOnNetworkIfMultiplayer: false);
+        comp.SetLinkUi(Tools.CreatorSettings.lastState);
+        if (string.IsNullOrEmpty(syncComp))
+        {
+            RLog.Warning("[Network] [ReciverSyncEvent] [UpdateState] syncComp is null or empty, Some items will not sync correctly");
+        } 
+        else
+        {
+            switch (syncComp)
+            {
+                case "REMOVE_NETOWNER_AND_PLACESTRUCTURE":
+                    RemoveNetworkOwnerComp();
+                    break;
+                case "REMOVE_NETOWNER":
+                    var netOwner = gameObject.GetComponent<Mono.NetworkOwner>();
+                    if (netOwner != null)
+                    {
+                        netOwner.DestroyUi();
+                        DestroyImmediate(netOwner);
+                        Misc.Msg("[ReciverSetter] [ReadPacket] [LateJoinSync] Removed NetworkOwner Component", true);
+                    }
+                    break;
+                case "REMOVE_PLACESTRUCTURE":
+                    var placeStructure = gameObject.GetComponent<Mono.PlaceStructure>();
+                    if (placeStructure != null)
+                    {
+                        DestroyImmediate(placeStructure);
+                        Misc.Msg("[ReciverSetter] [ReadPacket] [LateJoinSync] Removed PlaceStructure Component", true);
+                    }
+                    break;
+                case "NONE":
+                    AddNetworkOwnerComp();
+                    break;
+            }
+        }
+        
+        Misc.Msg($"[Network] [ReciverSyncEvent] [UpdateState] Recived LateJoinSync: UniqueId: " +
+            $"{uniqueId} IsOn: {isOn} linkedToTranmitterSwithUniqueId: {linkedToTranmitterSwithUniqueId}" +
+            $" ownerSteamId: {ownerSteamId} linkedReciverObject: {linkedReciverObject} linkedReciverObjectName:" +
+            $" {linkedReciverObjectName} objectRange: {objectRange} RevertOuput: {revertOuput}" +
+            $" LoadedFromSave: {loadedFromSave}" + $"ShowScanLines: {showScanLines}" + $"LoadedIn: {loadedIn}", true);
+    }
+
 
     public void ReadPacket(UdpPacket packet, BoltConnection fromConnection)
     {
@@ -371,6 +470,13 @@ public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
             Misc.Msg("[ReciverSetter] [ReadPacket] Recived packet on client", true);
         }
         var type = (ReciverSyncEvent.ReciverSyncType)packet.ReadByte();
+        string toPlayerSteamId = packet.ReadString();
+        if (toPlayerSteamId.ToLower() != "all" && toPlayerSteamId != Misc.GetMySteamId())
+        {
+            Misc.Msg("[ReciverSetter] [ReadPacket] Recived packet not meant for this player", true);
+            Misc.Msg($"[ReciverSetter] [ReadPacket] Recived packet meant for: {toPlayerSteamId}", true);
+            return;
+        }
         switch (type)
         {
             case ReciverSyncType.UniqueId:
@@ -407,7 +513,8 @@ public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
                     linkedReciverObjectName: packet.ReadString(),
                     objectRange: packet.ReadFloat(),
                     revertOuput: packet.ReadBool(),
-                    loadedFromSave: packet.ReadBool()
+                    loadedFromSave: packet.ReadBool(),
+                    loadedIn: packet.ReadBool()
                 );
                 break;
             case ReciverSyncType.Position:
@@ -469,6 +576,27 @@ public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
                 break;
             case ReciverSyncType.ShowScanLines:
                 ShowScanLines(packet.ReadBool());
+                break;
+            case ReciverSyncType.LateJoinSync:
+                if (BoltNetwork.isServer)
+                {
+                    Misc.Msg("[ReciverSetter] [ReadPacket] [LateJoinSync] Recived LateJoinSync on server, skipping", true);
+                    return;
+                }
+                LateJoinSync(
+                    uniqueId: packet.ReadString(),
+                    isOn: packet.ReadBool(),
+                    linkedToTranmitterSwithUniqueId: packet.ReadString(),
+                    ownerSteamId: packet.ReadString(),
+                    linkedReciverObject: packet.ReadBool(),
+                    linkedReciverObjectName: packet.ReadString(),
+                    objectRange: packet.ReadFloat(),
+                    revertOuput: packet.ReadBool(),
+                    loadedFromSave: packet.ReadBool(),
+                    loadedIn: packet.ReadBool(),
+                    showScanLines: packet.ReadBool(),
+                    syncComp: packet.ReadString()
+                );
                 break;
             default:
                 RLog.Error($"[ReciverSetter] [ReadPacket] Unknown packet type: {type}");

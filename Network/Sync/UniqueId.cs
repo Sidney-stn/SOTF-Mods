@@ -3,6 +3,7 @@ using RedLoader;
 using SonsSdk.Networking;
 using UdpKit;
 using UnityEngine;
+using WirelessSignals.Network.Joining;
 
 namespace WirelessSignals.Network.SyncLists
 {
@@ -319,6 +320,11 @@ namespace WirelessSignals.Network.SyncLists
                             break;
                     }
                     break;
+            }
+            if (!isServer)
+            {
+                // Request Reciver Sync Event
+                RequestReciverSyncEvent.Instance.RequestInfoFromServer();
             }
         }
 

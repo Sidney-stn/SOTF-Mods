@@ -31,16 +31,25 @@ public class ReciverSyncEvent : RelayEventBase<ReciverSyncEvent, ReciverSetter>
         Unlink = 17, // Reciver Script Unlink Function
         Link = 18, // Reciver Script Link Function
         ShowScanLines = 19, // Reciver Script ShowScanLines Function
+        LateJoinSync = 20,
     }
 
     /// For sending from the client
     public void SendClientResponse() { }
 
-    private void UpdateStateInternal(BoltEntity entity, ReciverSyncType type)
+    private void UpdateStateInternal(BoltEntity entity, ReciverSyncType type, string toConnectionSteamId = null)
     {
-        Misc.Msg($"Sending {type} to {entity}", true);
-        var packet = NewPacket(entity, 128, GlobalTargets.Everyone);
+        Misc.Msg($"[ReciverSyncEvent] [UpdateState] Sending {type} to {entity}", true);
+        var packet = NewPacket(entity, 128, GlobalTargets.Everyone);  // Still Sent To Everyone Even If sendToConnection Is Not Null
         packet.Packet.WriteByte((byte)type);
+        if (toConnectionSteamId != null)
+        {
+            packet.Packet.WriteString(toConnectionSteamId);
+        }
+        else
+        {
+            packet.Packet.WriteString("All");
+        }
         switch (type)
         {
             case ReciverSyncType.UniqueId:
@@ -161,6 +170,8 @@ public class ReciverSyncEvent : RelayEventBase<ReciverSyncEvent, ReciverSetter>
                 }
                 else { packet.Packet.WriteBool((bool)reciver.loadedFromSave); }
 
+                packet.Packet.WriteBool((bool)reciver.IsLoadedIn());  // LoadedIn
+
                 break;
             case ReciverSyncType.Position:
                 Vector3 position = entity.gameObject.transform.position;
@@ -252,6 +263,85 @@ public class ReciverSyncEvent : RelayEventBase<ReciverSyncEvent, ReciverSetter>
                 bool showScanLines = entity.gameObject.GetComponent<Mono.Reciver>().IsScanLinesShown();
                 packet.Packet.WriteBool(showScanLines);
                 break;
+            case ReciverSyncType.LateJoinSync: // Only Host Can Send This Event
+                if (BoltNetwork.isServer == false)
+                {
+                    RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] LateJoinSync can only be sent by the host");
+                    packet.Packet.Dispose();
+                    return;
+                }
+                Mono.Reciver comp = entity.gameObject.GetComponent<Mono.Reciver>();
+                if (comp == null)
+                {
+                    RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] reciver is null");
+                    packet.Packet.Dispose();
+                    return;
+                }
+                if (string.IsNullOrEmpty(comp.uniqueId))
+                {
+                    RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] UniqueId is null or empty");
+                    packet.Packet.Dispose();
+                    return;
+                }
+                if (comp.isOn == null)
+                {
+                    RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] IsOn is null");
+                    packet.Packet.Dispose();
+                    return;
+                }
+
+                packet.Packet.WriteString(comp.uniqueId);  // UniqueId
+                packet.Packet.WriteBool((bool)comp.isOn);  // IsOn
+                if (string.IsNullOrEmpty(comp.linkedToTranmitterSwithUniqueId))  // LinkedToTransmitterSwitchUniqueId
+                {
+                    packet.Packet.WriteString("None");
+                }
+                else { packet.Packet.WriteString(comp.linkedToTranmitterSwithUniqueId); }
+                if (string.IsNullOrEmpty(comp.ownerSteamId))  // OwnerSteamId
+                {
+                    packet.Packet.WriteString("None");
+                }
+                else { packet.Packet.WriteString(comp.ownerSteamId); }
+                packet.Packet.WriteBool(comp.IsLinkedReciverObject());  // LinkedReciverObject
+                if (string.IsNullOrEmpty(comp.GetLinkedReciverObjectName()))  // LinkedReciverObjectName
+                {
+                    packet.Packet.WriteString("None");
+                }
+                else { packet.Packet.WriteString(comp.GetLinkedReciverObjectName()); }
+                packet.Packet.WriteFloat(comp.objectRange);  // ObjectRange
+                packet.Packet.WriteBool(comp._revertOutput);  // RevertOuput
+                if (comp.loadedFromSave == null)  // LoadedFromSave
+                {
+                    packet.Packet.WriteBool(false);
+                }
+                else { packet.Packet.WriteBool((bool)comp.loadedFromSave); }
+
+                packet.Packet.WriteBool((bool)comp.IsLoadedIn());  // LoadedIn
+
+                packet.Packet.WriteBool(comp.IsScanLinesShown());  // ShowScanLines
+
+                var netOwnerComp = entity.gameObject.GetComponent<Mono.NetworkOwner>();
+                var placeStructureComp = entity.gameObject.GetComponent<Mono.PlaceStructure>();
+
+                if (netOwnerComp == null && placeStructureComp == null)  // Sync PlaceOnBoltEntity or RemoveFromBoltEntity
+                {
+                    packet.Packet.WriteString("REMOVE_NETOWNER_AND_PLACESTRUCTURE");  // Remove Both
+                }
+                else if (netOwnerComp == null && placeStructureComp != null)
+                {
+                    packet.Packet.WriteString("REMOVE_NETOWNER");  // Remove NetOwner
+                }
+                else if (netOwnerComp != null && placeStructureComp == null)
+                {
+                    packet.Packet.WriteString("REMOVE_PLACESTRUCTURE");  // Remove PlaceStructure
+                }
+                else  // If Both Is != null
+                {
+                    packet.Packet.WriteString("NONE");  // Run AddNetworkOwnerComp
+                }
+                Misc.Msg($"[ReciverSyncEvent] [UpdateState] LateJoinSync Sent Object UniqueId: {comp.uniqueId}");
+                break;
+
 
         }
         Send(packet);
@@ -262,6 +352,11 @@ public class ReciverSyncEvent : RelayEventBase<ReciverSyncEvent, ReciverSetter>
     public static void SendState(BoltEntity entity, ReciverSyncType type)
     {
         Instance.UpdateStateInternal(entity, type);
+    }
+
+    public static void SendState(BoltEntity entity, string toConnectionSteamId, ReciverSyncType type)
+    {
+        Instance.UpdateStateInternal(entity, type, toConnectionSteamId);
     }
 
     public override string Id => "WirelessSignals_ReciverSyncEvent";
