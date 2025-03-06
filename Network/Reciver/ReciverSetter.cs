@@ -86,7 +86,7 @@ public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
             RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] Reciver Component is null");
             return;
         }
-        comp.SetLinkedReciverObject(linkedReciverObject, linkedReciverObjectName);
+        comp.SetLinkedReciverObject(linkedReciverObject, linkedReciverObjectName, runOnNetworkIfMultiplayer: false);
         Misc.Msg($"[Network] [ReciverSyncEvent] [UpdateState] Recived linkedReciverObject: {linkedReciverObject} linkedReciverObjectName: {linkedReciverObjectName}", true);
     }
 
@@ -99,6 +99,7 @@ public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
             return;
         }
         comp.objectRange = objectRange;
+        comp.SetScanObjectRange(objectRange, false);
         Misc.Msg($"[Network] [ReciverSyncEvent] [UpdateState] Recived objectRange: {objectRange}", true);
     }
 
@@ -110,7 +111,7 @@ public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
             RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] Reciver Component is null");
             return;
         }
-        comp._revertOutput = revertOuput;
+        comp.SetRevertOutput(revertOuput, runOnNetworkIfMultiplayer: false);
         Misc.Msg($"[Network] [ReciverSyncEvent] [UpdateState] Recived RevertOuput: {revertOuput}", true);
     }
 
@@ -291,9 +292,84 @@ public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
         }
     }
 
+    private void SetLoadedIn(bool loadedIn)
+    {
+        var comp = gameObject.GetComponent<Mono.Reciver>();
+        if (comp == null)
+        {
+            RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] Reciver Component is null");
+            return;
+        }
+        comp.SetLoadedInNetwork(loadedIn);
+        Misc.Msg($"[Network] [ReciverSyncEvent] [UpdateState] Recived LoadedIn: {loadedIn}", true);
+    }
+
+    private void SetStateNetwork(bool state)
+    {
+        var comp = gameObject.GetComponent<Mono.Reciver>();
+        if (comp == null)
+        {
+            RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] Reciver Component is null");
+            return;
+        }
+        comp.SetStateNetwork(state);
+        Misc.Msg($"[Network] [ReciverSyncEvent] [UpdateState] Recived State: {state}", true);
+    }
+
+    private void Unlink()
+    {
+        var comp = gameObject.GetComponent<Mono.Reciver>();
+        if (comp == null)
+        {
+            RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] Reciver Component is null");
+            return;
+        }
+        comp.Unlink(runOnNetworkIfMultiplayer: false);  // Dont Want Infinite Loop
+        Misc.Msg($"[Network] [ReciverSyncEvent] [UpdateState] Unlinked", true);
+    }
+
+    private void Link(string transmitterUniqueId)
+    {
+        var comp = gameObject.GetComponent<Mono.Reciver>();
+        if (comp == null)
+        {
+            RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] Reciver Component is null");
+            return;
+        }
+        if (transmitterUniqueId == "None")  // If Null "None" will be sent
+        {
+            comp.Link(null, runOnNetworkIfMultiplayer: false); // Dont Want Infinite Loop
+        }
+        else
+        {
+            comp.Link(transmitterUniqueId, runOnNetworkIfMultiplayer: false); // Dont Want Infinite Loop
+        }
+
+        Misc.Msg($"[Network] [ReciverSyncEvent] [UpdateState] Linked", true);
+    }
+
+    private void ShowScanLines(bool state)
+    {
+        var comp = gameObject.GetComponent<Mono.Reciver>();
+        if (comp == null)
+        {
+            RLog.Error("[Network] [ReciverSyncEvent] [UpdateState] Reciver Component is null");
+            return;
+        }
+        comp.ShowScanLines(state, runOnNetworkIfMultiplayer: false);
+        Misc.Msg($"[Network] [ReciverSyncEvent] [UpdateState] ShowScanLines", true);
+    }
+
 
     public void ReadPacket(UdpPacket packet, BoltConnection fromConnection)
     {
+        if (BoltNetwork.isServer)
+        {
+            Misc.Msg("[ReciverSetter] [ReadPacket] Recived packet on server", true);
+        } else
+        {
+            Misc.Msg("[ReciverSetter] [ReadPacket] Recived packet on client", true);
+        }
         var type = (ReciverSyncEvent.ReciverSyncType)packet.ReadByte();
         switch (type)
         {
@@ -319,7 +395,7 @@ public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
                 SetRevertOuput(packet.ReadBool());
                 break;
             case ReciverSyncType.LoadedFromSave:
-                SetRevertOuput(packet.ReadBool());
+                SetLoadedFromSave(packet.ReadBool());
                 break;
             case ReciverSyncType.AllData:
                 SetAllData(
@@ -369,6 +445,33 @@ public class ReciverSetter : MonoBehaviour, Packets.IPacketReader
                 break;
             case ReciverSyncType.LinkUiSync:
                 LinkUiForOwnerOrAll(packet.ReadBool());
+                break;
+            case ReciverSyncType.SetLoadedIn:
+                SetLoadedIn(packet.ReadBool());
+                break;
+            case ReciverSyncType.SetState:
+                SetStateNetwork(packet.ReadBool());
+                break;
+            case ReciverSyncType.Unlink:
+                string fromNetworkUnlink = packet.ReadString();
+                if (fromNetworkUnlink == "UNLINK")
+                {
+                    Unlink();
+                    Misc.Msg("[ReciverSetter] [ReadPacket] [Unlink] Unlinked", true);
+                }
+                else
+                {
+                    Misc.Msg($"[ReciverSetter] [ReadPacket] [Unlink] Unknown string: {fromNetworkUnlink}", true);
+                }
+                break;
+            case ReciverSyncType.Link:
+                Link(packet.ReadString());
+                break;
+            case ReciverSyncType.ShowScanLines:
+                ShowScanLines(packet.ReadBool());
+                break;
+            default:
+                RLog.Error($"[ReciverSetter] [ReadPacket] Unknown packet type: {type}");
                 break;
         }
     }

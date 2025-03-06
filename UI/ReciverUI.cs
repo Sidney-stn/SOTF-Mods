@@ -123,7 +123,7 @@ namespace WirelessSignals.UI
                     }
                     if (revertOutput != null)  // Set Revert Output On Save
                     {
-                        controller._revertOutput = revertOutput.isOn;
+                        controller.SetRevertOutput(revertOutput.isOn);
                     }
 
                     string selectedVal = linkElementDropdown.options[linkElementDropdown.value].text;
@@ -211,7 +211,7 @@ namespace WirelessSignals.UI
                         if (activeReciverPrefab == null) { return; }
                         Mono.Reciver controller = activeReciverPrefab.GetComponent<Mono.Reciver>();
                         if (controller == null) { return; }
-                        controller._revertOutput = val;
+                        controller.SetRevertOutput(val);
                     });
                 callbacks.Add(callback);
                 revertOutput.onValueChanged.AddListener(callback);

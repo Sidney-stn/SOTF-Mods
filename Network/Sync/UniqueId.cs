@@ -35,7 +35,24 @@ namespace WirelessSignals.Network.SyncLists
         /// Read message on the client
         protected override void ReadMessageClient(UdpPacket packet, BoltConnection _)  // This is Recived From SendServerResponseToAll
         {
+            Misc.Msg("[UniqueIdSync] [ReadMessageClient] Recived Event", true);
+            RecivedEvent(packet, _, isServer: false);
+        }
 
+        protected override void ReadMessageServer(UdpPacket packet, BoltConnection fromConnection)
+        {
+            Misc.Msg("[UniqueIdSync] [ReadMessageServer] Recived Event", true);
+            RecivedEvent(packet, fromConnection, isServer: true);
+        }
+
+        /// For sending from the server
+        private void SendServerResponse(BoltConnection connection)
+        {
+
+        }
+
+        private void RecivedEvent(UdpPacket packet, BoltConnection fromConnection, bool isServer = false)
+        {
             var toDo = (UniqueIdListOptions)packet.ReadByte();
             var forPrefab = (UniqueIdListType)packet.ReadByte();
             string steamId = packet.ReadString();
@@ -303,18 +320,6 @@ namespace WirelessSignals.Network.SyncLists
                     }
                     break;
             }
-
-        }
-
-        protected override void ReadMessageServer(UdpPacket packet, BoltConnection fromConnection)
-        {
-            ReadMessageServer(packet, fromConnection);
-        }
-
-        /// For sending from the server
-        private void SendServerResponse(BoltConnection connection)
-        {
-
         }
 
         /// For sending from the server or client, client is limited

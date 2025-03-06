@@ -46,23 +46,23 @@ namespace WirelessSignals.Mono
                 SonsTools.ShowMessage("Something went wrong when placing down structure!");
             }
 
-            if (BoltNetwork.isRunning)
-            {
-                // Make So We Can Take Ownership
-                if (BoltNetwork.isServer)
-                {
-                    Misc.Msg("[Mono] [Reciver] [Start] IsServer");
-                }
-                else if (BoltNetwork.isClient)
-                {
-                    Misc.Msg("[Mono] [Reciver] [Start] IsClient - Only Host Can Place Out Items");
-                    return;
-                }
-                else
-                {
-                    Misc.Msg("[Mono] [Reciver] [Start] IsNotServerOrClient");
-                }
-            }
+            //if (BoltNetwork.isRunning)
+            //{
+            //    // Make So We Can Take Ownership
+            //    if (BoltNetwork.isServer)
+            //    {
+            //        Misc.Msg("[Mono] [Reciver] [Start] IsServer");
+            //    }
+            //    else if (BoltNetwork.isClient)
+            //    {
+            //        Misc.Msg("[Mono] [Reciver] [Start] IsClient - Only Host Can Place Out Items");
+            //        return;
+            //    }
+            //    else
+            //    {
+            //        Misc.Msg("[Mono] [Reciver] [Start] IsNotServerOrClient");
+            //    }
+            //}
 
             // Light
             GameObject lights = transform.FindChild("Light").gameObject;
@@ -130,12 +130,32 @@ namespace WirelessSignals.Mono
         {
             yield return new WaitForSeconds(_loadInDelay);
             _loadedIn = true;
+            if (BoltNetwork.isRunning)  // Raise Network Event
+            {
+                var boltEntity = gameObject.GetComponent<BoltEntity>();
+                if (boltEntity != null)
+                {
+                    Network.Reciver.ReciverSyncEvent.SendState(boltEntity, Network.Reciver.ReciverSyncEvent.ReciverSyncType.SetLoadedIn);
+                } else
+                {
+                    RLog.Error("[Reciver] [LoadInDelay] BoltEntity is null, Cant Send LoadedIn Event");
+                }
+                
+            }
             yield break;
         }
 
         public bool IsLoadedIn()
         {
             return _loadedIn;
+        }
+
+        public void SetLoadedInNetwork(bool loadedIn)
+        {
+            if (BoltNetwork.isRunning)
+            {
+                _loadedIn = loadedIn;
+            }
         }
 
         private void TurnOnLight()
@@ -199,19 +219,60 @@ namespace WirelessSignals.Mono
                     }
                 }
             }
+            if (BoltNetwork.isRunning)
+            {
+                Network.Reciver.ReciverSyncEvent.SendState(gameObject.GetComponent<BoltEntity>(), Network.Reciver.ReciverSyncEvent.ReciverSyncType.SetState);
+            }
             UpdateDebugUi();
         }
 
-        public void Unlink()
+        public void SetStateNetwork(bool state)  // On State Change Recived From ReciverSyncEvent
+        {
+            Misc.Msg($"[Reciver] [SetStateNetwork] Setting State: {state}");
+            isOn = state;
+            if (state)
+            {
+                TurnOnLight();
+            }
+            else
+            {
+                TurnOffLight();
+            }
+            if (_linkedReciverObject)
+            {
+                if (!string.IsNullOrEmpty(_linkedReciverObjectName))
+                {
+                    if (_linkedReciverObjectName == "defensivewallgate")
+                    {
+                        UpdateDefenseWallGate(state);
+                    }
+                }
+            }
+            UpdateDebugUi();
+        }
+
+        public void Unlink(bool runOnNetworkIfMultiplayer = true)
         {
             Misc.Msg("[Reciver] [Unlink] Unlinking Reciver");
             isOn = false;
             TurnOffLight();
             linkedToTranmitterSwithUniqueId = null;
+            if (runOnNetworkIfMultiplayer && BoltNetwork.isRunning)
+            {
+                Network.Reciver.ReciverSyncEvent.SendState(gameObject.GetComponent<BoltEntity>(), Network.Reciver.ReciverSyncEvent.ReciverSyncType.Unlink);
+            }
             UpdateDebugUi();
         }
 
-        public void Link(string transmitterUniqueId)
+        private void SendLinkNetworkEvent()
+        {
+            if (BoltNetwork.isRunning)
+            {
+                Network.Reciver.ReciverSyncEvent.SendState(gameObject.GetComponent<BoltEntity>(), Network.Reciver.ReciverSyncEvent.ReciverSyncType.Link);
+            }
+        }
+
+        public void Link(string transmitterUniqueId, bool runOnNetworkIfMultiplayer = true)
         {
             Misc.Msg("[Reciver] [Link] Linking Reciver");
             linkedToTranmitterSwithUniqueId = transmitterUniqueId;
@@ -237,11 +298,13 @@ namespace WirelessSignals.Mono
                 {
                     TurnOnLight();
                     isOn = true;
+                    if (runOnNetworkIfMultiplayer) { SendLinkNetworkEvent(); }
                 }
                 else
                 {
                     TurnOffLight();
                     isOn = false;
+                    if (runOnNetworkIfMultiplayer) { SendLinkNetworkEvent(); }
                 }
             } else if (detector != null)
             {
@@ -255,11 +318,13 @@ namespace WirelessSignals.Mono
                 {
                     TurnOnLight();
                     isOn = true;
+                    if (runOnNetworkIfMultiplayer) { SendLinkNetworkEvent(); }
                 }
                 else
                 {
                     TurnOffLight();
                     isOn = false;
+                    if (runOnNetworkIfMultiplayer) { SendLinkNetworkEvent(); }
                 }
             }
 
@@ -287,6 +352,15 @@ namespace WirelessSignals.Mono
             else
             {
                 text.text = $"IsOn: {(isOn.HasValue ? (isOn.Value ? "True" : "False") : "null")}\r\nLinked: {(string.IsNullOrEmpty(linkedToTranmitterSwithUniqueId) ? "False" : "True")}";
+            }
+        }
+
+        public void SetRevertOutput(bool state, bool runOnNetworkIfMultiplayer = true)
+        {
+            _revertOutput = state;
+            if (runOnNetworkIfMultiplayer && BoltNetwork.isRunning)
+            {
+                Network.Reciver.ReciverSyncEvent.SendState(gameObject.GetComponent<BoltEntity>(), Network.Reciver.ReciverSyncEvent.ReciverSyncType.RevertOuput);
             }
         }
 
@@ -399,10 +473,14 @@ namespace WirelessSignals.Mono
             return _linkedReciverObjectName;
         }
 
-        public void SetLinkedReciverObject(bool state, string name)
+        public void SetLinkedReciverObject(bool state, string name, bool runOnNetworkIfMultiplayer = true)
         {
             _linkedReciverObject = state;
             _linkedReciverObjectName = name;
+            if (runOnNetworkIfMultiplayer && BoltNetwork.isRunning)
+            {
+                Network.Reciver.ReciverSyncEvent.SendState(gameObject.GetComponent<BoltEntity>(), Network.Reciver.ReciverSyncEvent.ReciverSyncType.LinkedReciverObject);
+            }
         }
 
         private void UpdateDefenseWallGate(bool onOff)
@@ -474,7 +552,7 @@ namespace WirelessSignals.Mono
             }
         }
 
-        public void ShowScanLines(bool state)
+        public void ShowScanLines(bool state, bool runOnNetworkIfMultiplayer = true)
         {
             Mono.OverlapSphereVisualizer visualizer = gameObject.GetComponent<Mono.OverlapSphereVisualizer>();
             if (!state)
@@ -493,12 +571,16 @@ namespace WirelessSignals.Mono
             }
         }
 
-        public void SetScanObjectRange(float range)
+        public void SetScanObjectRange(float range, bool runOnNetworkIfMultiplayer = true)
         {
             Mono.OverlapSphereVisualizer visualizer = gameObject.GetComponent<Mono.OverlapSphereVisualizer>();
             if (visualizer != null)
             {
                 visualizer.objectRange = range;
+            }
+            if (runOnNetworkIfMultiplayer && BoltNetwork.isRunning)
+            {
+                Network.Reciver.ReciverSyncEvent.SendState(gameObject.GetComponent<BoltEntity>(), Network.Reciver.ReciverSyncEvent.ReciverSyncType.ObjectRange);
             }
         }
 
@@ -653,6 +735,9 @@ namespace WirelessSignals.Mono
                     Network.Reciver.ReciverSyncEvent.SendState(bolt, Network.Reciver.ReciverSyncEvent.ReciverSyncType.UniqueId);
                     Network.Reciver.ReciverSyncEvent.SendState(bolt, Network.Reciver.ReciverSyncEvent.ReciverSyncType.OwnerSteamId);
                     Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] Sent Sync [UniqueId, OwnerSteamId] Event", true);
+
+                    Network.Reciver.ReciverSyncEvent.SendState(bolt, Network.Reciver.ReciverSyncEvent.ReciverSyncType.LinkUiSync);
+                    Misc.Msg("[Reciver] [OnMultiplayerAssignOwner] Sent Sync [LinkUiSync] Event", true);
                 }
                 else
                 {

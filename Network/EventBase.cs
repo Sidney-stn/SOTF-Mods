@@ -44,6 +44,11 @@ public class RelayEventBase<T, TRelay> : EventBase<T> where T : Packets.NetEvent
         TryRelay<TRelay>(packet, fromConnection);
     }
 
+    protected override void ReadMessageServer(UdpPacket packet, BoltConnection fromConnection)  // I Added This Maybe Not Safe
+    {
+        TryRelay<TRelay>(packet, fromConnection);
+    }
+
     protected Packets.EventPacket NewPacket(BoltEntity entity, int size, GlobalTargets targets)
     {
         var packet = NewPacket(size + 128, targets);

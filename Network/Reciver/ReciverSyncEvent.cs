@@ -26,10 +26,12 @@ public class ReciverSyncEvent : RelayEventBase<ReciverSyncEvent, ReciverSetter>
         PlaceOnBoltEntity = 12,
         RemoveFromBoltEntity = 13,
         LinkUiSync = 14,
+        SetLoadedIn = 15,
+        SetState = 16,  // Reciver Script State Function
+        Unlink = 17, // Reciver Script Unlink Function
+        Link = 18, // Reciver Script Link Function
+        ShowScanLines = 19, // Reciver Script ShowScanLines Function
     }
-
-    /// Read message on the server
-    protected override void ReadMessageServer(UdpPacket packet, BoltConnection fromConnection) { }
 
     /// For sending from the client
     public void SendClientResponse() { }
@@ -37,7 +39,7 @@ public class ReciverSyncEvent : RelayEventBase<ReciverSyncEvent, ReciverSetter>
     private void UpdateStateInternal(BoltEntity entity, ReciverSyncType type)
     {
         Misc.Msg($"Sending {type} to {entity}", true);
-        var packet = NewPacket(entity, 128, GlobalTargets.AllClients);
+        var packet = NewPacket(entity, 128, GlobalTargets.Everyone);
         packet.Packet.WriteByte((byte)type);
         switch (type)
         {
@@ -196,6 +198,61 @@ public class ReciverSyncEvent : RelayEventBase<ReciverSyncEvent, ReciverSetter>
                 bool uiVisibleForOwnerOnly = Tools.CreatorSettings.lastState;
                 packet.Packet.WriteBool(uiVisibleForOwnerOnly);
                 break;
+            case ReciverSyncType.SetLoadedIn:
+                bool? loadedIn = null;
+                try
+                {
+                    loadedIn = entity.gameObject.GetComponent<Mono.Reciver>().IsLoadedIn();
+                }
+                catch (System.Exception e)
+                {
+                    RLog.Error($"[Network] [ReciverSyncEvent] [UpdateState] SetLoadedIn failed: {e}");
+                    packet.Packet.Dispose();
+                    return;
+                }
+                if (loadedIn != null)
+                {
+                    packet.Packet.WriteBool((bool)loadedIn);
+                }
+                else
+                {
+                    RLog.Error($"[Network] [ReciverSyncEvent] [UpdateState] SetLoadedIn failed");
+                    packet.Packet.Dispose();
+                    return;
+                }
+                break;
+            case ReciverSyncType.SetState:
+                bool? state = entity.gameObject.GetComponent<Mono.Reciver>().isOn;
+                if (state != null)
+                {
+                    packet.Packet.WriteBool((bool)state);
+                } 
+                else
+                {
+                    RLog.Error($"[Network] [ReciverSyncEvent] [UpdateState] SetState failed");
+                    packet.Packet.Dispose();
+                    return;
+                }
+                break;
+            case ReciverSyncType.Unlink:
+                packet.Packet.WriteString("UNLINK");
+                break;
+            case ReciverSyncType.Link:
+                string transmitterUniqueId = entity.gameObject.GetComponent<Mono.Reciver>().linkedToTranmitterSwithUniqueId;
+                if (string.IsNullOrEmpty(transmitterUniqueId))
+                {
+                    packet.Packet.WriteString("None");
+                } 
+                else
+                {
+                    packet.Packet.WriteString(transmitterUniqueId);
+                }
+                break;
+            case ReciverSyncType.ShowScanLines:
+                bool showScanLines = entity.gameObject.GetComponent<Mono.Reciver>().IsScanLinesShown();
+                packet.Packet.WriteBool(showScanLines);
+                break;
+
         }
         Send(packet);
     }
