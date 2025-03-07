@@ -6,6 +6,7 @@
   "description": "Adds A Simple Sign In The Game",
   "gameVersion": "1.0.0",
   "type": "Mod",
+  "platform": "Universal",
   "dependencies": [ "SimpleNetworkEvents" ],
   "url": "..."
 }

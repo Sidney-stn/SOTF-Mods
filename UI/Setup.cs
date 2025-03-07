@@ -179,7 +179,7 @@ namespace Signs.UI
             if (raycastHit.collider == null) { return; }
             if (raycastHit.collider.transform.root == null) { return; }
             if (string.IsNullOrEmpty(raycastHit.collider.transform.root.name)) { return; }
-            Misc.Msg($"Hit: {raycastHit.collider.transform.root.name}");
+            //Misc.Msg($"Hit: {raycastHit.collider.transform.root.name}");
             if (raycastHit.collider.transform.root.name.Contains("Sign"))
             {
                 GameObject openSign = raycastHit.collider.transform.root.gameObject;

@@ -9,6 +9,7 @@ namespace Signs.Mono
     {
         public bool IsPlaceHolder = false;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Runs On Start Automatically After Script Is Loaded")]
         private void Start()
         {
             if (IsPlaceHolder) { Misc.Msg("[NewSign] Returned, no signcontroller added"); return; }
@@ -18,14 +19,34 @@ namespace Signs.Mono
             ScrewStructure scewStructure = gameObject.GetComponent<ScrewStructure>();
             if (scewStructure != null) { DestroyImmediate(scewStructure); Misc.SuperLog("[NewSign] [Start] ScrewStructure Deleted"); } else { Misc.SuperLog("[NewSign] [Start] ScrewStructure Not Found For Deletion!"); }
             BoltEntity bolt = gameObject.GetComponent<BoltEntity>();
-            if (bolt != null) { 
-                if ( Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
+            if (bolt != null) {
+                //if ( Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
+                //{
+                //    bolt.Entity.Detach();
+                //}
+                //DestroyImmediate(bolt); 
+                //Misc.SuperLog("[NewSign] [Start] BoltEntity Deleted");
+
+                // Test For Normal And Dedicated Server
+                if (BoltNetwork.isRunning)
                 {
-                    bolt.Entity.Detach();
+                    if (BoltNetwork.isServer)
+                    {
+                        bolt.Entity.Detach();
+                        DestroyImmediate(bolt);
+                        Misc.SuperLog("[NewSign] [Start] BoltEntity Deleted");
+                    }
+                    else
+                    {
+                        Misc.SuperLog("[NewSign] [Start] Not Deleting BoltEntity On Client");
+                    }
                 }
-                DestroyImmediate(bolt); 
-                Misc.SuperLog("[NewSign] [Start] BoltEntity Deleted");
-            } else { Misc.SuperLog("[NewSign] [Start] BoltEntity Not Found For Deletion!"); }
+                else
+                {
+                    DestroyImmediate(bolt);
+                    Misc.SuperLog("[NewSign] [Start] BoltEntity Deleted");
+                }
+                } else { Misc.SuperLog("[NewSign] [Start] BoltEntity Not Found For Deletion!"); }
 
             if (gameObject != null)
             {

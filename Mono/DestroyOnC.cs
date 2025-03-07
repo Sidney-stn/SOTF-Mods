@@ -1,9 +1,7 @@
 ﻿using RedLoader;
 using TheForest.Utils;
-using UnityEngine.Windows;
 using UnityEngine;
 using System.Collections;
-using static Il2CppMono.Math.BigInteger;
 
 namespace Signs.Mono
 {
