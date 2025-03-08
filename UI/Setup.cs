@@ -52,17 +52,6 @@ namespace Signs.UI
                     if (Prefab.ActiveSign.activeSign == null) { return; }
                     SignController signController = Prefab.ActiveSign.activeSign.GetComponent<SignController>();
                     signController.SetAllText(line1.text, line2.text, line3.text, line4.text);
-                    (ulong steamId, string stringSteamId) = Misc.MySteamId();
-                    SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.UpdateText
-                    {
-                        Sender = stringSteamId,
-                        Line1Text = line1.text,
-                        Line2Text = line2.text,
-                        Line3Text = line3.text,
-                        Line4Text = line4.text,
-                        UniqueId = signController.UniqueId,
-                        ToSteamId = "None"
-                    });
                 };
                 updateBtn.onClick.AddListener(updateUi);
             }

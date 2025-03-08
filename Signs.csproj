@@ -23,9 +23,6 @@
     <Reference Include="RedLoader">
       <HintPath>$(GameDir)\_RedLoader\net6\RedLoader.dll</HintPath>
     </Reference>
-    <Reference Include="SimpleNetworkEvents">
-      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Sons Of The Forest\Mods\SimpleNetworkEvents.dll</HintPath>
-    </Reference>
     <Reference Include="Sons">
       <HintPath>$(GameDir)\_RedLoader\Game\Sons.dll</HintPath>
     </Reference>
@@ -103,6 +100,12 @@
     </Reference>
     <Reference Include="Sons.Input">
       <HintPath>$(GameDir)\_RedLoader\Game\Sons.Input.dll</HintPath>
+    </Reference>
+    <Reference Include="udpkit.common">
+      <HintPath>$(GameDir)\_RedLoader\Game\udpkit.common.dll</HintPath>
+    </Reference>
+    <Reference Include="udpkit">
+      <HintPath>$(GameDir)\_RedLoader\Game\udpkit.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

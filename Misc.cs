@@ -13,11 +13,18 @@ namespace Signs
 {
     internal class Misc
     {
-        internal static void Msg(string msg)
+        internal static void Msg(string msg, bool network = false)
         {
             if (Config.DebugLoggingIngameSign.Value)
             {
-                RLog.Msg(msg);
+                if (network)
+                {
+                    RLog.Msg(ConsoleColor.DarkGreen, $"[Signs] [Network] {msg}");
+                }
+                else
+                {
+                    RLog.Msg($"[Signs] {msg}");
+                }
             }
         }
         internal static void SuperLog(string msg)
@@ -97,9 +104,6 @@ namespace Signs
                 Misc.Msg("Dialog Manager is NOT Found!");
             }
             AddOnQuitWorld();
-            Network.Manager.RegisterEvents();
-            //IngameTools.HotKeyCommandsIntegration.Setup();
-            //UI.Setup.SetupUI();
 
             Misc.Msg("[Loading] Processing deferred load.");
 

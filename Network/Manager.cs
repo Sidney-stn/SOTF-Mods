@@ -1,48 +1,37 @@
 ﻿
 
+using Il2CppInterop.Runtime.Injection;
+
 namespace Signs.Network
 {
     public class Manager
     {
-        public static void RegisterEvents()
+        private static bool isRegistered = false;
+        // Register all network related classes
+        internal static void Register()  // OnModInit
         {
-            // Network Stuff
-            if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
+            if (isRegistered) { return; }
+            isRegistered = true;
+
+            Network.Join.ReciveFromPlayerOnJoinEvent.Register();
+            Network.Join.SyncSignsOnJoin.Register();
+
+            //// SignSyncEvent
+            Network.SignSyncEvent.Register();
+            ClassInjector.RegisterTypeInIl2Cpp<Network.SignSetter>();
+
+            ClassInjector.RegisterTypeInIl2Cpp<Mono.SignController>();
+            ClassInjector.RegisterTypeInIl2Cpp<Mono.DestroyOnC>();
+
+            if (Tools.DedicatedServer.IsDeticatedServer())
             {
-                Misc.Msg("Registerd Events");
-                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.JoinedServer>();
-                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.SpawnSingeSign>();
-                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.UpdateText>();
-                SimpleNetworkEvents.EventDispatcher.RegisterEvent<Network.RemoveSign>();
-                SendJoinedServerEvent();
             }
-        }
-        public static void UnregisterEvents()
-        {
-            // Network Stuff
-            if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
-            {
-                Misc.Msg("Unregisterd Events");
-                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.JoinedServer>();
-                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.SpawnSingeSign>();
-                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.UpdateText>();
-                SimpleNetworkEvents.EventDispatcher.UnregisterEvent<Network.RemoveSign>();
-            }
+
         }
 
-        public static void SendJoinedServerEvent()
+        internal static void RegisterEventHandlers()  // OnGameStart
         {
-            if (Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
-            {
-                Misc.Msg("[Manager] I Joined Server, Sending JoinedServerEvent");
-                (ulong steamId, string stringSteamId) = Misc.MySteamId();
-                SimpleNetworkEvents.EventDispatcher.RaiseEvent(new Network.JoinedServer
-                {
-                    SenderName = Misc.GetLocalPlayerUsername(),
-                    SenderId = stringSteamId,
-
-                });
-            }
+            CustomEventHandler.Create();
         }
     }
 }

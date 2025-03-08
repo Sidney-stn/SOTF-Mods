@@ -6,13 +6,14 @@ namespace Signs.Saving
 {
     internal class Manager : ICustomSaveable<Manager.SignsManager>
     {
-        public string Name => "Manager";
+        public string Name => "SignsManager";
 
         // Used to determine if the data should also be saved in multiplayer saves
         public bool IncludeInPlayerSave => false;
 
         public SignsManager Save()
         {
+            Misc.Msg("[Saving] Saving SignsManager");
             if (Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
             {
                 Misc.Msg("[Saving] Only Host Saves");
@@ -21,28 +22,17 @@ namespace Signs.Saving
             var saveData = new SignsManager();
 
             // Signs
-            if (Saving.Load.ModdedSigns.Count != 0 || Saving.Load.ModdedSigns != null)
+            if (Saving.Track.spawnedSigns.Count != 0 || Saving.Track.spawnedSigns != null)
             {
-                foreach (var signsGameObject in Saving.Load.ModdedSigns)
+                foreach (var signsGameObject in Saving.Track.spawnedSigns)
                 {
-                    if (signsGameObject == null) { continue; }
-                    Mono.SignController current_obj_controller = signsGameObject.GetComponent<Mono.SignController>();
+                    if (signsGameObject.Value == null) { continue; }
+                    Mono.SignController current_obj_controller = signsGameObject.Value.GetComponent<Mono.SignController>();
                     if (current_obj_controller != null)
                     {
-                        if (current_obj_controller.UniqueId.IsNullOrWhitespace() || current_obj_controller.UniqueId == null)
-                        {
-                            // Generate New Id
-                            Misc.Msg("[Saving] Generated New Id For Sign");
-                            current_obj_controller.UniqueId = Guid.NewGuid().ToString();
-                        }
-                        if (current_obj_controller.UniqueId == "0")
-                        {
-                            Misc.Msg("[Saving] UniqueId == 0. Skipping Saving Of Sign");
-                            continue;
-                        }
+                        if (current_obj_controller.GetPos() == Vector3.zero) { continue; }
                         var SignsModData = new SignsManager.SignsModData
                         {
-                            UniqueId = current_obj_controller.UniqueId,
                             Position = current_obj_controller.GetPos(),
                             Rotation = current_obj_controller.GetCurrentRotation(),
                             Line1Text = current_obj_controller.GetLineText(1),
@@ -82,7 +72,6 @@ namespace Signs.Saving
 
             public class SignsModData
             {
-                public string UniqueId;
                 public Vector3 Position;
                 public Quaternion Rotation;
                 public string Line1Text;

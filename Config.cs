@@ -9,8 +9,6 @@ public static class Config
     internal static ConfigCategory IngameSignCategory { get; private set; }
     public static KeybindConfigEntry ToggleMenuKey { get; private set; }
     public static KeybindConfigEntry ExitMenuKey { get; private set; }
-    public static KeybindConfigEntry RotateLeftKey { get; private set; }
-    public static KeybindConfigEntry RotateRightKey { get; private set; }
     public static ConfigEntry<bool> DebugLoggingIngameSign { get; private set; }
     public static ConfigEntry<bool> ExtremeDebugLogging { get; private set; }
     public static ConfigEntry<bool> NetworkDebugIngameSign { get; private set; }
@@ -39,20 +37,6 @@ public static class Config
         {
             UI.Setup.CloseUI();
         });
-
-        RotateLeftKey = IngameSignCategory.CreateKeybindEntry(
-            "rotate_left_key_signs",
-            "q",
-            "Rotate Left Key",
-            "The key rotates the sign to the left when placing (DEFAULT Q).");
-        RotateLeftKey.DefaultValue = "q";
-
-        RotateRightKey = IngameSignCategory.CreateKeybindEntry(
-            "rotate_right_key_signs",
-            "e",
-            "Rotate Right Key",
-            "The key rotates the sign to the right when placing (DEFAULT E).");
-        RotateRightKey.DefaultValue = "e";
 
         DebugLoggingIngameSign = IngameSignCategory.CreateEntry(
             "enable_logging_advanced_ingamesign",

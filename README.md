@@ -8,8 +8,6 @@ https://youtu.be/imwI0d7QF_A
 
 ### Info:
 - Works On Singleplayer And Multiplayer
-- SimpleNetworkEvents Mod is Required
-
 - ### To Edit Sign In World:
   - Press 'E' To Edit The Sign (When Already Placed) <span style="color: red">*</span> 
 
