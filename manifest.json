@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToniMacaroni/RedLoader/main/MetadataSchema.json",
+  "id": "StoneGate",
+  "author": "SmokyAce",
+  "version": "1.0.0",
+  "description": "Adds a ingame stone gate",
+  "gameVersion": "1.0.0",
+  "type": "Mod",
+  "platform": "Universal",
+  "url": "..."
+}
