@@ -71,9 +71,14 @@ namespace StoneGate.Mono
             return false;
         }
 
-        private void Complete()
+        public void Complete()
         {
             if (CheckIfReadyToComplete() == false) { Misc.Msg("Structure Not Ready To Be Completed"); return; }
+            Misc.Msg("Structure Ready To Be Completed");
+            CleanupAllMarkedObjects();
+            CheckIfReadyToComplete();
+            Objects.CreateGateParent.Instance.AddDoor(GetObjectsWithMode(Objects.UiController.GetAllowedModes().ElementAt(1)).ElementAt(0), GetObjectsWithMode(Objects.UiController.GetAllowedModes().ElementAt(0)).ToArray());
+
         }
 
         private void OnDisable()
@@ -223,9 +228,10 @@ namespace StoneGate.Mono
 
             foreach (GameObject obj in allMarkedModeObjs)
             {
-                if (currentObjName.Contains("RockPilar")) { foundPilars++; }
-                else if (currentObjName.Contains("RockBeam")) { foundBeams++; }
-                else if (currentObjName.Contains("RockWall")) { foundRockWalls++; }
+                string objName = obj.name;
+                if (objName.Contains("RockPilar")) { foundPilars++; }
+                else if (objName.Contains("RockBeam")) { foundBeams++; }
+                else if (objName.Contains("RockWall")) { foundRockWalls++; }
             }
 
             if (currentObjName.Contains("RockPilar"))
@@ -343,7 +349,9 @@ namespace StoneGate.Mono
                     System.Array.Copy(renderer.sharedMaterials, originalMats, renderer.sharedMaterials.Length);
                     originalMaterials[rootInstanceID][rendererId] = originalMats;
                     if (Testing.Settings.logMaterialChanges)
+                    {
                         Misc.Msg($"[StoneGateItemMono] [MarkHit] Stored {originalMats.Length} original materials for renderer: {renderer.name}, ID: {rendererId}");
+                    }
                 }
 
                 // Create ghost material array matching the original count
@@ -356,7 +364,9 @@ namespace StoneGate.Mono
                 // Apply ghost materials
                 renderer.sharedMaterials = ghostedMats;
                 if (Testing.Settings.logMaterialChanges)
+                {
                     Misc.Msg($"[StoneGateItemMono] [MarkHit] Applied ghost materials to: {renderer.name}");
+                }
             }
 
             markedObjects.Add(rootGo);
@@ -372,13 +382,19 @@ namespace StoneGate.Mono
             }
 
             int rootInstanceID = rootGo.GetInstanceID();
-            Misc.Msg($"[StoneGateItemMono] [UnmarkHit] Object: {rootGo.name}, InstanceID: {rootInstanceID}");
+            if (Testing.Settings.logMaterialChanges)
+            {
+                Misc.Msg($"[StoneGateItemMono] [UnmarkHit] Object: {rootGo.name}, InstanceID: {rootInstanceID}");
+            }
+                
 
             // Check if we have stored materials for this GameObject
             if (!originalMaterials.ContainsKey(rootInstanceID))
             {
                 if (Testing.Settings.logMaterialChanges)
+                {
                     Misc.Msg($"[StoneGateItemMono] [UnmarkHit] No original materials found for {rootGo.name}");
+                }
                 return;
             }
 
@@ -386,7 +402,9 @@ namespace StoneGate.Mono
             if (renderers == null || renderers.Length == 0)
             {
                 if (Testing.Settings.logMaterialChanges)
+                {
                     Misc.Msg("[StoneGateItemMono] [UnmarkHit] Failed To Unmark Objects - No renderers found");
+                }
                 return;
             }
 
@@ -398,8 +416,10 @@ namespace StoneGate.Mono
                 if (originalMaterials[rootInstanceID].ContainsKey(rendererId))
                 {
                     Material[] origMats = originalMaterials[rootInstanceID][rendererId];
-                    if (Testing.Settings.logMaterialChanges) 
+                    if (Testing.Settings.logMaterialChanges)
+                    {
                         Misc.Msg($"[StoneGateItemMono] [UnmarkHit] Restoring {origMats.Length} materials for {renderer.name}, ID: {rendererId}");
+                    }
 
                     // Apply the original materials back
                     renderer.sharedMaterials = origMats;
@@ -410,7 +430,9 @@ namespace StoneGate.Mono
                 else
                 {
                     if (Testing.Settings.logMaterialChanges)
+                    {
                         Misc.Msg($"[StoneGateItemMono] [UnmarkHit] No materials found for renderer: {renderer.name}, ID: {rendererId}");
+                    }
                 }
             }
 

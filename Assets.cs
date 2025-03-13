@@ -124,5 +124,18 @@ namespace StoneGate
             string assetsPath = Path.Combine(modPath, "StoneGateIcon.png");
             return assetsPath;
         }
+        public string GetOpenCloseIconPath()
+        {
+            string dataPath = Application.dataPath;
+            // sotfPath Are 1 Level Up From The DataPath
+            string sotfPath = Directory.GetParent(dataPath).FullName;
+            // Mods
+            string modsPath = Path.Combine(sotfPath, "Mods");
+            // StoneGate
+            string modPath = Path.Combine(modsPath, "StoneGate");
+            // StoneGateIcon
+            string assetsPath = Path.Combine(modPath, "OpenCloseIcon.png");
+            return assetsPath;
+        }
     }
 }

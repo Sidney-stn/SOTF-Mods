@@ -41,9 +41,13 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         stoneGateCreatorTexture = AssetLoaders.LoadTexture(Assets.Instance.GetStoneGateToolPath());
         stoneGateCreatorTexture.hideFlags = HideFlags.HideAndDontSave;
 
+        stoneGateOpenCloseIcon = AssetLoaders.LoadTexture(Assets.Instance.GetOpenCloseIconPath());
+        stoneGateOpenCloseIcon.hideFlags = HideFlags.HideAndDontSave;
+
         // Registier Classes In Il2cpp
         ClassInjector.RegisterTypeInIl2Cpp<Mono.StoneGateMono>();
         ClassInjector.RegisterTypeInIl2Cpp<Mono.StoneGateItemMono>();
+        ClassInjector.RegisterTypeInIl2Cpp<Mono.StoneGateStoreMono>();
 
         // Register network classes
         Network.Manager.Register();
@@ -149,6 +153,8 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
     public static GameObject stoneGateCreatorPickupPrefab;
     public static Texture2D stoneGateCreatorTexture;
 
-    internal static GameObject StoneGateToolUI;
+    internal static GameObject StoneGateToolUI;  // UI For StoneGateTool, Complete or Add Objects
+
+    internal static Texture2D stoneGateOpenCloseIcon;
 
 }
