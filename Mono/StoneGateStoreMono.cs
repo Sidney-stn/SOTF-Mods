@@ -19,6 +19,8 @@ namespace StoneGate.Mono
 
         public LinkUiElement LinkUiElement { get; private set; }
 
+        private bool _gateOpen = false;
+
         public void Init(GameObject rotationGo,
             Objects.CreateGateParent.RotateMode mode,
             GameObject floorBeam = null,
@@ -71,6 +73,31 @@ namespace StoneGate.Mono
             {
                 if (Testing.Settings.logExtraStoneGateStoreMono) { Misc.Msg($"[StoneGate] [StoneGateStoreMono] [Init] LinkUI already exists"); }
             }
+        }
+
+        public bool IsGateOpen()
+        {
+            return _gateOpen;
+        }
+
+        public void OpenGate(bool raiseNetwork = true)
+        {
+            if (_gateOpen)
+            {
+                return;
+            }
+            _gateOpen = true;
+            // Open gate
+        }
+
+        public void CloseGate(bool raiseNetwork = true)
+        {
+            if (!_gateOpen)
+            {
+                return;
+            }
+            _gateOpen = false;
+            // Close gate
         }
 
     }

@@ -75,10 +75,19 @@ namespace StoneGate.Mono
         {
             if (CheckIfReadyToComplete() == false) { Misc.Msg("Structure Not Ready To Be Completed"); return; }
             Misc.Msg("Structure Ready To Be Completed");
+
+            var rotationObjects = GetObjectsWithMode(Objects.UiController.GetAllowedModes().ElementAt(1));
+            var markObjects = GetObjectsWithMode(Objects.UiController.GetAllowedModes().ElementAt(0));
+
+            if (rotationObjects.Count == 0 || markObjects.Count == 0)
+            {
+                Misc.Msg("[StoneGateItemMono] [Complete] No rotation objects or mark objects found");
+                return;
+            }
+
             CleanupAllMarkedObjects();
             CheckIfReadyToComplete();
-            Objects.CreateGateParent.Instance.AddDoor(GetObjectsWithMode(Objects.UiController.GetAllowedModes().ElementAt(1)).ElementAt(0), GetObjectsWithMode(Objects.UiController.GetAllowedModes().ElementAt(0)).ToArray());
-
+            Objects.CreateGateParent.Instance.AddDoor(rotationObjects.ElementAt(0), markObjects.ToArray());
         }
 
         private void OnDisable()

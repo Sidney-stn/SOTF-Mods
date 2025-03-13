@@ -80,6 +80,7 @@ public static class Config
                         {
                             if (comp.LinkUiElement.IsActive)
                             {
+                                if (Testing.Settings.logOnFinishOpenCloseDoorKey) { Misc.Msg($"[Config] [CheckLinkui] [Notify] LinkUiElement.IsActive"); }
                                 // Open Or Close Gate Code
                                 return;
                             }
