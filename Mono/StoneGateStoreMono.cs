@@ -20,7 +20,8 @@ namespace StoneGate.Mono
         private Dictionary<string, GameObject> namesOfAllGo = new Dictionary<string, GameObject>();
 
         //// THINGS WITH ROTATION
-        // Store original rotations for each object
+        // Store original positions and rotations for each object
+        private Dictionary<int, Vector3> originalPositions = new Dictionary<int, Vector3>();
         private Dictionary<int, Quaternion> originalRotations = new Dictionary<int, Quaternion>();
 
         // Animation parameters
@@ -55,26 +56,30 @@ namespace StoneGate.Mono
                 objectsToRotate.Add(floorBeam);
                 namesOfAllGo.Add(floorBeam.name, floorBeam);
                 originalRotations[floorBeam.GetInstanceID()] = floorBeam.transform.rotation;
+                originalPositions[floorBeam.GetInstanceID()] = floorBeam.transform.position;
             }
             if (topBeam != null)
             {
                 objectsToRotate.Add(topBeam);
                 namesOfAllGo.Add(topBeam.name, topBeam);
                 originalRotations[topBeam.GetInstanceID()] = topBeam.transform.rotation;
+                originalPositions[topBeam.GetInstanceID()] = topBeam.transform.position;
             }
             if (rockWall != null)
             {
                 objectsToRotate.Add(rockWall);
                 namesOfAllGo.Add(rockWall.name, rockWall);
                 originalRotations[rockWall.GetInstanceID()] = rockWall.transform.rotation;
+                originalPositions[rockWall.GetInstanceID()] = rockWall.transform.position;
             }
             if (extraPillar != null)
             {
                 objectsToRotate.Add(extraPillar);
                 namesOfAllGo.Add(extraPillar.name, extraPillar);
                 originalRotations[extraPillar.GetInstanceID()] = extraPillar.transform.rotation;
+                originalPositions[extraPillar.GetInstanceID()] = extraPillar.transform.position;
             }
-                
+
             namesOfAllGo.Add(rotationGo.name, rotationGo);
 
             if (Testing.Settings.logExtraStoneGateStoreMono) { Misc.Msg($"[StoneGate] [StoneGateStoreMono] [Init] Added {objectsToRotate.Count} GameObjects to objectsToRotate"); }
@@ -163,33 +168,33 @@ namespace StoneGate.Mono
             // Get the rotation axis based on the gate type
             Vector3 rotationAxis = GetRotationAxis();
 
-            // Calculate start and end rotations for each object
-            Dictionary<int, Quaternion> startRotations = new Dictionary<int, Quaternion>();
-            Dictionary<int, Quaternion> endRotations = new Dictionary<int, Quaternion>();
+            // Get the pivot point (center of the rotation gameobject)
+            Vector3 pivotPoint = _rotateGo.transform.position;
 
+            // Store initial positions and rotations of each object relative to the pivot
+            Dictionary<int, Vector3> initialPositions = new Dictionary<int, Vector3>();
+            Dictionary<int, Quaternion> initialRotations = new Dictionary<int, Quaternion>();
+
+            // Target angle for rotation (either 90 degrees or 0 degrees)
+            float targetAngle = opening ? 90f : 0f;
+            float startAngle = opening ? 0f : 90f;
+
+            // Store initial state for all objects to rotate
             foreach (GameObject obj in objectsToRotate)
             {
                 int id = obj.GetInstanceID();
-
-                // Starting rotation is the current rotation
-                startRotations[id] = obj.transform.rotation;
-
-                // For opening, we rotate from current to 90 degrees
-                // For closing, we rotate from current back to the original position
-                if (opening)
-                {
-                    // Calculate target rotation (90 degrees around the axis)
-                    Quaternion additionalRotation = Quaternion.AngleAxis(90f, rotationAxis);
-                    endRotations[id] = startRotations[id] * additionalRotation;
-                }
-                else
-                {
-                    // Return to original rotation
-                    endRotations[id] = originalRotations[id];
-                }
+                initialPositions[id] = obj.transform.position;
+                initialRotations[id] = obj.transform.rotation;
             }
 
-            // Animate the rotation
+            // Log for debugging
+            if (Testing.Settings.logExtraStoneGateStoreMono)
+            {
+                Misc.Msg($"[StoneGate] [AnimateGate] Starting gate animation: opening={opening}, objects={objectsToRotate.Count}");
+                Misc.Msg($"[StoneGate] [AnimateGate] Pivot point: {pivotPoint}, Axis: {rotationAxis}");
+            }
+
+            // Animate the rotation around the pivot
             while (elapsedTime < animationDuration)
             {
                 elapsedTime = Time.time - startTime;
@@ -198,35 +203,80 @@ namespace StoneGate.Mono
                 // Apply a smooth easing function
                 float smoothT = SmoothStep(0f, 1f, t);
 
+                // Calculate the current angle based on animation progress
+                float currentAngle = Mathf.Lerp(startAngle, targetAngle, smoothT);
+
+                // Create rotation quaternion around specified axis
+                Quaternion pivotRotation = Quaternion.AngleAxis(currentAngle, rotationAxis);
+
                 foreach (GameObject obj in objectsToRotate)
                 {
                     int id = obj.GetInstanceID();
 
-                    // Smoothly interpolate between start and end rotations
-                    obj.transform.rotation = Quaternion.Slerp(
-                        startRotations[id],
-                        endRotations[id],
-                        smoothT
-                    );
+                    // Get the object's initial position relative to the pivot
+                    Vector3 relativePos = initialPositions[id] - pivotPoint;
+
+                    // Rotate the relative position around the pivot
+                    Vector3 rotatedPos = pivotPoint + pivotRotation * relativePos;
+
+                    // Update position
+                    obj.transform.position = rotatedPos;
+
+                    // Update rotation - combine initial rotation with the pivot rotation
+                    if (opening)
+                    {
+                        // For opening, rotate from original rotation
+                        Quaternion originalRot = originalRotations.ContainsKey(id) ? originalRotations[id] : initialRotations[id];
+                        obj.transform.rotation = pivotRotation * originalRot;
+                    }
+                    else
+                    {
+                        // For closing, rotate back to original rotation
+                        float inverseT = 1f - smoothT;
+                        Quaternion rotatedQuat = Quaternion.AngleAxis(90f * inverseT, rotationAxis);
+                        Quaternion originalRot = originalRotations.ContainsKey(id) ? originalRotations[id] : initialRotations[id];
+                        obj.transform.rotation = rotatedQuat * originalRot;
+                    }
                 }
 
                 yield return null;
             }
 
-            // Ensure all objects are at their final rotation
+            // Final positioning to ensure perfect alignment
+            float finalAngle = opening ? 90f : 0f;
+            Quaternion finalRotation = Quaternion.AngleAxis(finalAngle, rotationAxis);
+
             foreach (GameObject obj in objectsToRotate)
             {
                 int id = obj.GetInstanceID();
-                obj.transform.rotation = endRotations[id];
 
-                // If we're closing, update the stored original rotations
-                if (!opening)
+                if (opening)
                 {
-                    originalRotations[id] = obj.transform.rotation;
+                    // Store the current position and rotation for when we close later
+                    Vector3 relativePos = initialPositions[id] - pivotPoint;
+                    Vector3 finalPos = pivotPoint + finalRotation * relativePos;
+                    obj.transform.position = finalPos;
+
+                    Quaternion originalRot = originalRotations.ContainsKey(id) ? originalRotations[id] : initialRotations[id];
+                    obj.transform.rotation = finalRotation * originalRot;
+                }
+                else
+                {
+                    // Restore original position and rotation
+                    if (originalRotations.ContainsKey(id))
+                    {
+                        obj.transform.position = initialPositions[id];
+                        obj.transform.rotation = originalRotations[id];
+                    }
                 }
             }
 
             isAnimating = false;
+
+            if (Testing.Settings.logExtraStoneGateStoreMono)
+            {
+                Misc.Msg($"[StoneGate] [AnimateGate] Completed gate animation: opening={opening}");
+            }
         }
 
         private Vector3 GetRotationAxis()
