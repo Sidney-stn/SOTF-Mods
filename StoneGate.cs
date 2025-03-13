@@ -111,7 +111,8 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
             .AddInventoryItem() // add a location in the inventory
             .AddIngredientItem() // add a location on the mat as an ingredient
             .AddCraftingResultItem() // add a location on the mat as a crafting result
-            .SetupHeld(new(0f, 0f, 0.1f), new(0f, 280f, 70f)) // add a location in the hand. This will enable you to hold the item
+            /*.SetupHeld(new(0f, 0f, 0.1f), new(0f, 280f, 70f))*/ // add a location in the hand. This will enable you to hold the item
+            .SetupHeld(new(0f, 0f, 0f), new(0f, 0f, 0f))
             .SetupPickup(stoneGateCreatorPickupPrefab) // setup a pickup for the item given a model
             .Recipe // recipe setup
             .AddIngredient(ItemTools.Identifiers.Stick, 2) // ingredients of the recipe
