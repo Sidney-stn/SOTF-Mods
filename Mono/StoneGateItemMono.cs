@@ -1,6 +1,7 @@
 ﻿using RedLoader;
 using StoneGate.Objects;
 using System.Collections;
+using TheForest.Utils;
 using UnityEngine;
 
 namespace StoneGate.Mono
@@ -16,6 +17,7 @@ namespace StoneGate.Mono
             "RockPilar",
             "RockBeam"
         };
+        private float raycastDistance = 1f;
 
         // Store original materials by GameObject instance ID for more reliable lookups
         private Dictionary<int, Dictionary<int, Material[]>> originalMaterials = new Dictionary<int, Dictionary<int, Material[]>>();
@@ -68,33 +70,64 @@ namespace StoneGate.Mono
         {
             isAnimRunning = true;
             animController.SetTrigger("Hit");
-            yield return new WaitForSeconds(animTime);
+            yield return new WaitForSeconds(animTime / 2);
+            TryHitObject();  // Should Be Called After Half Of The Animation Time (Peak Of Hit)
+            yield return new WaitForSeconds(animTime / 2);
             isAnimRunning = false;
             yield break;
         }
 
-        private void OnTriggerEnter(Collider other)
+        private void TryHitObject()
         {
             if (!isAnimRunning) { return; }
-            //Misc.Msg($"[StoneGateItemMono] [OnTriggerEnter] {other.gameObject.name} Root: {other.gameObject.transform.root.gameObject.name}");
-            string rootName = other.gameObject.transform.root.gameObject.name;
-            // Check if haset contains rootName, not exact match
-            if (allowedHits.Any(prefix => rootName.StartsWith(prefix)))
+            Transform transform = LocalPlayer._instance._mainCam.transform;  // Player Camera
+            RaycastHit raycastHit;  // Raycast Hit
+            Physics.Raycast(transform.position, transform.forward, out raycastHit, raycastDistance, LayerMask.GetMask(new string[]
             {
-                GameObject rootGo = other.gameObject.transform.root.gameObject;
-                Misc.Msg($"[StoneGateItemMono] [OnTriggerEnter] Hit {rootName}");
-                if (markedObjects.Contains(rootGo))
+                    "Prop"  // Prop Layer
+            }));
+            if (raycastHit.collider != null)
+            {
+                //Misc.Msg($"[StoneGateItemMono] [TryHitObject] Hit {raycastHit.collider.gameObject.name}");
+                string rootName = raycastHit.collider.gameObject.transform.root.gameObject.name;
+                if (allowedHits.Any(prefix => rootName.StartsWith(prefix)))
                 {
-                    UnmarkHit(rootGo);
-                }
-                else
-                {
-                    MarkHit(rootGo);
+                    GameObject rootGo = raycastHit.collider.gameObject.transform.root.gameObject;
+                    Misc.Msg($"[StoneGateItemMono] [TryHitObject] Hit {rootName}");
+                    if (markedObjects.Contains(rootGo))
+                    {
+                        UnmarkHit(rootGo);
+                    }
+                    else
+                    {
+                        MarkHit(rootGo);
+                    }
                 }
             }
         }
 
-        private void MarkHit(GameObject rootGo)
+        //private void OnTriggerEnter(Collider other)  // Was not satisfied with this method
+        //{
+        //    if (!isAnimRunning) { return; }
+        //    //Misc.Msg($"[StoneGateItemMono] [OnTriggerEnter] {other.gameObject.name} Root: {other.gameObject.transform.root.gameObject.name}");
+        //    string rootName = other.gameObject.transform.root.gameObject.name;
+        //    // Check if haset contains rootName, not exact match
+        //    if (allowedHits.Any(prefix => rootName.StartsWith(prefix)))
+        //    {
+        //        GameObject rootGo = other.gameObject.transform.root.gameObject;
+        //        Misc.Msg($"[StoneGateItemMono] [OnTriggerEnter] Hit {rootName}");
+        //        if (markedObjects.Contains(rootGo))
+        //        {
+        //            UnmarkHit(rootGo);
+        //        }
+        //        else
+        //        {
+        //            MarkHit(rootGo);
+        //        }
+        //    }
+        //}
+
+        private void MarkHit(GameObject rootGo, UnityEngine.Color? color = null)
         {
             Misc.Msg($"[StoneGateItemMono] [MarkHit] Object: {rootGo.name}, InstanceID: {rootGo.GetInstanceID()}");
             Renderer[] renderers = rootGo.GetComponentsInChildren<Renderer>(true);
@@ -105,10 +138,11 @@ namespace StoneGate.Mono
             }
 
             Shader shader = ShaderRuntimeLookup.Find("Sons/Outline/StructuresGhostHLSL");
+            UnityEngine.Color color1 = color ?? new UnityEngine.Color(224f / 255f, 91f / 255f, 111f / 255f, 1f);
             Material ghostMat = new Material(shader)
             {
                 name = "StructureGhostMaterial",
-                color = new UnityEngine.Color(224f / 255f, 91f / 255f, 111f / 255f, 1f), // Fixed color constructor
+                color = color1
             };
 
             int rootInstanceID = rootGo.GetInstanceID();
