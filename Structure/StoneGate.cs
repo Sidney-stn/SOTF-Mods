@@ -47,7 +47,6 @@ namespace StoneGate.Structure
         {
             GameObject main = new GameObject("StoneGate");
             main.DontDestroyOnLoad().HideAndDontSave();
-
             GameObject baseChild = new GameObject("Base");
             baseChild.transform.SetParent(main.transform);
 
@@ -59,34 +58,23 @@ namespace StoneGate.Structure
                 return null;
             }
 
-            GameObject singleStone = GameObject.Instantiate(ref_singleStone.transform
+            // Get the reference stone we want to copy
+            Transform stonePath = ref_singleStone.transform
                 .FindChild("StoneLayoutGroup")
-                .GetChild(1)  // StoneLayoutItem (In Stone Storage 28 Of These Exists)
-                .GetChild(0)  // StoneLogSledRender(Clone) with RockEMeshLOD01 and RockEMeshLOD00 under it
-                .gameObject)
-                ;  // Instantiate the stone only
+                .GetChild(1)  // StoneLayoutItem
+                .GetChild(0); // StoneLogSledRender(Clone)
 
-            // Remove unnecessary components
-            GameObject.DestroyImmediate(singleStone.GetComponent<Endnight.Rendering.AssetReferenceRenderableCollisionLink>());
-            GameObject.DestroyImmediate(singleStone.GetComponent<Sons.Items.Core.ItemRenderableTag>());
-            //GameObject.Destroy(singleStone.GetComponent<BoltEntity>());
-            //GameObject.Destroy(singleStone.GetComponent<Sons.Gameplay.PickUp>());
-            //GameObject.Destroy(singleStone.GetComponent<Rigidbody>());
-            //GameObject.Destroy(singleStone.GetComponent<Sons.Gameplay.ObjectPhysicsInteractionSfx>());
-            //GameObject.Destroy(singleStone.GetComponent<CoopDynamicPickUp>());
-            //GameObject.Destroy(singleStone.GetComponent<Sons.Ai.Vail.StimuliTypes.StonePickupStimuli>());
-            //GameObject.Destroy(singleStone.GetComponent<Sons.Ai.Vail.Inventory.VailPickup>());
-
-            //// Remove Nessecary Objects
-            //GameObject.Destroy(singleStone.transform.FindChild("_PickupGui_").gameObject);
-            //GameObject.Destroy(singleStone.transform.FindChild("VailPickupTransform").gameObject);
-
-
+            // Instead of instantiating it first, just use it as a template
             int neededStones = 24;
             for (int i = 0; i < neededStones; i++)
             {
-                GameObject stone = GameObject.Instantiate(singleStone);
-                stone.name = "Stone (640)";
+                GameObject stone = GameObject.Instantiate(stonePath.gameObject);
+                stone.name = "Stone (640)"; // Rename it immediately
+
+                // Remove unnecessary components
+                GameObject.DestroyImmediate(stone.GetComponent<Endnight.Rendering.AssetReferenceRenderableCollisionLink>());
+                GameObject.DestroyImmediate(stone.GetComponent<Sons.Items.Core.ItemRenderableTag>());
+
                 stone.transform.SetParent(baseChild.transform);
                 stone.transform.localPosition = new Vector3(0, 0, 0);
                 stone.transform.localRotation = Quaternion.Euler(0, 0, 0);

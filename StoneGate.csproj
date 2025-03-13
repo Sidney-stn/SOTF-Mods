@@ -83,6 +83,12 @@
     <Reference Include="Sons.Ai.Vail">
       <HintPath>$(GameDir)\_RedLoader\Game\Sons.Ai.Vail.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AnimationModule">
+      <HintPath>$(GameDir)\_RedLoader\Game\UnityEngine.AnimationModule.dll</HintPath>
+    </Reference>
+    <Reference Include="Sons.Weapon">
+      <HintPath>$(GameDir)\_RedLoader\Game\Sons.Weapon.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Update="manifest.json">
