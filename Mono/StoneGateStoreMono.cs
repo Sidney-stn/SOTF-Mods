@@ -27,6 +27,8 @@ namespace StoneGate.Mono
         // Animation parameters
         private bool isAnimating = false;
         private float animationDuration = 1.0f; // Duration of the gate animation in seconds
+        private float rotationAngle = 90f; // Default rotation angle
+        private int rotationDirection = 1; // 1 for positive rotation, -1 for negative
         //// THINGS WITH ROTATION END
 
         public LinkUiElement LinkUiElement { get; private set; }
@@ -121,6 +123,9 @@ namespace StoneGate.Mono
 
             _gateOpen = true;
 
+            // Determine the direction to rotate based on player position
+            DetermineRotationDirection();
+
             if (raiseNetwork)
             {
                 // Send network event to open the gate for all clients
@@ -157,127 +162,6 @@ namespace StoneGate.Mono
             // Start the gate closing animation
             AnimateGate(false).RunCoro();
         }
-
-        //private IEnumerator AnimateGate(bool opening)
-        //{
-        //    isAnimating = true;
-
-        //    float startTime = Time.time;
-        //    float elapsedTime = 0f;
-
-        //    // Get the rotation axis based on the gate type
-        //    Vector3 rotationAxis = GetRotationAxis();
-
-        //    // Get the pivot point (center of the rotation gameobject)
-        //    Vector3 pivotPoint = _rotateGo.transform.position;
-
-        //    // Store initial positions and rotations of each object relative to the pivot
-        //    Dictionary<int, Vector3> initialPositions = new Dictionary<int, Vector3>();
-        //    Dictionary<int, Quaternion> initialRotations = new Dictionary<int, Quaternion>();
-
-        //    // Target angle for rotation (either 90 degrees or 0 degrees)
-        //    float targetAngle = opening ? 90f : 0f;
-        //    float startAngle = opening ? 0f : 90f;
-
-        //    // Store initial state for all objects to rotate
-        //    foreach (GameObject obj in objectsToRotate)
-        //    {
-        //        int id = obj.GetInstanceID();
-        //        initialPositions[id] = obj.transform.position;
-        //        initialRotations[id] = obj.transform.rotation;
-        //    }
-
-        //    // Log for debugging
-        //    if (Testing.Settings.logExtraStoneGateStoreMono)
-        //    {
-        //        Misc.Msg($"[StoneGate] [AnimateGate] Starting gate animation: opening={opening}, objects={objectsToRotate.Count}");
-        //        Misc.Msg($"[StoneGate] [AnimateGate] Pivot point: {pivotPoint}, Axis: {rotationAxis}");
-        //    }
-
-        //    // Animate the rotation around the pivot
-        //    while (elapsedTime < animationDuration)
-        //    {
-        //        elapsedTime = Time.time - startTime;
-        //        float t = Mathf.Clamp01(elapsedTime / animationDuration);
-
-        //        // Apply a smooth easing function
-        //        float smoothT = SmoothStep(0f, 1f, t);
-
-        //        // Calculate the current angle based on animation progress
-        //        float currentAngle = Mathf.Lerp(startAngle, targetAngle, smoothT);
-
-        //        // Create rotation quaternion around specified axis
-        //        Quaternion pivotRotation = Quaternion.AngleAxis(currentAngle, rotationAxis);
-
-        //        foreach (GameObject obj in objectsToRotate)
-        //        {
-        //            int id = obj.GetInstanceID();
-
-        //            // Get the object's initial position relative to the pivot
-        //            Vector3 relativePos = initialPositions[id] - pivotPoint;
-
-        //            // Rotate the relative position around the pivot
-        //            Vector3 rotatedPos = pivotPoint + pivotRotation * relativePos;
-
-        //            // Update position
-        //            obj.transform.position = rotatedPos;
-
-        //            // Update rotation - combine initial rotation with the pivot rotation
-        //            if (opening)
-        //            {
-        //                // For opening, rotate from original rotation
-        //                Quaternion originalRot = originalRotations.ContainsKey(id) ? originalRotations[id] : initialRotations[id];
-        //                obj.transform.rotation = pivotRotation * originalRot;
-        //            }
-        //            else
-        //            {
-        //                // For closing, rotate back to original rotation
-        //                float inverseT = 1f - smoothT;
-        //                Quaternion rotatedQuat = Quaternion.AngleAxis(90f * inverseT, rotationAxis);
-        //                Quaternion originalRot = originalRotations.ContainsKey(id) ? originalRotations[id] : initialRotations[id];
-        //                obj.transform.rotation = rotatedQuat * originalRot;
-        //            }
-        //        }
-
-        //        yield return null;
-        //    }
-
-        //    // Final positioning to ensure perfect alignment
-        //    float finalAngle = opening ? 90f : 0f;
-        //    Quaternion finalRotation = Quaternion.AngleAxis(finalAngle, rotationAxis);
-
-        //    foreach (GameObject obj in objectsToRotate)
-        //    {
-        //        int id = obj.GetInstanceID();
-
-        //        if (opening)
-        //        {
-        //            // Store the current position and rotation for when we close later
-        //            Vector3 relativePos = initialPositions[id] - pivotPoint;
-        //            Vector3 finalPos = pivotPoint + finalRotation * relativePos;
-        //            obj.transform.position = finalPos;
-
-        //            Quaternion originalRot = originalRotations.ContainsKey(id) ? originalRotations[id] : initialRotations[id];
-        //            obj.transform.rotation = finalRotation * originalRot;
-        //        }
-        //        else
-        //        {
-        //            // Restore original position and rotation
-        //            if (originalRotations.ContainsKey(id))
-        //            {
-        //                obj.transform.position = initialPositions[id];
-        //                obj.transform.rotation = originalRotations[id];
-        //            }
-        //        }
-        //    }
-
-        //    isAnimating = false;
-
-        //    if (Testing.Settings.logExtraStoneGateStoreMono)
-        //    {
-        //        Misc.Msg($"[StoneGate] [AnimateGate] Completed gate animation: opening={opening}");
-        //    }
-        //}
 
         private IEnumerator AnimateGate(bool opening)
         {
@@ -327,7 +211,8 @@ namespace StoneGate.Mono
                     {
                         // For opening: rotate from current position to 90 degrees around pivot
                         Vector3 relativePos = originalPositions[id] - pivotPoint;
-                        Quaternion rotation = Quaternion.AngleAxis(90f * smoothT, rotationAxis);
+                        // Apply rotation direction to the angle
+                        Quaternion rotation = Quaternion.AngleAxis(rotationAngle * rotationDirection * smoothT, rotationAxis);
 
                         // Calculate the new position by rotating around pivot
                         Vector3 newPos = pivotPoint + rotation * relativePos;
@@ -369,7 +254,8 @@ namespace StoneGate.Mono
                 {
                     // Calculate final open position and rotation
                     Vector3 relativePos = originalPositions[id] - pivotPoint;
-                    Quaternion finalRotation = Quaternion.AngleAxis(90f, rotationAxis);
+                    // Apply rotation direction to the angle
+                    Quaternion finalRotation = Quaternion.AngleAxis(rotationAngle * rotationDirection, rotationAxis);
 
                     Vector3 finalPos = pivotPoint + finalRotation * relativePos;
                     Quaternion finalRot = finalRotation * originalRotations[id];
@@ -414,6 +300,59 @@ namespace StoneGate.Mono
             x = Mathf.Clamp01((x - edge0) / (edge1 - edge0));
             // Evaluate polynomial
             return x * x * (3 - 2 * x);
+        }
+
+        private void DetermineRotationDirection()
+        {
+            // Get player camera transform
+            Transform cameraTransform = TheForest.Utils.LocalPlayer._instance._mainCam.transform;
+
+            // Get player's forward direction (camera direction)
+            Vector3 playerForward = cameraTransform.forward;
+
+            // Get gate position (using rotation object as reference)
+            Vector3 gatePosition = _rotateGo.transform.position;
+
+            // Get the forward direction of the gate
+            Vector3 gateForward = _rotateGo.transform.forward;
+
+            // For vertical rotation (like a door):
+            if (_rotateMode == Objects.CreateGateParent.RotateMode.Vertical)
+            {
+                // If player is looking in the same general direction as the gate's forward (dot product > 0),
+                // rotate the gate in the opposite direction of the camera's forward
+                if (Vector3.Dot(gateForward, playerForward) > 0)
+                {
+                    rotationDirection = -1; // Rotate clockwise (negative angle)
+                }
+                else
+                {
+                    rotationDirection = 1; // Rotate counter-clockwise (positive angle)
+                }
+            }
+            // For horizontal rotation (like a drawbridge):
+            else
+            {
+                // For horizontal gates, we need to determine if the player is looking more up or down at the gate
+                // Get the gate's up vector
+                Vector3 gateUp = _rotateGo.transform.up;
+
+                // If player is looking more downward toward the gate
+                if (Vector3.Dot(gateUp, playerForward) < 0)
+                {
+                    rotationDirection = -1; // Rotate downward
+                }
+                else
+                {
+                    rotationDirection = 1; // Rotate upward
+                }
+            }
+
+            if (Testing.Settings.logExtraStoneGateStoreMono)
+            {
+                Misc.Msg($"[StoneGate] [DetermineRotationDirection] Camera forward: {playerForward}, Gate forward: {gateForward}");
+                Misc.Msg($"[StoneGate] [DetermineRotationDirection] Rotation direction: {rotationDirection}");
+            }
         }
     }
 }
