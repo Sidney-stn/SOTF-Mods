@@ -17,6 +17,10 @@ namespace StoneGate.Mono
             "RockBeam"
         };
 
+        // Store original materials by GameObject instance ID for more reliable lookups
+        private Dictionary<int, Dictionary<int, Material[]>> originalMaterials = new Dictionary<int, Dictionary<int, Material[]>>();
+        private HashSet<GameObject> markedObjects = new HashSet<GameObject>(new GameObjectInstanceIDComparer());
+
         private void Start()
         {
             Misc.Msg($"[StoneGateItemMono] [Start]");
@@ -29,6 +33,28 @@ namespace StoneGate.Mono
         {
             Misc.Msg($"[StoneGateItemMono] [OnDisable]");
             Objects.ActiveItem.active = null;
+
+            // Clean up any marked objects when the item is disabled
+            CleanupAllMarkedObjects();
+        }
+
+        private void CleanupAllMarkedObjects()
+        {
+            // Make a copy of the list to avoid modification during iteration
+            GameObject[] objectsToUnmark = new GameObject[markedObjects.Count];
+            markedObjects.CopyTo(objectsToUnmark);
+
+            foreach (var obj in objectsToUnmark)
+            {
+                if (obj != null)
+                {
+                    UnmarkHit(obj);
+                }
+            }
+
+            // Clear dictionaries
+            markedObjects.Clear();
+            originalMaterials.Clear();
         }
 
         public void InitHit()
@@ -68,12 +94,9 @@ namespace StoneGate.Mono
             }
         }
 
-        private HashSet<GameObject> markedObjects = new HashSet<GameObject>(new GameObjectInstanceIDComparer());
-        private Dictionary<Renderer, Material[]> originalMaterials = new Dictionary<Renderer, Material[]>();
-
         private void MarkHit(GameObject rootGo)
         {
-            Misc.Msg($"[StoneGateItemMono] [MarkHit]");
+            Misc.Msg($"[StoneGateItemMono] [MarkHit] Object: {rootGo.name}, InstanceID: {rootGo.GetInstanceID()}");
             Renderer[] renderers = rootGo.GetComponentsInChildren<Renderer>(true);
             if (renderers == null || renderers.Length == 0)
             {
@@ -85,15 +108,28 @@ namespace StoneGate.Mono
             Material ghostMat = new Material(shader)
             {
                 name = "StructureGhostMaterial",
-                color = new UnityEngine.Color(224, 91, 111),
+                color = new UnityEngine.Color(224f / 255f, 91f / 255f, 111f / 255f, 1f), // Fixed color constructor
             };
+
+            int rootInstanceID = rootGo.GetInstanceID();
+            // Create a new dictionary for this game object if needed
+            if (!originalMaterials.ContainsKey(rootInstanceID))
+            {
+                originalMaterials[rootInstanceID] = new Dictionary<int, Material[]>();
+            }
 
             foreach (Renderer renderer in renderers)
             {
+                int rendererId = renderer.GetInstanceID();
                 // Store original materials for restoration later
-                if (!originalMaterials.ContainsKey(renderer))
+                if (!originalMaterials[rootInstanceID].ContainsKey(rendererId))
                 {
-                    originalMaterials[renderer] = renderer.sharedMaterials;
+                    // Make a copy of the original materials array
+                    Material[] originalMats = new Material[renderer.sharedMaterials.Length];
+                    System.Array.Copy(renderer.sharedMaterials, originalMats, renderer.sharedMaterials.Length);
+                    originalMaterials[rootInstanceID][rendererId] = originalMats;
+
+                    Misc.Msg($"[StoneGateItemMono] [MarkHit] Stored {originalMats.Length} original materials for renderer: {renderer.name}, ID: {rendererId}");
                 }
 
                 // Create ghost material array matching the original count
@@ -105,6 +141,7 @@ namespace StoneGate.Mono
 
                 // Apply ghost materials
                 renderer.sharedMaterials = ghostedMats;
+                Misc.Msg($"[StoneGateItemMono] [MarkHit] Applied ghost materials to: {renderer.name}");
             }
 
             markedObjects.Add(rootGo);
@@ -112,29 +149,62 @@ namespace StoneGate.Mono
 
         private void UnmarkHit(GameObject rootGo)
         {
-            Misc.Msg($"[StoneGateItemMono] [UnmarkHit]");
+            if (rootGo == null)
+            {
+                Misc.Msg("[StoneGateItemMono] [UnmarkHit] GameObject is null");
+                return;
+            }
+
+            int rootInstanceID = rootGo.GetInstanceID();
+            Misc.Msg($"[StoneGateItemMono] [UnmarkHit] Object: {rootGo.name}, InstanceID: {rootInstanceID}");
+
+            // Check if we have stored materials for this GameObject
+            if (!originalMaterials.ContainsKey(rootInstanceID))
+            {
+                Misc.Msg($"[StoneGateItemMono] [UnmarkHit] No original materials found for {rootGo.name}");
+                return;
+            }
+
             Renderer[] renderers = rootGo.GetComponentsInChildren<Renderer>(true);
             if (renderers == null || renderers.Length == 0)
             {
-                Misc.Msg("Failed To Unmark Objects - No renderers found");
+                Misc.Msg("[StoneGateItemMono] [UnmarkHit] Failed To Unmark Objects - No renderers found");
                 return;
             }
 
             foreach (Renderer renderer in renderers)
             {
+                int rendererId = renderer.GetInstanceID();
+
                 // Restore original materials if we have them stored
-                if (originalMaterials.ContainsKey(renderer))
+                if (originalMaterials[rootInstanceID].ContainsKey(rendererId))
                 {
-                    renderer.sharedMaterials = originalMaterials[renderer];
-                    originalMaterials.Remove(renderer);
+                    Material[] origMats = originalMaterials[rootInstanceID][rendererId];
+                    Misc.Msg($"[StoneGateItemMono] [UnmarkHit] Restoring {origMats.Length} materials for {renderer.name}, ID: {rendererId}");
+
+                    // Apply the original materials back
+                    renderer.sharedMaterials = origMats;
+
+                    // Remove from tracked renderers
+                    originalMaterials[rootInstanceID].Remove(rendererId);
                 }
+                else
+                {
+                    Misc.Msg($"[StoneGateItemMono] [UnmarkHit] No materials found for renderer: {renderer.name}, ID: {rendererId}");
+                }
+            }
+
+            // Clean up dictionary entry if empty
+            if (originalMaterials[rootInstanceID].Count == 0)
+            {
+                originalMaterials.Remove(rootInstanceID);
             }
 
             if (markedObjects.Contains(rootGo))
             {
                 markedObjects.Remove(rootGo);
+                Misc.Msg($"[StoneGateItemMono] [UnmarkHit] Removed {rootGo.name} from marked objects");
             }
         }
-
     }
 }
