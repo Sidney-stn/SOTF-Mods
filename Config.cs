@@ -82,6 +82,7 @@ public static class Config
                             {
                                 if (Testing.Settings.logOnFinishOpenCloseDoorKey) { Misc.Msg($"[Config] [CheckLinkui] [Notify] LinkUiElement.IsActive"); }
                                 // Open Or Close Gate Code
+                                comp.ToggleGate(false);
                                 return;
                             }
                         }

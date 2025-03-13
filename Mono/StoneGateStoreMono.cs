@@ -1,5 +1,7 @@
 ﻿using RedLoader;
 using Sons.Gui.Input;
+using StoneGate.Objects;
+using System.Collections;
 using UnityEngine;
 
 namespace StoneGate.Mono
@@ -16,6 +18,15 @@ namespace StoneGate.Mono
 
         private HashSet<GameObject> objectsToRotate = new HashSet<GameObject>(new Objects.GameObjectInstanceIDComparer());
         private Dictionary<string, GameObject> namesOfAllGo = new Dictionary<string, GameObject>();
+
+        //// THINGS WITH ROTATION
+        // Store original rotations for each object
+        private Dictionary<int, Quaternion> originalRotations = new Dictionary<int, Quaternion>();
+
+        // Animation parameters
+        private bool isAnimating = false;
+        private float animationDuration = 1.0f; // Duration of the gate animation in seconds
+        //// THINGS WITH ROTATION END
 
         public LinkUiElement LinkUiElement { get; private set; }
 
@@ -43,21 +54,25 @@ namespace StoneGate.Mono
             {
                 objectsToRotate.Add(floorBeam);
                 namesOfAllGo.Add(floorBeam.name, floorBeam);
+                originalRotations[floorBeam.GetInstanceID()] = floorBeam.transform.rotation;
             }
             if (topBeam != null)
             {
                 objectsToRotate.Add(topBeam);
                 namesOfAllGo.Add(topBeam.name, topBeam);
+                originalRotations[topBeam.GetInstanceID()] = topBeam.transform.rotation;
             }
             if (rockWall != null)
             {
                 objectsToRotate.Add(rockWall);
                 namesOfAllGo.Add(rockWall.name, rockWall);
+                originalRotations[rockWall.GetInstanceID()] = rockWall.transform.rotation;
             }
             if (extraPillar != null)
             {
                 objectsToRotate.Add(extraPillar);
                 namesOfAllGo.Add(extraPillar.name, extraPillar);
+                originalRotations[extraPillar.GetInstanceID()] = extraPillar.transform.rotation;
             }
                 
             namesOfAllGo.Add(rotationGo.name, rotationGo);
@@ -80,25 +95,161 @@ namespace StoneGate.Mono
             return _gateOpen;
         }
 
-        public void OpenGate(bool raiseNetwork = true)
+        public void ToggleGate(bool raiseNetwork = true)
         {
             if (_gateOpen)
             {
+                CloseGate(raiseNetwork);
+            }
+            else
+            {
+                OpenGate(raiseNetwork);
+            }
+        }
+
+        public void OpenGate(bool raiseNetwork = true)
+        {
+            if (_gateOpen || isAnimating)
+            {
                 return;
             }
+
             _gateOpen = true;
-            // Open gate
+
+            if (raiseNetwork)
+            {
+                // Send network event to open the gate for all clients
+                BoltEntity entity = Track.FindEntity(gameObject);
+                if (entity != null)
+                {
+                    Network.StoneGateSyncEvent.SendState(entity, Network.StoneGateSyncEvent.StoneGateSyncType.OpenGate);
+                }
+            }
+
+            // Start the gate opening animation
+            AnimateGate(true).RunCoro();
         }
 
         public void CloseGate(bool raiseNetwork = true)
         {
-            if (!_gateOpen)
+            if (!_gateOpen || isAnimating)
             {
                 return;
             }
+
             _gateOpen = false;
-            // Close gate
+
+            if (raiseNetwork)
+            {
+                // Send network event to close the gate for all clients
+                BoltEntity entity = Track.FindEntity(gameObject);
+                if (entity != null)
+                {
+                    Network.StoneGateSyncEvent.SendState(entity, Network.StoneGateSyncEvent.StoneGateSyncType.CloseGate);
+                }
+            }
+
+            // Start the gate closing animation
+            AnimateGate(false).RunCoro();
         }
 
+        private IEnumerator AnimateGate(bool opening)
+        {
+            isAnimating = true;
+
+            float startTime = Time.time;
+            float elapsedTime = 0f;
+
+            // Get the rotation axis based on the gate type
+            Vector3 rotationAxis = GetRotationAxis();
+
+            // Calculate start and end rotations for each object
+            Dictionary<int, Quaternion> startRotations = new Dictionary<int, Quaternion>();
+            Dictionary<int, Quaternion> endRotations = new Dictionary<int, Quaternion>();
+
+            foreach (GameObject obj in objectsToRotate)
+            {
+                int id = obj.GetInstanceID();
+
+                // Starting rotation is the current rotation
+                startRotations[id] = obj.transform.rotation;
+
+                // For opening, we rotate from current to 90 degrees
+                // For closing, we rotate from current back to the original position
+                if (opening)
+                {
+                    // Calculate target rotation (90 degrees around the axis)
+                    Quaternion additionalRotation = Quaternion.AngleAxis(90f, rotationAxis);
+                    endRotations[id] = startRotations[id] * additionalRotation;
+                }
+                else
+                {
+                    // Return to original rotation
+                    endRotations[id] = originalRotations[id];
+                }
+            }
+
+            // Animate the rotation
+            while (elapsedTime < animationDuration)
+            {
+                elapsedTime = Time.time - startTime;
+                float t = Mathf.Clamp01(elapsedTime / animationDuration);
+
+                // Apply a smooth easing function
+                float smoothT = SmoothStep(0f, 1f, t);
+
+                foreach (GameObject obj in objectsToRotate)
+                {
+                    int id = obj.GetInstanceID();
+
+                    // Smoothly interpolate between start and end rotations
+                    obj.transform.rotation = Quaternion.Slerp(
+                        startRotations[id],
+                        endRotations[id],
+                        smoothT
+                    );
+                }
+
+                yield return null;
+            }
+
+            // Ensure all objects are at their final rotation
+            foreach (GameObject obj in objectsToRotate)
+            {
+                int id = obj.GetInstanceID();
+                obj.transform.rotation = endRotations[id];
+
+                // If we're closing, update the stored original rotations
+                if (!opening)
+                {
+                    originalRotations[id] = obj.transform.rotation;
+                }
+            }
+
+            isAnimating = false;
+        }
+
+        private Vector3 GetRotationAxis()
+        {
+            if (_rotateMode == Objects.CreateGateParent.RotateMode.Vertical)
+            {
+                // For vertical rotation (like a door hinge), rotate around the Y axis
+                return _rotateGo.transform.up;
+            }
+            else // RotateMode.Horizontal
+            {
+                // For horizontal rotation (like a drawbridge), rotate around the X axis
+                return _rotateGo.transform.right;
+            }
+        }
+
+        // Helper smoothing function for animation
+        private float SmoothStep(float edge0, float edge1, float x)
+        {
+            // Scale and clamp x to 0..1 range
+            x = Mathf.Clamp01((x - edge0) / (edge1 - edge0));
+            // Evaluate polynomial
+            return x * x * (3 - 2 * x);
+        }
     }
 }
