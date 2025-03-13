@@ -17,11 +17,14 @@ namespace StoneGate.Mono
             "RockPilar",
             "RockBeam"
         };
-        private float raycastDistance = 1f;
+        private float raycastDistance = 1.5f;
 
         // Store original materials by GameObject instance ID for more reliable lookups
         private Dictionary<int, Dictionary<int, Material[]>> originalMaterials = new Dictionary<int, Dictionary<int, Material[]>>();
         private HashSet<GameObject> markedObjects = new HashSet<GameObject>(new GameObjectInstanceIDComparer());
+        private Dictionary<ModeGameObjectKey, GameObject> markedObjectsWithMode = new Dictionary<ModeGameObjectKey, GameObject>();
+
+        private LineRenderer axisLineRenderer;
 
         private void Start()
         {
@@ -29,6 +32,13 @@ namespace StoneGate.Mono
             Objects.ActiveItem.active = this;
 
             animController = GetComponent<Animator>();
+
+            if (LocalPlayer.Inventory?.LeftHandItem?._itemID == StoneGate.ToolItemId)
+            {
+                Misc.Msg($"[StoneGateItemMono] [Start] StoneGateItem Found");
+                //StoneGateUi.OpenMainPanel();
+            }
+            StoneGateUi.OpenMainPanel();
         }
 
         private void OnDisable()
@@ -38,6 +48,8 @@ namespace StoneGate.Mono
 
             // Clean up any marked objects when the item is disabled
             CleanupAllMarkedObjects();
+
+            StoneGateUi.CloseMainPanel();
         }
 
         private void CleanupAllMarkedObjects()
@@ -57,6 +69,8 @@ namespace StoneGate.Mono
             // Clear dictionaries
             markedObjects.Clear();
             originalMaterials.Clear();
+            markedObjectsWithMode.Clear();
+            Destroy(axisLineRenderer);
         }
 
         public void InitHit()
@@ -97,35 +111,113 @@ namespace StoneGate.Mono
                     if (markedObjects.Contains(rootGo))
                     {
                         UnmarkHit(rootGo);
+                        RemoveObjectWithoutMode(rootGo);
                     }
                     else
                     {
-                        MarkHit(rootGo);
+                        string currentToolMode = UiController.GetMode();
+                        if (currentToolMode == UiController.GetAllowedModes().ElementAt(0))  // MARK
+                        {
+                            MarkHit(rootGo);
+                            AddObjectWithMode(UiController.GetAllowedModes().ElementAt(0), rootGo);
+
+                        }
+                        else if (currentToolMode == UiController.GetAllowedModes().ElementAt(1))  // ROTATE
+                        {
+                            MarkHit(rootGo, UnityEngine.Color.green);
+                            AddObjectWithMode(UiController.GetAllowedModes().ElementAt(1), rootGo);
+                            CreateAxisLineRenderer(rootGo);
+                        }
+                        else
+                        {
+                            Misc.Msg($"[StoneGateItemMono] [TryHitObject] Unknown Tool Mode: {currentToolMode}");
+                        }
+                        
                     }
                 }
             }
         }
 
-        //private void OnTriggerEnter(Collider other)  // Was not satisfied with this method
-        //{
-        //    if (!isAnimRunning) { return; }
-        //    //Misc.Msg($"[StoneGateItemMono] [OnTriggerEnter] {other.gameObject.name} Root: {other.gameObject.transform.root.gameObject.name}");
-        //    string rootName = other.gameObject.transform.root.gameObject.name;
-        //    // Check if haset contains rootName, not exact match
-        //    if (allowedHits.Any(prefix => rootName.StartsWith(prefix)))
-        //    {
-        //        GameObject rootGo = other.gameObject.transform.root.gameObject;
-        //        Misc.Msg($"[StoneGateItemMono] [OnTriggerEnter] Hit {rootName}");
-        //        if (markedObjects.Contains(rootGo))
-        //        {
-        //            UnmarkHit(rootGo);
-        //        }
-        //        else
-        //        {
-        //            MarkHit(rootGo);
-        //        }
-        //    }
-        //}
+        private void CreateAxisLineRenderer(GameObject go)
+        {
+            // If the GameObject doesn't have a LineRenderer component, add one
+            axisLineRenderer = go.GetComponent<LineRenderer>();
+            if (axisLineRenderer == null)
+            {
+                axisLineRenderer = go.AddComponent<LineRenderer>();
+            }
+
+            // Configure the LineRenderer
+            axisLineRenderer.startWidth = 0.05f;
+            axisLineRenderer.endWidth = 0.05f;
+            axisLineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+            axisLineRenderer.startColor = Color.red;
+            axisLineRenderer.endColor = Color.red;
+
+            // Calculate the bounds to find the longest axis
+            Bounds bounds = CalculateBounds(go);
+            Vector3 size = bounds.size;
+
+            // Determine which axis is the longest
+            Vector3 direction = Vector3.forward; // Default to Z-axis
+            float maxSize = size.z;
+
+            if (size.x > maxSize)
+            {
+                direction = Vector3.right;
+                maxSize = size.x;
+            }
+
+            if (size.y > maxSize)
+            {
+                direction = Vector3.up;
+                maxSize = size.y;
+            }
+
+            // Set the LineRenderer positions to follow the longest axis
+            axisLineRenderer.positionCount = 2;
+            float halfLength = maxSize / 2;
+            axisLineRenderer.SetPosition(0, go.transform.position - direction * halfLength);
+            axisLineRenderer.SetPosition(1, go.transform.position + direction * halfLength);
+
+            Misc.Msg($"[StoneGateMono] [CreateAxisLineRenderer] Created line renderer along axis {direction} with length {maxSize}");
+        }
+
+        private Bounds CalculateBounds(GameObject go)
+        {
+            // Initialize bounds with center at the GameObject's position
+            Bounds bounds = new Bounds(go.transform.position, Vector3.zero);
+
+            // Get all renderers in the GameObject and its children
+            Renderer[] renderers = go.GetComponentsInChildren<Renderer>();
+
+            // If there are no renderers, try to use colliders
+            if (renderers.Length == 0)
+            {
+                Collider[] colliders = go.GetComponentsInChildren<Collider>();
+                foreach (Collider collider in colliders)
+                {
+                    bounds.Encapsulate(collider.bounds);
+                }
+            }
+            else
+            {
+                // Encapsulate the bounds of all renderers
+                foreach (Renderer renderer in renderers)
+                {
+                    bounds.Encapsulate(renderer.bounds);
+                }
+            }
+
+            // If we still have zero size (no renderers or colliders), use a default size
+            if (bounds.size == Vector3.zero)
+            {
+                bounds.size = new Vector3(1, 1, 1);
+            }
+
+            return bounds;
+        }
+    
 
         private void MarkHit(GameObject rootGo, UnityEngine.Color? color = null)
         {
@@ -238,6 +330,52 @@ namespace StoneGate.Mono
             {
                 markedObjects.Remove(rootGo);
                 Misc.Msg($"[StoneGateItemMono] [UnmarkHit] Removed {rootGo.name} from marked objects");
+            }
+        }
+
+        public void AddObjectWithMode(string mode, GameObject gameObject)
+        {
+            if (!UiController.IsValidMode(mode) || gameObject == null)
+                return;
+
+            var key = new ModeGameObjectKey(mode, gameObject);
+            markedObjectsWithMode[key] = gameObject;
+        }
+
+        public bool HasObjectWithMode(string mode, GameObject gameObject)
+        {
+            if (gameObject == null)
+                return false;
+
+            var key = new ModeGameObjectKey(mode, gameObject);
+            return markedObjectsWithMode.ContainsKey(key);
+        }
+
+        public GameObject GetObjectWithMode(string mode, GameObject gameObject)
+        {
+            var key = new ModeGameObjectKey(mode, gameObject);
+            return markedObjectsWithMode.TryGetValue(key, out var result) ? result : null;
+        }
+
+        public void RemoveObjectWithMode(string mode, GameObject gameObject)
+        {
+            var key = new ModeGameObjectKey(mode, gameObject);
+            markedObjectsWithMode.Remove(key);
+        }
+
+        public void RemoveObjectWithoutMode(GameObject gameObject)
+        {
+            foreach (var mode in UiController.GetAllowedModes())
+            {
+                var key = new ModeGameObjectKey(mode, gameObject);
+                if (markedObjectsWithMode.ContainsKey(key))
+                {
+                    markedObjectsWithMode.Remove(key);
+                    if (mode == UiController.GetAllowedModes().ElementAt(1))  // ROTATE
+                    {
+                        Destroy(axisLineRenderer);
+                    }
+                }
             }
         }
     }

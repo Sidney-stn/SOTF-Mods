@@ -8,6 +8,7 @@ public static class Config
     public static ConfigCategory Category { get; private set; }
     public static ConfigEntry<bool> LoggingToConsole { get; private set; }
     public static KeybindConfigEntry PrimaryAction { get; private set; }
+    public static KeybindConfigEntry CycleAction { get; private set; }
 
     public static void Init()
     {
@@ -29,6 +30,17 @@ public static class Config
         PrimaryAction.Notify(() =>
         {
             Objects.ActiveItem.OnKeyPress();
+        });
+
+        CycleAction = Category.CreateKeybindEntry(
+            "stone_gate_cycle",
+            "c",
+            "Change Tool Mode",
+            "Key changes tool mode (DEFAULT C).");
+        CycleAction.DefaultValue = "c";
+        CycleAction.Notify(() =>
+        {
+            Objects.UiController.ChangeMode();
         });
     }
 

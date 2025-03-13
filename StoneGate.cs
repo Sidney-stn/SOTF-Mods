@@ -8,6 +8,7 @@ using Sons.Items.Core;
 using SonsSdk;
 using SonsSdk.Attributes;
 using SUI;
+using TheForest;
 using UnityEngine;
 using static Sons.Input.InputSystem;
 
@@ -27,6 +28,8 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         // Uncomment this to automatically apply harmony patches in your assembly.
         //HarmonyPatchAll = true;
     }
+
+    public const int ToolItemId = 751152;
 
     protected override void OnInitializeMod()
     {
@@ -91,7 +94,7 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
 
     private void OnFirstGameActivation()
     {
-        stoneGateCreatorItemData = ItemTools.CreateAndRegisterItem(751152, "Stone Gate Creator", maxAmount: 1, description: "Create Stone Gates");
+        stoneGateCreatorItemData = ItemTools.CreateAndRegisterItem(ToolItemId, "Stone Gate Creator", maxAmount: 1, description: "Create Stone Gates");
         stoneGateCreatorItemData.SetIcon(stoneGateCreatorTexture);
 
         // Some parameters for holdable stuff
@@ -126,6 +129,8 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
             .BuildAndAdd();
 
         RLog.Msg(System.Drawing.Color.SeaGreen, "[ ADDED ITEM ]");
+
+        DebugConsole.Instance.SendCommand($"additem {ToolItemId}");
     }
 
     internal static Structure.StoneGate stoneGate;

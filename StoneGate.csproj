@@ -95,6 +95,9 @@
     <Reference Include="Unity.InputSystem">
       <HintPath>$(GameDir)\_RedLoader\Game\Unity.InputSystem.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(GameDir)\_RedLoader\Game\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Update="manifest.json">
