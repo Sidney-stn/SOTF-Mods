@@ -1,5 +1,6 @@
 ﻿using Bolt;
 using Endnight.Utilities;
+using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.Injection;
 using RedLoader;
 using Sons.Items;
@@ -8,6 +9,7 @@ using SonsSdk;
 using SonsSdk.Attributes;
 using SUI;
 using UnityEngine;
+using static Sons.Input.InputSystem;
 
 namespace StoneGate;
 
@@ -38,7 +40,7 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
 
         // Registier Classes In Il2cpp
         ClassInjector.RegisterTypeInIl2Cpp<Mono.StoneGateMono>();
-        ClassInjector.RegisterTypeInIl2Cpp<Mono.StoneToolItemController>();
+        ClassInjector.RegisterTypeInIl2Cpp<Mono.StoneGateItemMono>();
 
         // Register network classes
         Network.Manager.Register();
@@ -61,6 +63,8 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
                 renderer.sharedMaterial.SetFloat("_EnableSnow", 0);
             }
 
+            stoneGateCreatorHeldPrefab.AddComponent<Mono.StoneGateItemMono>();
+
             Misc.Msg("StoneGateTool Set");
         }
         else { RLog.Error("Asset Not Loaded"); }
@@ -77,6 +81,24 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         SettingsRegistry.CreateSettings(this, null, typeof(Config));
 
         SdkEvents.OnGameActivated.Subscribe(OnFirstGameActivation, unsubscribeOnFirstInvocation: true);
+
+        // If Sons.Input.InputSystem.Action is an enum, you might need to use something like:
+        Sons.Input.InputSystem.Action inputActionEnum = Sons.Input.InputSystem.Actions.Find(ActionId.PrimaryAction);
+
+        // Convert your delegates using Il2CppInterop
+        var startedCallback = DelegateSupport.ConvertDelegate<Il2CppSystem.Action<UnityEngine.InputSystem.InputAction.CallbackContext>>(OnActionStarted);
+        var performedCallback = DelegateSupport.ConvertDelegate<Il2CppSystem.Action<UnityEngine.InputSystem.InputAction.CallbackContext>>(OnActionPerformed);
+        var cancelledCallback = DelegateSupport.ConvertDelegate<Il2CppSystem.Action<UnityEngine.InputSystem.InputAction.CallbackContext>>(OnActionCancelled);
+        var alreadyStartedCallback = DelegateSupport.ConvertDelegate<Il2CppSystem.Action>(OnActionAlreadyStarted);
+
+        // Now register with the proper types
+        Sons.Input.InputSystem.RegisterActionUpdate(
+            inputActionEnum, // Use the enum value
+            startedCallback,
+            performedCallback,
+            cancelledCallback,
+            alreadyStartedCallback
+        );
     }
 
     protected override void OnGameStart()
@@ -92,36 +114,11 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         // Some parameters for holdable stuff
         stoneGateCreatorItemData.SetupHeld(EquipmentSlot.RightHand, new[] { AnimatorVariables.molotovHeld });
 
-        // Apply Settings
-        stoneGateCreatorItemData._allowPickupWhenInventoryIsFull = false;
-        stoneGateCreatorItemData._maxCountPerBundle = 1;
-        stoneGateCreatorItemData._type = Sons.Items.Core.Types.Equippable |
-                                Sons.Items.Core.Types.Droppable |
-                                Sons.Items.Core.Types.UniqueItem | Sons.Items.Core.Types.Weapon | Sons.Items.Core.Types.Axe;
-        stoneGateCreatorItemData.MeleeWeaponData.BlockDamagePercent = 0.82f;
-        stoneGateCreatorItemData.MeleeWeaponData.ChargeAttackDamage = 26f;
-        stoneGateCreatorItemData.MeleeWeaponData.ChargeAttackStamina = 12f;
-        stoneGateCreatorItemData.MeleeWeaponData.Damage = 12f;
-        stoneGateCreatorItemData.MeleeWeaponData.Dismember = 1f;
-        stoneGateCreatorItemData.MeleeWeaponData.DismemberCriticalPercent = 0.075f;
-        stoneGateCreatorItemData.MeleeWeaponData.GroundSmashDamage = 25f;
-        stoneGateCreatorItemData.MeleeWeaponData.GroundSmashStamina = 12f;
-        stoneGateCreatorItemData.MeleeWeaponData.KnockdownCriticalPercent = 0f;
-        stoneGateCreatorItemData.MeleeWeaponData.StaminaCost = 7f;
-        stoneGateCreatorItemData.MeleeWeaponData.StrengthGainOnHit = 10f;
-        stoneGateCreatorItemData.MeleeWeaponData.SwingSpeed = 1f;
-        stoneGateCreatorItemData.MeleeWeaponData.SwingSpeedTired = 0.75f;
-        stoneGateCreatorItemData.MeleeWeaponData.UISwingSpeed = 0.75f;
-        stoneGateCreatorItemData.MeleeWeaponData.Weight = 0.75f;
-
         // use the same model for the pickup
         stoneGateCreatorPickupPrefab = stoneGateCreatorPrefab;
 
         // also use the same model for the held item
         stoneGateCreatorItemData._heldPrefab = stoneGateCreatorHeldPrefab.transform;
-        
-        //stoneGateCreatorHeldPrefab.AddComponent<PickaxeItemController>();
-        stoneGateCreatorHeldPrefab.AddComponent<Mono.StoneToolItemController>();
 
     }
 
@@ -155,4 +152,27 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
     public static GameObject stoneGateCreatorPickupPrefab;
     public static Texture2D stoneGateCreatorTexture;
 
+    private void OnActionStarted(UnityEngine.InputSystem.InputAction.CallbackContext context)
+    {
+        Misc.Msg($"[StoneGateItemMono] Action started");
+        // Your code here
+    }
+
+    private void OnActionPerformed(UnityEngine.InputSystem.InputAction.CallbackContext context)
+    {
+        Misc.Msg($"[StoneGateItemMono] Action performed");
+        // Your code here
+    }
+
+    private void OnActionCancelled(UnityEngine.InputSystem.InputAction.CallbackContext context)
+    {
+        Misc.Msg($"[StoneGateItemMono] Action cancelled");
+        // Your code here
+    }
+
+    private void OnActionAlreadyStarted()
+    {
+        Misc.Msg($"[StoneGateItemMono] Action was already started");
+        // Your code here
+    }
 }

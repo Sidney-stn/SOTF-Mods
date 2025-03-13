@@ -10,3 +10,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "OnFirstGameActivation() does also gets called automatically", Scope = "member", Target = "~M:StoneGate.StoneGate.OnFirstGameActivation")]
 [assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:StoneGate.Mono.StoneToolItemController.Start")]
 [assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>", Scope = "member", Target = "~M:StoneGate.Mono.StoneToolItemController.Start")]
+[assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>", Scope = "member", Target = "~M:StoneGate.Mono.StoneGateItemMono.Start")]
