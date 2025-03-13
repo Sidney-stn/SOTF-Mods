@@ -85,6 +85,14 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
 
         SdkEvents.OnGameActivated.Subscribe(OnFirstGameActivation, unsubscribeOnFirstInvocation: true);
 
+        // Instantiate Ui
+        StoneGateToolUI = GameObject.Instantiate(Assets.Instance.StoneGateToolUI);
+        StoneGateToolUI.DontDestroyOnLoad().HideAndDontSave();
+        if (StoneGateToolUI == null)
+        {
+            RLog.Error("[StoneGate] StoneGateToolUI Asset Not Found");
+        } else { RLog.Msg("[StoneGate] StoneGateToolUI Asset Found"); StoneGateToolUI.SetActive(false); Misc.Msg("StoneGateToolUI Set"); }
+        
     }
 
     protected override void OnGameStart()
@@ -140,5 +148,7 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
     public static GameObject stoneGateCreatorHeldPrefab;
     public static GameObject stoneGateCreatorPickupPrefab;
     public static Texture2D stoneGateCreatorTexture;
+
+    internal static GameObject StoneGateToolUI;
 
 }

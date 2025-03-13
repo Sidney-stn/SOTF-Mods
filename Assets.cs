@@ -22,6 +22,7 @@ namespace StoneGate
             }
         }
         public GameObject StoneGateTool { get; private set; }
+        public GameObject StoneGateToolUI { get; private set; }
         private bool _loaded;
 
         /// <summary>
@@ -66,9 +67,6 @@ namespace StoneGate
             StoneGateTool.GetComponent<Rigidbody>().isKinematic = true;
             StoneGateTool.GetComponent<Rigidbody>().useGravity = false;
 
-            // Destory Rigidbody
-            //GameObject.Destroy(StoneGateTool.GetComponent<Rigidbody>());
-
             // Destroy MeshCollider
             Transform stick = StoneGateTool.transform.FindDeepChild("Stick (392)");
             List<Transform> transforms = stick.GetChildren();
@@ -92,9 +90,14 @@ namespace StoneGate
                 GameObject.Destroy(capsuleCollider);
             }
 
-
-            // Scale Up The Tool
-            //StoneGateTool.transform.localScale = Vector3.one * 2f;
+            StoneGateToolUI = assetBundle.LoadAsset<GameObject>("StoneGateToolUI");
+            if (StoneGateToolUI == null)
+            {
+                RLog.Error("[StoneGate] StoneGateToolUI Asset Not Found");
+                return;
+            }
+            StoneGateToolUI.HideAndDontSave().DontDestroyOnLoad();
+            StoneGateToolUI.SetActive(false);  // Hide The UI By Default
 
             // Unload the bundle, but keep loaded assets
             assetBundle.Unload(false);

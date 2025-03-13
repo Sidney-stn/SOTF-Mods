@@ -1,5 +1,6 @@
 ﻿
 
+using RedLoader;
 using Sons.Gui;
 using TheForest.Utils;
 
@@ -31,6 +32,12 @@ namespace StoneGate.Objects
             else
             {
                 StoneGateUi.panelText.Value = "MARK";
+            }
+
+            if (StoneGateUi.panelText.Value == "MARK" || StoneGateUi.panelText.Value == "ROTATE")
+            {
+                if (StoneGate.StoneGateToolUI == null) { RLog.Error("[StoneGate] [UiController] [ChangeMode] StoneGateToolUI is null"); return; }
+                StoneGate.StoneGateToolUI.SetActive(true);
             }
         }
 

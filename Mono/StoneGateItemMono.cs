@@ -1,8 +1,10 @@
 ﻿using RedLoader;
+using SonsSdk;
 using StoneGate.Objects;
 using System.Collections;
 using TheForest.Utils;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace StoneGate.Mono
 {
@@ -33,12 +35,45 @@ namespace StoneGate.Mono
 
             animController = GetComponent<Animator>();
 
-            if (LocalPlayer.Inventory?.LeftHandItem?._itemID == StoneGate.ToolItemId)
-            {
-                Misc.Msg($"[StoneGateItemMono] [Start] StoneGateItem Found");
-                //StoneGateUi.OpenMainPanel();
-            }
             StoneGateUi.OpenMainPanel();
+
+            CheckIfReadyToComplete();
+
+            if (StoneGate.StoneGateToolUI == null) { RLog.Error("[StoneGate] [StoneGateItemMono] [Start()] StoneGateToolUI is null"); } 
+            else { StoneGate.StoneGateToolUI.SetActive(true); }
+        }
+
+        private void EnableCompleteUI()  // Not The Whole UI, Just The Text And Press To Finish
+        {
+            if (StoneGate.StoneGateToolUI == null) { RLog.Error("[StoneGate] [StoneGateItemMono] [EnableCompleteUI] StoneGateToolUI is null"); return; }
+            Transform itemContainer = StoneGate.StoneGateToolUI.transform.GetChild(0).GetChild(0).GetChild(0);
+            GameObject finishText = itemContainer.GetChild(0).gameObject;
+            GameObject pressToFinish = itemContainer.GetChild(2).gameObject;
+            finishText.SetActive(true);
+            pressToFinish.SetActive(true);
+        }
+
+        private void DisableCompleteUI()  // Not The Whole UI, Just The Text And Press To Finish
+        {
+            if (StoneGate.StoneGateToolUI == null) { RLog.Error("[StoneGate] [StoneGateItemMono] [DisableCompleteUI] StoneGateToolUI is null"); return; }
+            Transform itemContainer = StoneGate.StoneGateToolUI.transform.GetChild(0).GetChild(0).GetChild(0);
+            GameObject finishText = itemContainer.GetChild(0).gameObject;
+            GameObject pressToFinish = itemContainer.GetChild(2).gameObject;
+            finishText.SetActive(false);
+            pressToFinish.SetActive(false);
+        }
+
+        private bool CheckIfReadyToComplete()
+        {
+            if (HasAnyObjectWithMode(Objects.UiController.GetAllowedModes().ElementAt(1)) && HasAnyObjectWithMode(Objects.UiController.GetAllowedModes().ElementAt(0)))  // 1 ROTATE And Atleast 1 MARK Object
+            { EnableCompleteUI(); return true; }
+            else { DisableCompleteUI(); }
+            return false;
+        }
+
+        private void Complete()
+        {
+            if (CheckIfReadyToComplete() == false) { Misc.Msg("Structure Not Ready To Be Completed"); return; }
         }
 
         private void OnDisable()
@@ -50,6 +85,9 @@ namespace StoneGate.Mono
             CleanupAllMarkedObjects();
 
             StoneGateUi.CloseMainPanel();
+
+            if (StoneGate.StoneGateToolUI == null) { RLog.Error("[StoneGate] [StoneGateItemMono] [OnDisable] StoneGateToolUI is null"); }
+            else { StoneGate.StoneGateToolUI.SetActive(false); }
         }
 
         private void CleanupAllMarkedObjects()
@@ -118,20 +156,39 @@ namespace StoneGate.Mono
                         string currentToolMode = UiController.GetMode();
                         if (currentToolMode == UiController.GetAllowedModes().ElementAt(0))  // MARK
                         {
-                            MarkHit(rootGo);
-                            AddObjectWithMode(UiController.GetAllowedModes().ElementAt(0), rootGo);
-
+                            ValidateAndPerformMark(rootGo);
                         }
                         else if (currentToolMode == UiController.GetAllowedModes().ElementAt(1))  // ROTATE
                         {
                             bool gotMarked = true;
 
                             // Check if we already have a marked object for rotation
-
-
-                            MarkHit(rootGo, UnityEngine.Color.green);
-                            AddObjectWithMode(UiController.GetAllowedModes().ElementAt(1), rootGo);
-                            CreateAxisLineRenderer(rootGo);
+                            if (HasAnyObjectWithMode(UiController.GetAllowedModes().ElementAt(1)))  // ROTATE
+                            {
+                                gotMarked = false;
+                                Misc.Msg($"[StoneGateItemMono] [TryHitObject] Already have a rotation point marked");
+                                SonsTools.ShowMessage("Rotation point already marked, Max 1", 3f);
+                                CheckIfReadyToComplete();
+                            }
+                            else
+                            {
+                                if (rootGo.name.Contains("RockPilar") == false && rootGo.name.Contains("RockBeam") == false)
+                                {
+                                    gotMarked = false;
+                                    Misc.Msg($"[StoneGateItemMono] [TryHitObject] Invalid rotation Item: {rootGo.name}");
+                                    SonsTools.ShowMessage("Invalid rotation object", 3f);
+                                    
+                                } 
+                                else
+                                {
+                                    MarkHit(rootGo, UnityEngine.Color.green);
+                                    AddObjectWithMode(UiController.GetAllowedModes().ElementAt(1), rootGo);
+                                    CreateAxisLineRenderer(rootGo);
+                                    gotMarked = true;
+                                    CheckIfReadyToComplete();
+                                }
+                                
+                            }
 
                             if (gotMarked == false && Testing.Settings.allowMultipleRotationPoints)
                             {
@@ -144,10 +201,64 @@ namespace StoneGate.Mono
                         {
                             Misc.Msg($"[StoneGateItemMono] [TryHitObject] Unknown Tool Mode: {currentToolMode}");
                         }
-                        
+
                     }
                 }
             }
+        }
+
+        private void ValidateAndPerformMark(GameObject rootGo)
+        {
+            List<GameObject> allMarkedModeObjs = GetObjectsWithMode(UiController.GetAllowedModes().ElementAt(0));  // MARK
+
+            int maxPilars = 1;
+            int maxBeams = 2;
+            int maxRockWalls = 1;
+
+            int foundPilars = 0;
+            int foundBeams = 0;
+            int foundRockWalls = 0;
+
+            string currentObjName = rootGo.name;
+
+            foreach (GameObject obj in allMarkedModeObjs)
+            {
+                if (currentObjName.Contains("RockPilar")) { foundPilars++; }
+                else if (currentObjName.Contains("RockBeam")) { foundBeams++; }
+                else if (currentObjName.Contains("RockWall")) { foundRockWalls++; }
+            }
+
+            if (currentObjName.Contains("RockPilar"))
+            {
+                if (foundPilars >= maxPilars)
+                {
+                    Misc.Msg($"[StoneGateItemMono] [ValidateAndPerformMark] Max RockPilars Marked: {foundPilars}");
+                    SonsTools.ShowMessage("Max RockPilars Marked", 3f);
+                    return;
+                }
+            }
+            else if (currentObjName.Contains("RockBeam"))
+            {
+                if (foundBeams >= maxBeams)
+                {
+                    Misc.Msg($"[StoneGateItemMono] [ValidateAndPerformMark] Max RockBeams Marked: {foundBeams}");
+                    SonsTools.ShowMessage("Max RockBeams Marked", 3f);
+                    return;
+                }
+            }
+            else if (currentObjName.Contains("RockWall"))
+            {
+                if (foundRockWalls >= maxRockWalls)
+                {
+                    Misc.Msg($"[StoneGateItemMono] [ValidateAndPerformMark] Max RockWalls Marked: {foundRockWalls}");
+                    SonsTools.ShowMessage("Max RockWalls Marked", 3f);
+                    return;
+                }
+            }
+
+            MarkHit(rootGo);
+            AddObjectWithMode(UiController.GetAllowedModes().ElementAt(0), rootGo);  // MARK
+            CheckIfReadyToComplete();
         }
 
         private void CreateAxisLineRenderer(GameObject go)
@@ -201,7 +312,8 @@ namespace StoneGate.Mono
             Renderer[] renderers = rootGo.GetComponentsInChildren<Renderer>(true);
             if (renderers == null || renderers.Length == 0)
             {
-                Misc.Msg("Failed To Mark Objects - No renderers found");
+                if (Testing.Settings.logMaterialChanges)
+                    Misc.Msg("Failed To Mark Objects - No renderers found");
                 return;
             }
 
@@ -230,8 +342,8 @@ namespace StoneGate.Mono
                     Material[] originalMats = new Material[renderer.sharedMaterials.Length];
                     System.Array.Copy(renderer.sharedMaterials, originalMats, renderer.sharedMaterials.Length);
                     originalMaterials[rootInstanceID][rendererId] = originalMats;
-
-                    Misc.Msg($"[StoneGateItemMono] [MarkHit] Stored {originalMats.Length} original materials for renderer: {renderer.name}, ID: {rendererId}");
+                    if (Testing.Settings.logMaterialChanges)
+                        Misc.Msg($"[StoneGateItemMono] [MarkHit] Stored {originalMats.Length} original materials for renderer: {renderer.name}, ID: {rendererId}");
                 }
 
                 // Create ghost material array matching the original count
@@ -243,11 +355,13 @@ namespace StoneGate.Mono
 
                 // Apply ghost materials
                 renderer.sharedMaterials = ghostedMats;
-                Misc.Msg($"[StoneGateItemMono] [MarkHit] Applied ghost materials to: {renderer.name}");
+                if (Testing.Settings.logMaterialChanges)
+                    Misc.Msg($"[StoneGateItemMono] [MarkHit] Applied ghost materials to: {renderer.name}");
             }
 
             markedObjects.Add(rootGo);
         }
+
 
         private void UnmarkHit(GameObject rootGo)
         {
@@ -263,14 +377,16 @@ namespace StoneGate.Mono
             // Check if we have stored materials for this GameObject
             if (!originalMaterials.ContainsKey(rootInstanceID))
             {
-                Misc.Msg($"[StoneGateItemMono] [UnmarkHit] No original materials found for {rootGo.name}");
+                if (Testing.Settings.logMaterialChanges)
+                    Misc.Msg($"[StoneGateItemMono] [UnmarkHit] No original materials found for {rootGo.name}");
                 return;
             }
 
             Renderer[] renderers = rootGo.GetComponentsInChildren<Renderer>(true);
             if (renderers == null || renderers.Length == 0)
             {
-                Misc.Msg("[StoneGateItemMono] [UnmarkHit] Failed To Unmark Objects - No renderers found");
+                if (Testing.Settings.logMaterialChanges)
+                    Misc.Msg("[StoneGateItemMono] [UnmarkHit] Failed To Unmark Objects - No renderers found");
                 return;
             }
 
@@ -282,7 +398,8 @@ namespace StoneGate.Mono
                 if (originalMaterials[rootInstanceID].ContainsKey(rendererId))
                 {
                     Material[] origMats = originalMaterials[rootInstanceID][rendererId];
-                    Misc.Msg($"[StoneGateItemMono] [UnmarkHit] Restoring {origMats.Length} materials for {renderer.name}, ID: {rendererId}");
+                    if (Testing.Settings.logMaterialChanges) 
+                        Misc.Msg($"[StoneGateItemMono] [UnmarkHit] Restoring {origMats.Length} materials for {renderer.name}, ID: {rendererId}");
 
                     // Apply the original materials back
                     renderer.sharedMaterials = origMats;
@@ -292,7 +409,8 @@ namespace StoneGate.Mono
                 }
                 else
                 {
-                    Misc.Msg($"[StoneGateItemMono] [UnmarkHit] No materials found for renderer: {renderer.name}, ID: {rendererId}");
+                    if (Testing.Settings.logMaterialChanges)
+                        Misc.Msg($"[StoneGateItemMono] [UnmarkHit] No materials found for renderer: {renderer.name}, ID: {rendererId}");
                 }
             }
 
@@ -305,7 +423,7 @@ namespace StoneGate.Mono
             if (markedObjects.Contains(rootGo))
             {
                 markedObjects.Remove(rootGo);
-                Misc.Msg($"[StoneGateItemMono] [UnmarkHit] Removed {rootGo.name} from marked objects");
+                Misc.Msg($"[StoneGateItemMono] [UnmarkHit] Removed {rootGo.name} from marked [NOT MODE] objects");
             }
         }
 
@@ -316,6 +434,7 @@ namespace StoneGate.Mono
 
             var key = new ModeGameObjectKey(mode, gameObject);
             markedObjectsWithMode[key] = gameObject;
+            Misc.Msg($"[StoneGateItemMono] [AddObjectWithMode] Added {gameObject.name} with mode {mode}");
         }
 
         public bool HasObjectWithMode(string mode, GameObject gameObject)
@@ -349,10 +468,41 @@ namespace StoneGate.Mono
                     markedObjectsWithMode.Remove(key);
                     if (mode == UiController.GetAllowedModes().ElementAt(1))  // ROTATE
                     {
+                        Misc.Msg($"[StoneGateItemMono] [RemoveObjectWithoutMode] Removing rotation point for {gameObject.name}");
                         Destroy(axisLineRenderer);
+                    }
+                    else
+                    {
+                        Misc.Msg($"[StoneGateItemMono] [RemoveObjectWithoutMode] Removing marked object for {gameObject.name}");
                     }
                 }
             }
+        }
+        public bool HasAnyObjectWithMode(string mode)
+        {
+            if (!UiController.IsValidMode(mode))
+                return false;
+
+            foreach (var key in markedObjectsWithMode.Keys)
+            {
+                if (key.Mode == mode)
+                    return true;
+            }
+
+            return false;
+        }
+
+        // Get Object With Mode Only, List
+        public List<GameObject> GetObjectsWithMode(string mode)
+        {
+            List<GameObject> objects = new List<GameObject>();
+            foreach (var key in markedObjectsWithMode.Keys)
+            {
+                if (key.Mode == mode)
+                    objects.Add(markedObjectsWithMode[key]);
+            }
+            return objects;
+
         }
     }
 }
