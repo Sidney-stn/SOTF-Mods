@@ -1,4 +1,5 @@
 using RedLoader;
+using SonsSdk;
 
 namespace StoneGate;
 
@@ -6,6 +7,7 @@ public static class Config
 {
     public static ConfigCategory Category { get; private set; }
     public static ConfigEntry<bool> LoggingToConsole { get; private set; }
+    public static KeybindConfigEntry PrimaryAction { get; private set; }
 
     public static void Init()
     {
@@ -17,6 +19,17 @@ public static class Config
             "Enable Console Logs",
             "Enable Console Logs To Console");
         LoggingToConsole.DefaultValue = false;
+
+        PrimaryAction = Category.CreateKeybindEntry(
+            "stone_gate_primary",
+            "<Mouse>/leftButton",
+            "Hit Tool Key",
+            "Key that makes the Gate Tool useable (DEFAULT Left Click).");
+        PrimaryAction.DefaultValue = "<Mouse>/leftButton";
+        PrimaryAction.Notify(() =>
+        {
+            Objects.ActiveItem.OnKeyPress();
+        });
     }
 
     // Same as the callback in "CreateSettings". Called when the settings ui is closed.
