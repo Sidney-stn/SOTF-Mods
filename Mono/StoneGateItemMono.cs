@@ -124,9 +124,21 @@ namespace StoneGate.Mono
                         }
                         else if (currentToolMode == UiController.GetAllowedModes().ElementAt(1))  // ROTATE
                         {
+                            bool gotMarked = true;
+
+                            // Check if we already have a marked object for rotation
+
+
                             MarkHit(rootGo, UnityEngine.Color.green);
                             AddObjectWithMode(UiController.GetAllowedModes().ElementAt(1), rootGo);
                             CreateAxisLineRenderer(rootGo);
+
+                            if (gotMarked == false && Testing.Settings.allowMultipleRotationPoints)
+                            {
+                                MarkHit(rootGo, UnityEngine.Color.green);
+                                AddObjectWithMode(UiController.GetAllowedModes().ElementAt(1), rootGo);
+                                CreateAxisLineRenderer(rootGo);
+                            }
                         }
                         else
                         {
@@ -147,77 +159,41 @@ namespace StoneGate.Mono
                 axisLineRenderer = go.AddComponent<LineRenderer>();
             }
 
-            // Configure the LineRenderer
+            // Configure the LineRenderer basic properties
             axisLineRenderer.startWidth = 0.05f;
             axisLineRenderer.endWidth = 0.05f;
             axisLineRenderer.material = new Material(Shader.Find("Sprites/Default"));
             axisLineRenderer.startColor = Color.red;
             axisLineRenderer.endColor = Color.red;
-
-            // Calculate the bounds to find the longest axis
-            Bounds bounds = CalculateBounds(go);
-            Vector3 size = bounds.size;
-
-            // Determine which axis is the longest
-            Vector3 direction = Vector3.forward; // Default to Z-axis
-            float maxSize = size.z;
-
-            if (size.x > maxSize)
-            {
-                direction = Vector3.right;
-                maxSize = size.x;
-            }
-
-            if (size.y > maxSize)
-            {
-                direction = Vector3.up;
-                maxSize = size.y;
-            }
-
-            // Set the LineRenderer positions to follow the longest axis
             axisLineRenderer.positionCount = 2;
-            float halfLength = maxSize / 2;
-            axisLineRenderer.SetPosition(0, go.transform.position - direction * halfLength);
-            axisLineRenderer.SetPosition(1, go.transform.position + direction * halfLength);
 
-            Misc.Msg($"[StoneGateMono] [CreateAxisLineRenderer] Created line renderer along axis {direction} with length {maxSize}");
-        }
+            string goName = go.name;
+            Vector3 center = go.transform.position;
 
-        private Bounds CalculateBounds(GameObject go)
-        {
-            // Initialize bounds with center at the GameObject's position
-            Bounds bounds = new Bounds(go.transform.position, Vector3.zero);
-
-            // Get all renderers in the GameObject and its children
-            Renderer[] renderers = go.GetComponentsInChildren<Renderer>();
-
-            // If there are no renderers, try to use colliders
-            if (renderers.Length == 0)
+            // Set positions based on GameObject name
+            if (goName.Contains("RockPilar"))
             {
-                Collider[] colliders = go.GetComponentsInChildren<Collider>();
-                foreach (Collider collider in colliders)
-                {
-                    bounds.Encapsulate(collider.bounds);
-                }
+                // Vertical line for RockPilar (3f high)
+                axisLineRenderer.SetPosition(0, center + Vector3.down * 0.3f);
+                axisLineRenderer.SetPosition(1, center + Vector3.up * 3.3f);
+                Misc.Msg($"[StoneGateMono] [CreateAxisLineRenderer] Created vertical line for {goName}");
+            }
+            else if (goName.Contains("RockBeam"))
+            {
+                // Horizontal line for RockBeam (3f width)
+                //axisLineRenderer.SetPosition(0, center + Vector3.left * 0.3f);
+                //axisLineRenderer.SetPosition(1, center + Vector3.right * 3.3f);
+                Vector3 direction = go.transform.forward;
+                axisLineRenderer.SetPosition(0, center - direction * 0.3f);
+                axisLineRenderer.SetPosition(1, center + direction * 3.3f);
+                Misc.Msg($"[StoneGateMono] [CreateAxisLineRenderer] Created horizontal line for {goName}");
             }
             else
             {
-                // Encapsulate the bounds of all renderers
-                foreach (Renderer renderer in renderers)
-                {
-                    bounds.Encapsulate(renderer.bounds);
-                }
+                Misc.Msg($"[StoneGateMono] [CreateAxisLineRenderer] Invalid Hit line for {goName}");
             }
-
-            // If we still have zero size (no renderers or colliders), use a default size
-            if (bounds.size == Vector3.zero)
-            {
-                bounds.size = new Vector3(1, 1, 1);
-            }
-
-            return bounds;
         }
-    
+
 
         private void MarkHit(GameObject rootGo, UnityEngine.Color? color = null)
         {
