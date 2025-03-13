@@ -1,4 +1,5 @@
 ﻿using RedLoader;
+using StoneGate.Objects;
 using System.Collections;
 using UnityEngine;
 
@@ -33,7 +34,7 @@ namespace StoneGate.Mono
         public void InitHit()
         {
             if (isAnimRunning) { return; }
-            Misc.Msg($"[StoneGateItemMono] [InitHit]");
+            //Misc.Msg($"[StoneGateItemMono] [InitHit]");
             StartAnim().RunCoro();
         }
 
@@ -67,7 +68,7 @@ namespace StoneGate.Mono
             }
         }
 
-        private HashSet<GameObject> markedObjects = new HashSet<GameObject>();
+        private HashSet<GameObject> markedObjects = new HashSet<GameObject>(new GameObjectInstanceIDComparer());
         private Dictionary<Renderer, Material[]> originalMaterials = new Dictionary<Renderer, Material[]>();
 
         private void MarkHit(GameObject rootGo)
