@@ -50,6 +50,11 @@ public class StoneGateUi
     internal static void CloseMainPanel()
     {
         TogglePanel(StoneGatePlacePanel, false);
+        // Close all other panels
+        if (StoneGate.StoneGateToolUI != null)
+        {
+            StoneGate.StoneGateToolUI.SetActive(false);
+        }
     }
 
     internal static void ToggleMainPanel()

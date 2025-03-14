@@ -8,5 +8,6 @@ namespace StoneGate.Testing
         internal static bool logMaterialChanges = false;
         internal static bool logExtraStoneGateStoreMono = true;
         internal static bool logOnFinishOpenCloseDoorKey = true;
+        internal static bool logToolsGates = true;
     }
 }

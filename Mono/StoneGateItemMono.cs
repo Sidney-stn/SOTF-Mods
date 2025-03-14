@@ -160,6 +160,39 @@ namespace StoneGate.Mono
                 {
                     GameObject rootGo = raycastHit.collider.gameObject.transform.root.gameObject;
                     Misc.Msg($"[StoneGateItemMono] [TryHitObject] Hit {rootName}");
+                    string currentToolMode = UiController.GetMode();
+                    if (currentToolMode == UiController.GetAllowedModes().ElementAt(2))  // DELETE
+                    {
+                        bool objectInUseOnOtherGate = Tools.Gates.DoesGoHaveStoneGateLinked(rootGo);
+                        if (objectInUseOnOtherGate)
+                        {
+                            var gottenGo = Tools.Gates.GetLinkedStoneGate(rootGo);
+                            if (gottenGo == null)
+                            {
+                                RLog.Error("[StoneGate] [StoneGateItemMono] [TryHitObject] [DELETE] [GetLinkedStoneGate] Can't Delete gate, gotten object == NULL");
+                                SonsTools.ShowMessage("Can't Delete Gate!, Something went wrong", 3f);
+                                return;
+                            }
+                            Mono.StoneGateStoreMono controller = gottenGo.GetComponent<Mono.StoneGateStoreMono>();
+                            if (controller.IsGateOpen())
+                            {
+                                Misc.Msg($"[StoneGateItemMono] [TryHitObject] Can't Delete Gate, Gate is Open");
+                                SonsTools.ShowMessage("Can't Delete Gate, Gate is Open", 3f); return;
+                            }
+                            controller.DestroyGate();
+                        } 
+                        else
+                        {
+                            Misc.Msg($"[StoneGateItemMono] [TryHitObject] Can't Delete Gate, Not Found");
+                            SonsTools.ShowMessage("Can't Delete Gate, No Link Found", 3f);
+                        }
+                    }
+                    if (Tools.Gates.ocupiedObjects.Contains(rootGo))
+                    {
+                        Misc.Msg($"[StoneGateItemMono] [TryHitObject] Object Already Ocupied");
+                        SonsTools.ShowMessage("Object Already Ocupied", 3f);
+                        return;
+                    }
                     if (markedObjects.Contains(rootGo))
                     {
                         UnmarkHit(rootGo);
@@ -167,7 +200,6 @@ namespace StoneGate.Mono
                     }
                     else
                     {
-                        string currentToolMode = UiController.GetMode();
                         if (currentToolMode == UiController.GetAllowedModes().ElementAt(0))  // MARK
                         {
                             ValidateAndPerformMark(rootGo);

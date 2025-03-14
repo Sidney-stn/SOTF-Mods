@@ -53,12 +53,14 @@ namespace StoneGate.Mono
             _topBeam = topBeam;
             _rockWall = rockWall;
             _extraPillar = extraPillar;
+            Tools.Gates.ocupiedObjects.Add(rotationGo);
             if (floorBeam != null)
             {
                 objectsToRotate.Add(floorBeam);
                 namesOfAllGo.Add(floorBeam.name, floorBeam);
                 originalRotations[floorBeam.GetInstanceID()] = floorBeam.transform.rotation;
                 originalPositions[floorBeam.GetInstanceID()] = floorBeam.transform.position;
+                Tools.Gates.ocupiedObjects.Add(floorBeam);
             }
             if (topBeam != null)
             {
@@ -66,6 +68,7 @@ namespace StoneGate.Mono
                 namesOfAllGo.Add(topBeam.name, topBeam);
                 originalRotations[topBeam.GetInstanceID()] = topBeam.transform.rotation;
                 originalPositions[topBeam.GetInstanceID()] = topBeam.transform.position;
+                Tools.Gates.ocupiedObjects.Add(topBeam);
             }
             if (rockWall != null)
             {
@@ -73,6 +76,7 @@ namespace StoneGate.Mono
                 namesOfAllGo.Add(rockWall.name, rockWall);
                 originalRotations[rockWall.GetInstanceID()] = rockWall.transform.rotation;
                 originalPositions[rockWall.GetInstanceID()] = rockWall.transform.position;
+                Tools.Gates.ocupiedObjects.Add(rockWall);
             }
             if (extraPillar != null)
             {
@@ -80,6 +84,7 @@ namespace StoneGate.Mono
                 namesOfAllGo.Add(extraPillar.name, extraPillar);
                 originalRotations[extraPillar.GetInstanceID()] = extraPillar.transform.rotation;
                 originalPositions[extraPillar.GetInstanceID()] = extraPillar.transform.position;
+                Tools.Gates.ocupiedObjects.Add(extraPillar);
             }
 
             namesOfAllGo.Add(rotationGo.name, rotationGo);
@@ -353,6 +358,29 @@ namespace StoneGate.Mono
                 Misc.Msg($"[StoneGate] [DetermineRotationDirection] Camera forward: {playerForward}, Gate forward: {gateForward}");
                 Misc.Msg($"[StoneGate] [DetermineRotationDirection] Rotation direction: {rotationDirection}");
             }
+        }
+
+        /// <summary>
+        /// Get the names of all GameObjects associated with this gate
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, GameObject> GetNamesAndGameObjects()
+        {
+            return namesOfAllGo;
+        }
+
+        public void DestroyGate(bool raiseNetwork = true)
+        {
+            if (LinkUiElement != null)
+            {
+                Destroy(LinkUiElement);
+            }
+            foreach (GameObject obj in objectsToRotate)
+            {
+                Tools.Gates.ocupiedObjects.Remove(obj);
+            }
+            Tools.Gates.ocupiedObjects.Remove(_rotateGo);
+            Destroy(gameObject);
         }
     }
 }

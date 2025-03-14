@@ -12,6 +12,7 @@ namespace StoneGate.Objects
         {
             "MARK",
             "ROTATE",
+            "DELETE"
         };
 
         public static void ChangeMode()
@@ -27,6 +28,10 @@ namespace StoneGate.Objects
             }
             else if (StoneGateUi.panelText.Value == "ROTATE")
             {
+                StoneGateUi.panelText.Value = "DELETE";
+            }
+            else if (StoneGateUi.panelText.Value == "DELETE")
+            {
                 StoneGateUi.panelText.Value = "MARK";
             }
             else
@@ -38,6 +43,11 @@ namespace StoneGate.Objects
             {
                 if (StoneGate.StoneGateToolUI == null) { RLog.Error("[StoneGate] [UiController] [ChangeMode] StoneGateToolUI is null"); return; }
                 StoneGate.StoneGateToolUI.SetActive(true);
+            } 
+            else if (StoneGateUi.panelText.Value == "DELETE")
+            {
+                if (StoneGate.StoneGateToolUI == null) { RLog.Error("[StoneGate] [UiController] [ChangeMode] StoneGateToolUI is null"); return; }
+                StoneGate.StoneGateToolUI.SetActive(false);
             }
         }
 

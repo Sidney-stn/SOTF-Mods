@@ -101,7 +101,7 @@ public static class Config
     {
     }
 
-    private static HashSet<string> allowedHits = new HashSet<string>()
+    public static HashSet<string> allowedHits = new HashSet<string>()
         {
             "RockWall",
             "RockPilar",
