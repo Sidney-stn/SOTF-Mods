@@ -8,6 +8,11 @@ namespace StoneGate.Tools
     internal static class Gates
     {
         public static Scene? scene = null;
+
+        /// <summary>
+        /// For keeping track of all under gameobjects used in stonegate.
+        /// Example RockPilar1, if its in the list no other gate can use this object if found in here
+        /// </summary>
         public static HashSet<GameObject> ocupiedObjects = new HashSet<GameObject>(new Objects.GameObjectInstanceIDComparer());
 
         /// <summary>
@@ -150,12 +155,12 @@ namespace StoneGate.Tools
         {
             if (string.IsNullOrEmpty(objectName))
             {
-                Misc.Msg("ObjectName is null or empty");
+                Misc.Msg("[Tools] [Tools] [FindObjectInSpecificScene] ObjectName is null or empty");
                 return null;
             }
             if (string.IsNullOrEmpty(sceneName))
             {
-                Misc.Msg("SceneName is null or empty");
+                Misc.Msg("[Tools] [Tools] [FindObjectInSpecificScene] SceneName is null or empty");
                 return null;
             }
             if (scene == null)
@@ -186,6 +191,145 @@ namespace StoneGate.Tools
 
             // Return null if the GameObject was not found
             return null;
+        }
+
+        public static void LoadAllSaveData(Saving.Manager.GatesManager obj)
+        {
+            if (BoltNetwork.isRunning && BoltNetwork.isClient)
+            {
+                if (Testing.Settings.logSavingSystem)
+                    Misc.Msg("[Loading] Skipped Loading StoneGates On Multiplayer Client");
+                return;
+            }
+            if (Testing.Settings.logSavingSystem)
+                Misc.Msg($"[Loading] Gates From Save: {obj.Gates.Count.ToString()}");
+            foreach (var gatesData in obj.Gates)
+            {
+                if (Testing.Settings.logSavingSystem)
+                    Misc.Msg("[Loading] Creating New Gates");
+                LoadIndivudalSaveData(gatesData);
+            }
+        }
+
+        public static void LoadIndivudalSaveData(Saving.Manager.GatesManager.GatesModData obj)
+        {
+            if (BoltNetwork.isRunning && BoltNetwork.isClient)
+            {
+                if (Testing.Settings.logSavingSystem)
+                    Misc.Msg("[Loading] Skipped Loading StoneGates On Multiplayer Client");
+                return;
+            }
+            if (Testing.Settings.logSavingSystem) { Misc.Msg($"[Loading] Gates From Save: {obj.ToString()}"); }
+
+            // Check if if gameobject is null or empty
+            bool floorBeamIsNull = string.IsNullOrEmpty(obj.FloorBeamName);
+            bool topBeamIsNull = string.IsNullOrEmpty(obj.TopBeamName);
+            bool rockWallIsNull = string.IsNullOrEmpty(obj.RockWallName);
+            bool extraPillarIsNull = string.IsNullOrEmpty(obj.ExtraPillarName);
+            bool rotateIsNull = string.IsNullOrEmpty(obj.RotationGoName);
+
+            // Mode
+            Objects.CreateGateParent.RotateMode mode = Objects.CreateGateParent.RotateModeFromString(obj.Mode);
+
+            GameObject floorBeam = null;
+            GameObject topBeam = null;
+            GameObject rockWall = null;
+            GameObject extraPillar = null;
+            GameObject rotate = null;
+
+            if (floorBeamIsNull == false)
+            {
+                floorBeam = FindObjectInSpecificScene(obj.FloorBeamName);
+                if (Testing.Settings.superLogSavingSystem)
+                {
+                    if (floorBeam == null)
+                    {
+                        Misc.Msg("[Tools] [Gates] [LoadIndivudalSaveData] FloorBeam is null, can't reconstruct gate");
+                    }
+                    else
+                    {
+                        Misc.Msg("[Tools] [Gates] [LoadIndivudalSaveData] FloorBeam is not null, can reconstruct gate");
+                    }
+                }
+                if (topBeamIsNull == false)
+                {
+                    topBeam = FindObjectInSpecificScene(obj.TopBeamName);
+                    if (Testing.Settings.superLogSavingSystem)
+                    {
+                        if (topBeam == null)
+                        {
+                            Misc.Msg("[Tools] [Gates] [LoadIndivudalSaveData] TopBeam is null, can't reconstruct gate");
+                        }
+                        else
+                        {
+                            Misc.Msg("[Tools] [Gates] [LoadIndivudalSaveData] TopBeam is not null, can reconstruct gate");
+                        }
+                    }
+                }
+                if (rockWallIsNull == false)
+                {
+                    rockWall = FindObjectInSpecificScene(obj.RockWallName);
+                    if (Testing.Settings.superLogSavingSystem)
+                    {
+                        if (rockWall == null)
+                        {
+                            Misc.Msg("[Tools] [Gates] [LoadIndivudalSaveData] RockWall is null, can't reconstruct gate");
+                        }
+                        else
+                        {
+                            Misc.Msg("[Tools] [Gates] [LoadIndivudalSaveData] RockWall is not null, can reconstruct gate");
+                        }
+                    }
+                }
+                if (extraPillarIsNull == false)
+                {
+                    extraPillar = FindObjectInSpecificScene(obj.ExtraPillarName);
+                    if (Testing.Settings.superLogSavingSystem)
+                    {
+                        if (extraPillar == null)
+                        {
+                            Misc.Msg("[Tools] [Gates] [LoadIndivudalSaveData] ExtraPillar is null, can't reconstruct gate");
+                        }
+                        else
+                        {
+                            Misc.Msg("[Tools] [Gates] [LoadIndivudalSaveData] ExtraPillar is not null, can reconstruct gate");
+                        }
+                    }
+                }
+                if (rotateIsNull == false)
+                {
+                    rotate = FindObjectInSpecificScene(obj.RotationGoName);
+                    if (Testing.Settings.superLogSavingSystem)
+                    {
+                        if (rotate == null)
+                        {
+                            Misc.Msg("[Tools] [Gates] [LoadIndivudalSaveData] Main Rotate is null, can't reconstruct gate");
+                        }
+                        else
+                        {
+                            Misc.Msg("[Tools] [Gates] [LoadIndivudalSaveData] Main Rotate is not null, can reconstruct gate");
+                        }
+                    }
+                }
+
+                if (rotate == null) { Misc.Msg("[Tools] [Gates] [LoadIndivudalSaveData] Main Rotate is null, can't reconstruct gate"); return; }
+
+                int notNullCount = 0;
+                if (floorBeam != null) { notNullCount++; }
+                if (topBeam != null) { notNullCount++; }
+                if (rockWall != null) { notNullCount++; }
+                if (extraPillar != null) { notNullCount++; }
+
+
+                if (notNullCount <= 0)
+                {
+                    Misc.Msg("[Tools] [Gates] [LoadIndivudalSaveData] No GameObjects found, can't reconstruct gate");
+                    return;
+                }
+
+                // Use AddDoor to create the gate
+                CreateGateParent.Instance.AddDoor(rotate, mode, floorBeam, topBeam, rockWall, extraPillar);
+            }
         }
     }
 }

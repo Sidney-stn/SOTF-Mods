@@ -1,6 +1,4 @@
-﻿
-
-using Endnight.Utilities;
+﻿using Endnight.Utilities;
 using Il2CppInterop.Runtime;
 using RedLoader;
 using SonsSdk;
@@ -36,6 +34,9 @@ namespace StoneGate.Objects
             StoredParent.SetActive(true);
         }
 
+        /// <summary>
+        /// The parent object that will store all the gate objects.
+        /// </summary>
         public GameObject StoredParent { get; private set; }
 
         public enum RotateMode
@@ -45,6 +46,19 @@ namespace StoneGate.Objects
             None
         }
 
+        public static RotateMode RotateModeFromString(string modeString)
+        {
+            return (RotateMode)Enum.Parse(typeof(RotateMode), modeString, true);
+        }
+
+        /// <summary>
+        /// Add a door to the gate parent.
+        /// KeyPress-> [StoneGateItemMono] Complete() -> HERE -> [StoneGateStoreMono] Init().
+        /// This function add StoneGateStoreMono To Parent GameObject (CodeName: StoredParent/GoName: StoneGateObjects).
+        /// Then StoneGateStoreMono is Initialized to store all GameObjects that are used in the gate.
+        /// </summary>
+        /// <param name="rotate"></param>
+        /// <param name="otherGameObjects"></param>
         public void AddDoor(GameObject rotate, params GameObject[] otherGameObjects)
         {
             if (rotate == null) { RLog.Error("[StoneGate] [CreateGateParent] [AddDoor] Rotate is null"); return; }
@@ -102,8 +116,27 @@ namespace StoneGate.Objects
 
                 stoneGateMono.Init(rotate, mode, floorBeam, topBeam, rockWall, extraPillar);
             }
+        }
 
-            
+        /// <summary>
+        /// Add a door to the gate parent. Used when loading save data.
+        /// </summary>
+        /// <param name="rotate"></param>
+        /// <param name="mode"></param>
+        /// <param name="floorBeam"></param>
+        /// <param name="topBeam"></param>
+        /// <param name="rockWall"></param>
+        /// <param name="extraPillar"></param>
+        public void AddDoor(GameObject rotate, RotateMode mode, GameObject floorBeam = null, GameObject topBeam = null, GameObject rockWall = null, GameObject extraPillar = null)
+        {
+            if (rotate == null) { RLog.Error("[StoneGate] [CreateGateParent] [AddDoor] Rotate is null"); return; }
+            if (mode == RotateMode.None) { RLog.Error("[StoneGate] [CreateGateParent] [AddDoor] Rotate Mode is not valid"); return; }
+
+            GameObject newGate = new GameObject("StoneGate", Il2CppType.Of<Mono.StoneGateStoreMono>());
+            newGate.SetParent(StoredParent.transform);
+            Mono.StoneGateStoreMono stoneGateMono = newGate.GetOrAddComponent<Mono.StoneGateStoreMono>();
+
+            stoneGateMono.Init(rotate, mode, floorBeam, topBeam, rockWall, extraPillar);
         }
     }
 }

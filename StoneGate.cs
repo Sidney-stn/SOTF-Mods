@@ -96,7 +96,10 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         {
             RLog.Error("[StoneGate] StoneGateToolUI Asset Not Found");
         } else { RLog.Msg("[StoneGate] StoneGateToolUI Asset Found"); StoneGateToolUI.SetActive(false); Misc.Msg("StoneGateToolUI Set"); }
-        
+
+        // Registering Save System
+        var manager = new Saving.Manager();
+        SonsSaveTools.Register(manager);
     }
 
     protected override void OnGameStart()
@@ -143,6 +146,17 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         RLog.Msg(System.Drawing.Color.SeaGreen, "[ ADDED ITEM ]");
 
         DebugConsole.Instance.SendCommand($"additem {ToolItemId}");
+
+        // Load Saved Gates
+        if (Testing.Settings.logSavingSystem)
+            Misc.Msg("[Loading] Processing deferred load.");
+
+        // Process all deferred load data
+        while (Saving.Load.deferredLoadQueue.Count > 0)
+        {
+            var obj = Saving.Load.deferredLoadQueue.Dequeue();
+            Saving.Load.ProcessLoadData(obj);
+        }
     }
 
     internal static Structure.StoneGate stoneGate;

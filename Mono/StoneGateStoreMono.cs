@@ -3,6 +3,7 @@ using Sons.Gui.Input;
 using StoneGate.Objects;
 using System.Collections;
 using UnityEngine;
+using static StoneGate.Saving.Manager;
 
 namespace StoneGate.Mono
 {
@@ -35,6 +36,15 @@ namespace StoneGate.Mono
 
         private bool _gateOpen = false;
 
+        /// <summary>
+        /// Initialize the StoneGateStoreMono with the required GameObjects and Mode
+        /// </summary>
+        /// <param name="rotationGo"></param>
+        /// <param name="mode"></param>
+        /// <param name="floorBeam"></param>
+        /// <param name="topBeam"></param>
+        /// <param name="rockWall"></param>
+        /// <param name="extraPillar"></param>
         public void Init(GameObject rotationGo,
             Objects.CreateGateParent.RotateMode mode,
             GameObject floorBeam = null,
@@ -369,6 +379,11 @@ namespace StoneGate.Mono
             return namesOfAllGo;
         }
 
+
+        /// <summary>
+        /// Destroy the gate and all associated GameObjects
+        /// </summary>
+        /// <param name="raiseNetwork"></param>
         public void DestroyGate(bool raiseNetwork = true)
         {
             if (LinkUiElement != null)
@@ -381,6 +396,38 @@ namespace StoneGate.Mono
             }
             Tools.Gates.ocupiedObjects.Remove(_rotateGo);
             Destroy(gameObject);
+        }
+
+        /// <summary>
+        /// Find the name of a GameObject from the dictionary of names and GameObjects (namesOfAllGo)
+        /// </summary>
+        /// <param name="go"></param>
+        /// <returns></returns>
+        private string FindNameFromGameObject(GameObject go)
+        {
+            foreach (KeyValuePair<string, GameObject> kvp in namesOfAllGo)
+            {
+                if (kvp.Value == go)
+                {
+                    return kvp.Key;
+                }
+            }
+            return null;
+        }
+
+        public GatesManager.GatesModData GetSaveData()
+        {
+            // Always Save The Gate In Closed State, Regardless Of The Current State
+            GatesManager.GatesModData data = new GatesManager.GatesModData
+            {
+                Mode = _rotateMode.ToString(),
+                FloorBeamName = FindNameFromGameObject(_floorBeam),
+                TopBeamName = FindNameFromGameObject(_topBeam),
+                RockWallName = FindNameFromGameObject(_rockWall),
+                ExtraPillarName = FindNameFromGameObject(_extraPillar),
+                RotationGoName = FindNameFromGameObject(_rotateGo)
+            };
+            return data;
         }
     }
 }

@@ -6,8 +6,10 @@ namespace StoneGate.Testing
     {
         internal static bool allowMultipleRotationPoints = false;
         internal static bool logMaterialChanges = false;
-        internal static bool logExtraStoneGateStoreMono = true;
+        internal static bool logExtraStoneGateStoreMono = false;
         internal static bool logOnFinishOpenCloseDoorKey = true;
         internal static bool logToolsGates = true;
+        internal static bool logSavingSystem = true;
+        internal static bool superLogSavingSystem = true;
     }
 }
