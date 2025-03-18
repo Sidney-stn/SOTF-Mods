@@ -71,12 +71,12 @@ public class CustomEventHandler : GlobalEventListener
         {
             if (Network.Joining.StoneGateJoin.Instance != null)
             {
-                Misc.Msg("[CustomEventHandler] [OnEnterWorld] Sending Request SyncSignsOnJoin", true);
+                Misc.Msg("[CustomEventHandler] [OnEnterWorld] Sending Request StoneGateJoin", true);
                 Network.Joining.StoneGateJoin.Instance.RequestInfoFromServer();
             }
             else
             {
-                Misc.Msg("[CustomEventHandler] [OnEnterWorld] SyncSignsOnJoin.Instance is null", true);
+                Misc.Msg("[CustomEventHandler] [OnEnterWorld] StoneGateJoin.Instance is null", true);
             }
         }
         catch (System.Exception ex)

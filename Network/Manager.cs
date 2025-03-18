@@ -15,9 +15,8 @@ namespace StoneGate.Network
 
             Network.Joining.StoneGateJoin.Register();
 
-            // ConveyorSyncEvent, StoneGateSetter
-            Network.StoneGateSyncEvent.Register();
-            ClassInjector.RegisterTypeInIl2Cpp<Network.StoneGateSetter>();
+            Network.ClientEvents.Register();
+            Network.HostEvents.Register();
 
         }
 

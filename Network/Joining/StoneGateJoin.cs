@@ -4,6 +4,7 @@ using Bolt;
 using RedLoader;
 using SonsSdk;
 using UdpKit;
+using static StoneGate.Saving.Manager;
 
 namespace StoneGate.Network.Joining
 {
@@ -39,60 +40,31 @@ namespace StoneGate.Network.Joining
                     return;
                 }
 
-                // Check if the collections are valid before sending
-                bool collectionsValid = true;
-
-                if (Objects.Track.spawendStoneGates == null)
+                var hashSetStoreMono = Tools.Gates.GetAllStoneGateStoreMono();
+                if (hashSetStoreMono == null)
                 {
-                    Misc.Msg("[StoneGateJoin] [ReadMessageServer] Objects.Track.spawendStoneGates Is Null", true);
-                    collectionsValid = false;
+                    Misc.Msg("[StoneGateJoin] [ReadMessageServer] hashSetStoreMono is null");
+                    SendEmptyResponse(fromConnection);
+                    return;
                 }
-                else
+                if (hashSetStoreMono.Count <= 0)
                 {
-                    Misc.Msg($"[StoneGateJoin] [ReadMessageServer] StoneGates items count: {Objects.Track.spawendStoneGates.Count}", true);
-                }
-
-                if (!collectionsValid)
-                {
-                    Misc.Msg("[StoneGateJoin] [ReadMessageServer] One or more collections is invalid, not sending sync data", true);
-                    // Send a small valid response instead
+                    Misc.Msg("[StoneGateJoin] [ReadMessageServer] hashSetStoreMono is empty");
                     SendEmptyResponse(fromConnection);
                     return;
                 }
 
 
                 // If collections are valid, send the full sync event
-                foreach (var item in Objects.Track.spawendStoneGates)
+                foreach (var mono in hashSetStoreMono)
                 {
                     try
                     {
-                        Misc.Msg($"[StoneGateJoin] Processing item: Key={item.Key}, Value={item.Value}", true);
-
-                        var boltEntity = item.Key;
-                        if (boltEntity == null)
-                        {
-                            Misc.Msg($"[StoneGateJoin] [ReadMessageServer] BoltEntity is null for {item.Value?.name ?? "unknown"}", true);
-                            continue;
-                        }
-
-                        Misc.Msg($"[StoneGateJoin] BoltEntity valid, getting StoneGateSetter component", true);
-                        var StoneGateSetter = boltEntity.GetComponent<Network.StoneGateSetter>();
-                        if (StoneGateSetter == null)
-                        {
-                            Misc.Msg($"[StoneGateJoin] [ReadMessageServer] StoneGateSetter is null for {item.Value?.name ?? "unknown"}", true);
-                            continue;
-                        }
-
-                        Misc.Msg($"[StoneGateJoin] StoneGateSetter valid, calling SendState", true);
-                        if (item.Value.GetComponent<Mono.StoneGateMono>().IsGateOpen())
-                        {
-                            Network.StoneGateSyncEvent.SendState(boltEntity, StoneGateSyncEvent.StoneGateSyncType.OpenGate, toPlayerSteamId);
-                        }
-                        else
-                        {
-                            Network.StoneGateSyncEvent.SendState(boltEntity, StoneGateSyncEvent.StoneGateSyncType.CloseGate, toPlayerSteamId);
-                        }
-                        Misc.Msg($"[StoneGateJoin] SendState completed successfully", true);
+                        Misc.Msg($"[StoneGateJoin] [ReadMessageServer] Sending StoneGateJoin RESPONSE for gate", true);
+                        int childIndex = mono.GetChildIndex();
+                        GatesManager.GatesModData gatesModData = mono.GetSaveData();
+                        Objects.CreateGateParent.RotateMode mode = Objects.CreateGateParent.RotateModeFromString(gatesModData.Mode);
+                        Network.HostEvents.Instance.SendHostEvent(HostEvents.HostEvent.CreateStoneGate, gatesModData.RotationGoName, mode, gatesModData.FloorBeamName, gatesModData.TopBeamName, gatesModData.RockWallName, gatesModData.ExtraPillarName, childIndex);
                     }
                     catch (System.Exception ex)
                     {

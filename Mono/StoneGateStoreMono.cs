@@ -141,14 +141,17 @@ namespace StoneGate.Mono
             // Determine the direction to rotate based on player position
             DetermineRotationDirection();
 
-            if (raiseNetwork)
+            if (raiseNetwork && BoltNetwork.isRunning && BoltNetwork.isServer)
             {
                 // Send network event to open the gate for all clients
-                BoltEntity entity = Track.FindEntity(gameObject);
-                if (entity != null)
-                {
-                    Network.StoneGateSyncEvent.SendState(entity, Network.StoneGateSyncEvent.StoneGateSyncType.OpenGate);
-                }
+                Network.HostEvents.Instance.SendHostEvent(Network.HostEvents.HostEvent.OpenStoneGate, GetChildIndex());
+                if (Testing.Settings.logExtraStoneGateStoreMono) { Misc.Msg($"[StoneGate] [StoneGateStoreMono] [OpenGate] Sending OpenStoneGate event to clients", true); }
+            } 
+            else if (raiseNetwork && BoltNetwork.isRunning && BoltNetwork.isClient)
+            {
+                // Send network event to open the gate for the server
+                Network.ClientEvents.Instance.SendClientEvent(Network.ClientEvents.ClientEvent.OpenStoneGate, GetChildIndex());
+                if (Testing.Settings.logExtraStoneGateStoreMono) { Misc.Msg($"[StoneGate] [StoneGateStoreMono] [OpenGate] Sending OpenStoneGate event to server", true); }
             }
 
             // Start the gate opening animation
@@ -164,14 +167,17 @@ namespace StoneGate.Mono
 
             _gateOpen = false;
 
-            if (raiseNetwork)
+            if (raiseNetwork && BoltNetwork.isRunning && BoltNetwork.isServer)
             {
                 // Send network event to close the gate for all clients
-                BoltEntity entity = Track.FindEntity(gameObject);
-                if (entity != null)
-                {
-                    Network.StoneGateSyncEvent.SendState(entity, Network.StoneGateSyncEvent.StoneGateSyncType.CloseGate);
-                }
+                Network.HostEvents.Instance.SendHostEvent(Network.HostEvents.HostEvent.CloseStoneGate, GetChildIndex());
+                if (Testing.Settings.logExtraStoneGateStoreMono) { Misc.Msg($"[StoneGate] [StoneGateStoreMono] [CloseGate] Sending CloseStoneGate event to clients", true); }
+            } 
+            else if (raiseNetwork && BoltNetwork.isRunning && BoltNetwork.isClient)
+            {
+                // Send network event to close the gate for the server
+                Network.ClientEvents.Instance.SendClientEvent(Network.ClientEvents.ClientEvent.CloseStoneGate, GetChildIndex());
+                if (Testing.Settings.logExtraStoneGateStoreMono) { Misc.Msg($"[StoneGate] [StoneGateStoreMono] [CloseGate] Sending CloseStoneGate event to server", true); }
             }
 
             // Start the gate closing animation
@@ -386,6 +392,19 @@ namespace StoneGate.Mono
         /// <param name="raiseNetwork"></param>
         public void DestroyGate(bool raiseNetwork = true)
         {
+            // Network
+            if (BoltNetwork.isRunning && BoltNetwork.isServer && raiseNetwork)
+            {
+                Network.HostEvents.Instance.SendHostEvent(Network.HostEvents.HostEvent.DestroyStoneGate, GetChildIndex());
+                if (Testing.Settings.logExtraStoneGateStoreMono) { Misc.Msg($"[StoneGate] [StoneGateStoreMono] [DestroyGate] Sending DestroyStoneGate event to clients", true); }
+            } 
+            else if (BoltNetwork.isRunning && BoltNetwork.isClient && raiseNetwork)
+            {
+                Network.ClientEvents.Instance.SendClientEvent(Network.ClientEvents.ClientEvent.DestroyStoneGate, GetChildIndex());
+                if (Testing.Settings.logExtraStoneGateStoreMono) { Misc.Msg($"[StoneGate] [StoneGateStoreMono] [DestroyGate] Sending DestroyStoneGate event to server", true); }
+            }
+
+            // Normal
             if (LinkUiElement != null)
             {
                 Destroy(LinkUiElement);
@@ -428,6 +447,11 @@ namespace StoneGate.Mono
                 RotationGoName = FindNameFromGameObject(_rotateGo)
             };
             return data;
+        }
+
+        public int GetChildIndex()
+        {
+            return gameObject.transform.GetSiblingIndex();
         }
     }
 }

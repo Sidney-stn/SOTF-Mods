@@ -45,7 +45,6 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         stoneGateOpenCloseIcon.hideFlags = HideFlags.HideAndDontSave;
 
         // Registier Classes In Il2cpp
-        ClassInjector.RegisterTypeInIl2Cpp<Mono.StoneGateMono>();
         ClassInjector.RegisterTypeInIl2Cpp<Mono.StoneGateItemMono>();
         ClassInjector.RegisterTypeInIl2Cpp<Mono.StoneGateStoreMono>();
 
@@ -75,6 +74,7 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
             Misc.Msg("StoneGateTool Set");
         }
         else { RLog.Error("Asset Not Loaded"); }
+
         //stoneGate = Structure.StoneGate.Instance;
     }
 
@@ -105,6 +105,8 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
     protected override void OnGameStart()
     {
         // This is called once the player spawns in the world and gains control.
+        // Register Network Event Handlers
+        Network.Manager.RegisterEventHandlers();
     }
 
     private void OnFirstGameActivation()
