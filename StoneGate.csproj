@@ -98,6 +98,9 @@
     <Reference Include="Unity.TextMeshPro">
       <HintPath>$(GameDir)\_RedLoader\Game\Unity.TextMeshPro.dll</HintPath>
     </Reference>
+    <Reference Include="com.rlabrecque.steamworks.net">
+      <HintPath>$(GameDir)\_RedLoader\Game\com.rlabrecque.steamworks.net.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Update="manifest.json">

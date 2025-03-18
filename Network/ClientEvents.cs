@@ -80,6 +80,8 @@ namespace StoneGate.Network
 
         private void CreateStoneGate(string rotateGoName, Objects.CreateGateParent.RotateMode mode, string floorBeamGoName, string topBeamGoName, string rockWallGoName, string extraPillarGoName)
         {
+            Misc.Msg($"[ClientEvents] [CreateStoneGate] Recived From Client - Create StoneGate Values: rotateGoName: {rotateGoName}," +
+                $" mode: {mode}, floorBeamGoName: {floorBeamGoName}, topBeamGoName: {topBeamGoName}, rockWallGoName: {rockWallGoName}, extraPillarGoName: {extraPillarGoName}", true);
             Objects.CreateGateParent.Instance.AddDoorNetworkHost(rotateGoName, mode, floorBeamGoName, topBeamGoName, rockWallGoName, extraPillarGoName);
         }
 

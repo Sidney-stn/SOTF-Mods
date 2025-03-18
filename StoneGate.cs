@@ -100,6 +100,12 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         // Registering Save System
         var manager = new Saving.Manager();
         SonsSaveTools.Register(manager);
+
+        // Ensure CreateGateParent is initialized
+        var _ = Objects.CreateGateParent.Instance;
+
+        //ItemData solafiteOre = ItemDatabaseManager.ItemById(664);
+        //solafiteOre._type |= Sons.Items.Core.Types.CraftingMaterial | Sons.Items.Core.Types.Droppable | Sons.Items.Core.Types.Craftable;
     }
 
     protected override void OnGameStart()
@@ -135,7 +141,9 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
             .SetupHeld(new(0f, 0f, 0f), new(0f, 0f, 0f))
             .SetupPickup(stoneGateCreatorPickupPrefab) // setup a pickup for the item given a model
             .Recipe // recipe setup
-            .AddIngredient(ItemTools.Identifiers.Stick, 2) // ingredients of the recipe
+            //.AddIngredient(ItemTools.Identifiers.SolafiteOre, 2) // ingredients of the recipe
+            .AddIngredient(ItemTools.Identifiers.Stick, 2)
+            .AddIngredient(ItemTools.Identifiers.Rock, 2)
             .AddResult(stoneGateCreatorItemData._id) // resulting item of the recipe
             .Animation(ItemTools.CraftAnimations.CraftedArrows) // crafting animation
             .BuildAndAdd(); // register the recipe
@@ -145,15 +153,25 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
             .AddResult(ItemTools.Identifiers.Stick)
             .BuildAndAdd();
 
-        RLog.Msg(System.Drawing.Color.SeaGreen, "[ ADDED ITEM ]");
+        RLog.Msg(System.Drawing.Color.SeaGreen, "[ ADDED ITEM: StoneGateTool]");
 
-        DebugConsole.Instance.SendCommand($"additem {ToolItemId}");
+        //DebugConsole.Instance.SendCommand($"additem {ToolItemId}");
 
         // Load Saved Gates
         if (Testing.Settings.logSavingSystem)
             Misc.Msg("[Loading] Processing deferred load.");
 
-        // Process all deferred load data
+        Network.CustomEventHandler.Instance.OnEnterWorld();
+
+
+        if (BoltNetwork.isRunning && BoltNetwork.isClient)
+        {
+            if (Testing.Settings.logSavingSystem)
+                Misc.Msg("[Loading] Skipped Loading StoneGates On Multiplayer Client");
+            return;
+        }
+
+        // Process all deferred load data, if host
         while (Saving.Load.deferredLoadQueue.Count > 0)
         {
             var obj = Saving.Load.deferredLoadQueue.Dequeue();
@@ -172,5 +190,7 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
     internal static GameObject StoneGateToolUI;  // UI For StoneGateTool, Complete or Add Objects
 
     internal static Texture2D stoneGateOpenCloseIcon;
+
+    internal static bool isStoneGateToolOneTimeUse = true;
 
 }

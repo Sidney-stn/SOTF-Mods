@@ -22,11 +22,26 @@ namespace StoneGate.Saving
                 return;
             }
             if (Testing.Settings.logSavingSystem)
+            {
+                // Check if the gates data is null
+                if (obj == null)
+                {
+                    Misc.Msg("[Loading] GatesData IS NULL");
+                    return;
+                }
                 Misc.Msg($"[Loading] Gates From Save: {obj.Gates.Count.ToString()}");
+            }
+                
             foreach (var gatesData in obj.Gates)
             {
                 if (Testing.Settings.logSavingSystem)
                     Misc.Msg("[Loading] Creating New Gates");
+
+                if (gatesData == null)
+                {
+                    Misc.Msg("[Loading] GatesData IS NULL");
+                    continue;
+                }
                 Tools.Gates.LoadIndivudalSaveData(gatesData);
             }
         }

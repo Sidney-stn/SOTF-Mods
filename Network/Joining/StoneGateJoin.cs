@@ -146,6 +146,12 @@ namespace StoneGate.Network.Joining
 
                 var packet = NewPacket(64, GlobalTargets.OnlyServer);
                 packet.Packet.WriteString("REQUEST_SYNC");
+                string steamID = Misc.GetLocalPlayerSteamId();
+                if (string.IsNullOrEmpty(steamID))
+                {
+                    RLog.Error("[StoneGate] [StoneGateJoin] [SendServerResponse] SteamID is null or empty", true);
+                    return;
+                }
                 packet.Packet.WriteString(Misc.GetLocalPlayerSteamId());
                 Send(packet);
 

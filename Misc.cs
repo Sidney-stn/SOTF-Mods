@@ -1,5 +1,6 @@
 ﻿using RedLoader;
 using Sons.Multiplayer;
+using Steamworks;
 using TheForest.Utils;
 
 
@@ -17,7 +18,9 @@ namespace StoneGate
             ulong? mySteamId = MultiplayerUtilities.GetSteamId(LocalPlayer.Entity);
             if (mySteamId == null || mySteamId == 0)
             {
-                return null;
+                Steamworks.CSteamID SteamID = SteamUser.GetSteamID();
+                string SteamIDString = SteamID.ToString();
+                return SteamIDString;
             }
             return mySteamId.ToString();
         }

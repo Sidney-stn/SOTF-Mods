@@ -87,7 +87,32 @@ namespace StoneGate.Mono
 
             CleanupAllMarkedObjects();
             CheckIfReadyToComplete();
-            Objects.CreateGateParent.Instance.AddDoor(rotationObjects.ElementAt(0), markObjects.ToArray());
+            if (BoltNetwork.isRunning)
+            {
+                if (BoltNetwork.isServer)
+                {
+                    Objects.CreateGateParent.Instance.AddDoorNetworkHost(rotationObjects.ElementAt(0), markObjects.ToArray());
+                }
+                else if (BoltNetwork.isClient)
+                {
+                    Objects.CreateGateParent.Instance.AddDoorNetworkClient(rotationObjects.ElementAt(0), markObjects.ToArray());
+                }
+                else
+                {
+                    Misc.Msg("[StoneGateItemMono] [Complete] Not Server Or Client");
+                }
+            }
+            else
+            {
+                Objects.CreateGateParent.Instance.AddDoor(rotationObjects.ElementAt(0), markObjects.ToArray());
+            }
+
+            if (StoneGate.isStoneGateToolOneTimeUse == true)
+            {
+                LocalPlayer.Inventory.RemoveItem(StoneGate.ToolItemId, 1, false, false, true, null, true);
+                SonsTools.ShowMessage("Stone Gate Tool Used Up", 5f);
+            }
+            
         }
 
         private void OnDisable()

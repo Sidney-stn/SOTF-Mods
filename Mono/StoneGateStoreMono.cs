@@ -1,5 +1,6 @@
 ﻿using RedLoader;
 using Sons.Gui.Input;
+using SonsSdk;
 using StoneGate.Objects;
 using System.Collections;
 using UnityEngine;
@@ -415,6 +416,8 @@ namespace StoneGate.Mono
             }
             Tools.Gates.ocupiedObjects.Remove(_rotateGo);
             Destroy(gameObject);
+
+            SonsTools.ShowMessage("Gate Destroyed", 5f);
         }
 
         /// <summary>

@@ -32,6 +32,7 @@ namespace StoneGate.Objects
             StoredParent.transform.rotation = Quaternion.identity;
             StoredParent.transform.localScale = Vector3.one;
             StoredParent.SetActive(true);
+            StoredParent.DontDestroyOnLoad().HideAndDontSave();
         }
 
         /// <summary>
@@ -234,15 +235,19 @@ namespace StoneGate.Objects
             if (mode == RotateMode.None) { RLog.Error("[StoneGate] [CreateGateParent] [AddDoorNetworkClient] Rotate Mode is not valid"); return; }
 
             // Check, at least 1 of the other string must be valid
-            if (string.IsNullOrEmpty(floorBeamGoName) || floorBeamGoName == "NONE" && string.IsNullOrEmpty(topBeamGoName) || topBeamGoName == "NONE" && string.IsNullOrEmpty(rockWallGoName) || rockWallGoName == "NONE" && string.IsNullOrEmpty(extraPillarGoName) || extraPillarGoName == "NONE")
+            if ((string.IsNullOrEmpty(floorBeamGoName) || floorBeamGoName == "NONE") &&
+                (string.IsNullOrEmpty(topBeamGoName) || topBeamGoName == "NONE") &&
+                (string.IsNullOrEmpty(rockWallGoName) || rockWallGoName == "NONE") &&
+                (string.IsNullOrEmpty(extraPillarGoName) || extraPillarGoName == "NONE")
+            )
             {
-                RLog.Error("[StoneGate] [CreateGateParent] [AddDoorNetworkHost] At least 1 of the other string must be valid");
+                RLog.Error("[StoneGate] [CreateGateParent] [AddDoorNetworkClient] At least 1 of the other string must be valid");
                 return;
             }
 
             // Find GameObjects From Name
             GameObject rotateGo = Tools.Gates.FindObjectInSpecificScene(rotateGoName);
-            if (rotateGo == null) { RLog.Error("[StoneGate] [CreateGateParent] [AddDoorNetworkHost] Rotate GameObject is null"); return; }
+            if (rotateGo == null) { RLog.Error("[StoneGate] [CreateGateParent] [AddDoorNetworkClient] Rotate GameObject is null"); return; }
             GameObject floorBeamGo = null;
             GameObject topBeamGo = null;
             GameObject rockWallGo = null;
@@ -370,7 +375,11 @@ namespace StoneGate.Objects
             if (mode == RotateMode.None) { RLog.Error("[StoneGate] [CreateGateParent] [AddDoorNetworkHost] Rotate Mode is not valid"); return; }
 
             // Check, at least 1 of the other string must be valid
-            if (string.IsNullOrEmpty(floorBeamGoName) || floorBeamGoName == "NONE" && string.IsNullOrEmpty(topBeamGoName) || topBeamGoName == "NONE" && string.IsNullOrEmpty(rockWallGoName) || rockWallGoName == "NONE" && string.IsNullOrEmpty(extraPillarGoName) || extraPillarGoName == "NONE")
+            if ((string.IsNullOrEmpty(floorBeamGoName) || floorBeamGoName == "NONE") &&
+                (string.IsNullOrEmpty(topBeamGoName) || topBeamGoName == "NONE") &&
+                (string.IsNullOrEmpty(rockWallGoName) || rockWallGoName == "NONE") &&
+                (string.IsNullOrEmpty(extraPillarGoName) || extraPillarGoName == "NONE")
+            )
             {
                 RLog.Error("[StoneGate] [CreateGateParent] [AddDoorNetworkHost] At least 1 of the other string must be valid");
                 return;
