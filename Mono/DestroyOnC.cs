@@ -27,7 +27,7 @@ namespace Signs.Mono
         private void Update()
         {
             float distance = Vector3.Distance(LocalPlayer.Transform.position, gameObject.transform.position);
-            if (UnityEngine.Input.GetKeyDown(KeyCode.C) && distance < 10f)
+            if (UnityEngine.Input.GetKeyDown(KeyCode.C) && distance < 1f)
             {
                 Transform cameraTransform = LocalPlayer._instance._mainCam.transform;
                 RaycastHit raycastHit;

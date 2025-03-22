@@ -18,12 +18,16 @@ namespace Signs.Network
             }
             var type = (SignSyncEvent.SignSyncType)packet.ReadByte();
             string toPlayerSteamId = packet.ReadString();
-            if (SonsSdk.Networking.NetUtils.IsDedicatedServer == false && toPlayerSteamId.ToLower() != "all" && toPlayerSteamId != Misc.MySteamId().Item2)
+            if (SonsSdk.Networking.NetUtils.IsDedicatedServer == false)
             {
-                Misc.Msg("[ReciverSetter] [ReadPacket] Recived packet not meant for this player", true);
-                Misc.Msg($"[ReciverSetter] [ReadPacket] Recived packet meant for: {toPlayerSteamId}", true);
-                return;
+                if (toPlayerSteamId.ToLower() != "all" && toPlayerSteamId != Misc.MySteamId().Item2)
+                {
+                    Misc.Msg("[ReciverSetter] [ReadPacket] Recived packet not meant for this player", true);
+                    Misc.Msg($"[ReciverSetter] [ReadPacket] Recived packet meant for: {toPlayerSteamId}", true);
+                    return;
+                }
             }
+            
             switch (type)
             {
                 case SignSyncEvent.SignSyncType.SetTextAll:

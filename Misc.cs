@@ -160,6 +160,7 @@ namespace Signs
 
         public static (ulong, string) MySteamId()
         {
+            if (BoltNetwork.isRunning && BoltNetwork.isServer && SonsSdk.Networking.NetUtils.IsDedicatedServer) { return (0, null); }
             ulong? mySteamId = MultiplayerUtilities.GetSteamId(LocalPlayer.Entity);
             if (mySteamId == null || mySteamId == 0)
             {

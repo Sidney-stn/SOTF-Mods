@@ -65,19 +65,33 @@ namespace Signs.Network.Join
                 // If collections are valid, send the full sync event
                 foreach (var item in Saving.Track.spawnedSigns)
                 {
-                    var boltEntity = item.Key;
-                    if (boltEntity == null)
+                    try
                     {
-                        Misc.Msg($"[SyncSignsOnJoin] [ReadMessageServer] BoltEntity is null for {item.Value.name}", true);
-                        continue;
+                        Misc.Msg($"[SyncSignsOnJoin] Processing item: Key={item.Key}, Value={item.Value}", true);
+
+                        var boltEntity = item.Key;
+                        if (boltEntity == null)
+                        {
+                            Misc.Msg($"[SyncSignsOnJoin] [ReadMessageServer] BoltEntity is null for {item.Value?.name ?? "unknown"}", true);
+                            continue;
+                        }
+
+                        Misc.Msg($"[SyncSignsOnJoin] BoltEntity valid, getting SignSetter component", true);
+                        var signSetter = boltEntity.GetComponent<Network.SignSetter>();
+                        if (signSetter == null)
+                        {
+                            Misc.Msg($"[SyncSignsOnJoin] [ReadMessageServer] SignSetter is null for {item.Value?.name ?? "unknown"}", true);
+                            continue;
+                        }
+
+                        Misc.Msg($"[SyncSignsOnJoin] SignSetter valid, calling SendState", true);
+                        Network.SignSyncEvent.SendState(boltEntity, SignSyncEvent.SignSyncType.SetTextAll, toPlayerSteamId);
+                        Misc.Msg($"[SyncSignsOnJoin] SendState completed successfully", true);
                     }
-                    var signSetter = boltEntity.GetComponent<Network.SignSetter>();
-                    if (signSetter == null)
+                    catch (System.Exception ex)
                     {
-                        Misc.Msg($"[SyncSignsOnJoin] [ReadMessageServer] SignSetter is null for {item.Value.name}", true);
-                        continue;
+                        Misc.Msg($"[SyncSignsOnJoin] Error processing item: {ex.Message}\n{ex.StackTrace}", true);
                     }
-                    Network.SignSyncEvent.SendState(boltEntity, SignSyncEvent.SignSyncType.SetTextAll, toPlayerSteamId);
                 }
             }
             catch (System.Exception ex)
@@ -146,7 +160,7 @@ namespace Signs.Network.Join
                     Misc.Msg("[SyncSignsOnJoin] [SendServerResponse] BoltNetwork.server is null", true);
                     return;
                 }
-                if (BoltNetwork.isServer)
+                if (BoltNetwork.isServer == true || SonsSdk.Networking.NetUtils.IsDedicatedServer == true)
                 {
                     Misc.Msg("[SyncSignsOnJoin] [SendServerResponse] Not a client, skipping request", true);
                     return;

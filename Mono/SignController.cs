@@ -145,7 +145,15 @@ namespace Signs.Mono
             if (raiseNetwork && BoltNetwork.isRunning)
             {
                 Misc.Msg($"[SignController] [SetLineText] Raising Network Event");
-                Network.SignSyncEvent.SendState(GetComponent<BoltEntity>(), Network.SignSyncEvent.SignSyncType.SetTextAll);
+                try
+                {
+                    Network.SignSyncEvent.SendState(GetComponent<BoltEntity>(), Network.SignSyncEvent.SignSyncType.SetTextAll);
+                } 
+                catch (Exception e) 
+                {
+                    RLog.Error($"Rasing Network SignSyncEvent Failed, Error: {e}");
+                }
+                
             }
 
         }

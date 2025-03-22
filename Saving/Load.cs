@@ -28,6 +28,10 @@ namespace Signs.Saving
                 if (Misc.hostMode == Misc.SimpleSaveGameType.SinglePlayer)
                 {
                     GameObject sign = GameObject.Instantiate(Structure.Setup.signStructure, signsData.Position, signsData.Rotation);
+                    if (sign == null)
+                    {
+                        RLog.Error("[Load] GameObject Sign Equals Null!");
+                    }
                     var signController = sign.GetComponent<Mono.SignController>();
                     if (signController == null)
                     {
@@ -39,15 +43,26 @@ namespace Signs.Saving
                 }
                 else if (Misc.hostMode == Misc.SimpleSaveGameType.Multiplayer || Misc.hostMode == Misc.SimpleSaveGameType.MultiplayerClient)
                 {
-                    GameObject sign = BoltNetwork.Instantiate(Structure.Setup.signStructure, signsData.Position, signsData.Rotation);
-                    var signController = sign.GetComponent<Mono.SignController>();
-                    if (signController == null)
+                    try
                     {
-                        RLog.Error("[Load] Sign Controller Does Not Exsist When It Should");
-                        SonsTools.ShowMessage("Error Loding Sign Text Data, please report this to the mod author or try agian", 5);
-                        return;
+                        GameObject sign = BoltNetwork.Instantiate(Structure.Setup.signStructure, signsData.Position, signsData.Rotation);
+                        if (sign == null)
+                        {
+                            RLog.Error("[Load] GameObject Sign Equals Null!");
+                        }
+                        var signController = sign.GetComponent<Mono.SignController>();
+                        if (signController == null)
+                        {
+                            RLog.Error("[Load] Sign Controller Does Not Exsist When It Should");
+                            SonsTools.ShowMessage("Error Loding Sign Text Data, please report this to the mod author or try agian", 5);
+                            return;
+                        }
+                        signController.SetAllText(signsData.Line1Text, signsData.Line2Text, signsData.Line3Text, signsData.Line4Text, false);
+                    } catch (Exception ex)
+                    {
+                        RLog.Error($"[Load] Something went wrong when BoltNetwork.Instantiate on new sign! Error: {ex}");
                     }
-                    signController.SetAllText(signsData.Line1Text, signsData.Line2Text, signsData.Line3Text, signsData.Line4Text, false);
+                    
                 }
             }
         }

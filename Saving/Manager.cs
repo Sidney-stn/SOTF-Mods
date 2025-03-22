@@ -24,6 +24,7 @@ namespace Signs.Saving
             // Signs
             if (Saving.Track.spawnedSigns.Count != 0 || Saving.Track.spawnedSigns != null)
             {
+                int savedSigns = 0;
                 foreach (var signsGameObject in Saving.Track.spawnedSigns)
                 {
                     if (signsGameObject.Value == null) { continue; }
@@ -42,11 +43,13 @@ namespace Signs.Saving
                         };
 
                         saveData.Signs.Add(SignsModData);
-                        Misc.Msg("[Saving] Added Sign To Save List");
+                        savedSigns++;
+                        //Misc.Msg("[Saving] Added Sign To Save List");
                     }
                 }
+                Misc.Msg($"[Saving] Saved {savedSigns} Signs");
             }
-            else { Misc.Msg("[Saving] No Sign found in LST, skipped saving"); }
+            else { Misc.Msg("[Saving] No Sign found in save list, skipped saving"); }
 
             return saveData;
         }

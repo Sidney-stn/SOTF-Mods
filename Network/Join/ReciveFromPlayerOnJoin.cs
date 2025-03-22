@@ -82,6 +82,7 @@ namespace Signs.Network.Join
 
         private void KickPlayer(BoltConnection connection)
         {
+            Misc.Msg($"[JoinEvent] [KickPlayer] Kicking player for outdated mod version", true);
             connection.Disconnect(new CoopKickToken { Banned = false, KickMessage = "OUTDATED_VERSION_OF_SIGNS_MOD" }.Cast<IProtocolToken>());
         }
 
