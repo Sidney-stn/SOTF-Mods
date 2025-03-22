@@ -353,7 +353,14 @@ namespace StoneGate.Objects
                     stoneGateMono.Init(rotate, mode, floorBeam, topBeam, rockWall, extraPillar);
 
                     // Raise Event To Clients
-                    Network.HostEvents.Instance.SendHostEvent(Network.HostEvents.HostEvent.CreateStoneGate, rotate.name, mode, floorBeam?.name, topBeam?.name, rockWall?.name, extraPillar?.name, childIndex: (int)childIndex);
+                    try
+                    {
+                        Network.HostEvents.Instance.SendHostEvent(Network.HostEvents.HostEvent.CreateStoneGate, rotate.name, mode, floorBeam?.name, topBeam?.name, rockWall?.name, extraPillar?.name, childIndex: (int)childIndex);
+                    }
+                    catch (Exception e)
+                    {
+                        RLog.Error("[StoneGate] [CreateGateParent] [AddDoorNetworkHost] Error: " + e.Message);
+                    }
                 }
 
             }
@@ -423,7 +430,14 @@ namespace StoneGate.Objects
                 stoneGateMono.Init(rotateGo, mode, floorBeamGo, topBeamGo, rockWallGo, extraPillarGo);
 
                 // Raise Event To Clients
-                Network.HostEvents.Instance.SendHostEvent(Network.HostEvents.HostEvent.CreateStoneGate, rotateGoName, mode, floorBeamGoName, topBeamGoName, rockWallGoName, extraPillarGoName, childIndex: (int)childIndex);
+                try
+                {
+                    Network.HostEvents.Instance.SendHostEvent(Network.HostEvents.HostEvent.CreateStoneGate, rotateGoName, mode, floorBeamGoName, topBeamGoName, rockWallGoName, extraPillarGoName, childIndex: (int)childIndex);
+                }
+                catch (Exception e)
+                {
+                    RLog.Error("[StoneGate] [CreateGateParent] [AddDoorNetworkHost] Error: " + e.Message);
+                }
             }
         }
 

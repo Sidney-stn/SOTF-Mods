@@ -64,7 +64,14 @@ namespace StoneGate.Network.Joining
                         int childIndex = mono.GetChildIndex();
                         GatesManager.GatesModData gatesModData = mono.GetSaveData();
                         Objects.CreateGateParent.RotateMode mode = Objects.CreateGateParent.RotateModeFromString(gatesModData.Mode);
-                        Network.HostEvents.Instance.SendHostEvent(HostEvents.HostEvent.CreateStoneGate, gatesModData.RotationGoName, mode, gatesModData.FloorBeamName, gatesModData.TopBeamName, gatesModData.RockWallName, gatesModData.ExtraPillarName, childIndex);
+                        try
+                        {
+                            Network.HostEvents.Instance.SendHostEvent(HostEvents.HostEvent.CreateStoneGate, gatesModData.RotationGoName, mode, gatesModData.FloorBeamName, gatesModData.TopBeamName, gatesModData.RockWallName, gatesModData.ExtraPillarName, childIndex);
+                        }
+                        catch (System.Exception ex)
+                        {
+                            Misc.Msg($"[StoneGateJoin] [ReadMessageServer] Error sending gate: {ex.Message}", true);
+                        }
                     }
                     catch (System.Exception ex)
                     {

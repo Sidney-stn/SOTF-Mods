@@ -26,13 +26,17 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         //OnGUICallback = MyGUIMethod;
 
         // Uncomment this to automatically apply harmony patches in your assembly.
-        //HarmonyPatchAll = true;
+        HarmonyPatchAll = true;
     }
 
     public const int ToolItemId = 751152;
 
     protected override void OnInitializeMod()
     {
+        if (Testing.DedicatedServer.IsDeticatedServer())
+        {
+            RLog.Msg(System.ConsoleColor.Blue, "[StoneGate] [DEDICATED SERVER] OnInitializeMod");
+        }
         // Do your early mod initialization which doesn't involve game or sdk references here
         Config.Init();
 
@@ -75,11 +79,37 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         }
         else { RLog.Error("Asset Not Loaded"); }
 
-        //stoneGate = Structure.StoneGate.Instance;
+        if (Testing.DedicatedServer.IsDeticatedServer())
+        {
+            RLog.Msg(System.ConsoleColor.Blue, "[StoneGate] [DEDICATED SERVER] Running Setup Code in OnInitializeMod, instead of OnSdkInitialized");
+
+            SdkEvents.OnGameActivated.Subscribe(OnFirstGameActivation, unsubscribeOnFirstInvocation: true);
+
+            // Instantiate Ui
+            StoneGateToolUI = GameObject.Instantiate(Assets.Instance.StoneGateToolUI);
+            StoneGateToolUI.DontDestroyOnLoad().HideAndDontSave();
+            if (StoneGateToolUI == null)
+            {
+                RLog.Error("[StoneGate] StoneGateToolUI Asset Not Found");
+            }
+            else { RLog.Msg("[StoneGate] StoneGateToolUI Asset Found"); StoneGateToolUI.SetActive(false); Misc.Msg("StoneGateToolUI Set"); }
+
+            // Registering Save System
+            var manager = new Saving.Manager();
+            SonsSaveTools.Register(manager);
+
+            // Ensure CreateGateParent is initialized
+            var _ = Objects.CreateGateParent.Instance;
+        }
     }
 
     protected override void OnSdkInitialized()
     {
+        if (Testing.DedicatedServer.IsDeticatedServer())
+        {
+            // This Never Runs On Dedicated Server
+            RLog.Msg(System.ConsoleColor.Blue, "[StoneGate] [DEDICATED SERVER] OnSdkInitialized");
+        }
         // Do your mod initialization which involves game or sdk references here
         // This is for stuff like UI creation, event registration etc.
         StoneGateUi.Create();
@@ -110,6 +140,10 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
 
     protected override void OnGameStart()
     {
+        if (Testing.DedicatedServer.IsDeticatedServer())
+        {
+            RLog.Msg(System.ConsoleColor.Blue, "[StoneGate] [DEDICATED SERVER] OnGameStart");
+        }
         // This is called once the player spawns in the world and gains control.
         // Register Network Event Handlers
         Network.Manager.RegisterEventHandlers();
@@ -117,6 +151,10 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
 
     private void OnFirstGameActivation()
     {
+        if (Testing.DedicatedServer.IsDeticatedServer())
+        {
+            RLog.Msg(System.ConsoleColor.Blue, "[StoneGate] [DEDICATED SERVER] OnFirstGameActivation");
+        }
         stoneGateCreatorItemData = ItemTools.CreateAndRegisterItem(ToolItemId, "Stone Gate Creator", maxAmount: 1, description: "Create Stone Gates");
         stoneGateCreatorItemData.SetIcon(stoneGateCreatorTexture);
 
@@ -133,6 +171,10 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
 
     public void OnAfterSpawn()
     {
+        if (Testing.DedicatedServer.IsDeticatedServer())
+        {
+            RLog.Msg(System.ConsoleColor.Blue, "[StoneGate] [DEDICATED SERVER] OnAfterSpawn");
+        }
         new ItemTools.ItemBuilder(stoneGateCreatorPrefab, stoneGateCreatorItemData)
             .AddInventoryItem() // add a location in the inventory
             .AddIngredientItem() // add a location on the mat as an ingredient
@@ -156,6 +198,7 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         RLog.Msg(System.Drawing.Color.SeaGreen, "[ ADDED ITEM: StoneGateTool]");
 
         //DebugConsole.Instance.SendCommand($"additem {ToolItemId}");
+        DebugConsole.Instance.SendCommand($"removeitem {ToolItemId}");
 
         // Load Saved Gates
         if (Testing.Settings.logSavingSystem)

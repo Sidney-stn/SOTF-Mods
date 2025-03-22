@@ -145,13 +145,27 @@ namespace StoneGate.Mono
             if (raiseNetwork && BoltNetwork.isRunning && BoltNetwork.isServer)
             {
                 // Send network event to open the gate for all clients
-                Network.HostEvents.Instance.SendHostEvent(Network.HostEvents.HostEvent.OpenStoneGate, GetChildIndex());
+                try
+                {
+                    Network.HostEvents.Instance.SendHostEvent(Network.HostEvents.HostEvent.OpenStoneGate, GetChildIndex());
+                }
+                catch (Exception e)
+                {
+                    RLog.Error($"[StoneGate] [StoneGateStoreMono] [DestroyGate] Something Went Wrong Raising OpenStoneGate Host Event. Error: {e}");
+                }
                 if (Testing.Settings.logExtraStoneGateStoreMono) { Misc.Msg($"[StoneGate] [StoneGateStoreMono] [OpenGate] Sending OpenStoneGate event to clients", true); }
             } 
             else if (raiseNetwork && BoltNetwork.isRunning && BoltNetwork.isClient)
             {
                 // Send network event to open the gate for the server
-                Network.ClientEvents.Instance.SendClientEvent(Network.ClientEvents.ClientEvent.OpenStoneGate, GetChildIndex());
+                try
+                {
+                    Network.ClientEvents.Instance.SendClientEvent(Network.ClientEvents.ClientEvent.OpenStoneGate, GetChildIndex());
+                }
+                catch (Exception e)
+                {
+                    RLog.Error($"[StoneGate] [StoneGateStoreMono] [DestroyGate] Something Went Wrong Raising OpenStoneGate Client Event. Error: {e}");
+                }
                 if (Testing.Settings.logExtraStoneGateStoreMono) { Misc.Msg($"[StoneGate] [StoneGateStoreMono] [OpenGate] Sending OpenStoneGate event to server", true); }
             }
 
@@ -171,13 +185,25 @@ namespace StoneGate.Mono
             if (raiseNetwork && BoltNetwork.isRunning && BoltNetwork.isServer)
             {
                 // Send network event to close the gate for all clients
-                Network.HostEvents.Instance.SendHostEvent(Network.HostEvents.HostEvent.CloseStoneGate, GetChildIndex());
+                try
+                {
+                    Network.HostEvents.Instance.SendHostEvent(Network.HostEvents.HostEvent.CloseStoneGate, GetChildIndex());
+                } catch (Exception e)
+                {
+                    RLog.Error($"[StoneGate] [StoneGateStoreMono] [DestroyGate] Something Went Wrong Raising CloseStoneGate Host Event. Error: {e}");
+                }
                 if (Testing.Settings.logExtraStoneGateStoreMono) { Misc.Msg($"[StoneGate] [StoneGateStoreMono] [CloseGate] Sending CloseStoneGate event to clients", true); }
             } 
             else if (raiseNetwork && BoltNetwork.isRunning && BoltNetwork.isClient)
             {
                 // Send network event to close the gate for the server
-                Network.ClientEvents.Instance.SendClientEvent(Network.ClientEvents.ClientEvent.CloseStoneGate, GetChildIndex());
+                try
+                {
+                    Network.ClientEvents.Instance.SendClientEvent(Network.ClientEvents.ClientEvent.CloseStoneGate, GetChildIndex());
+                } catch (Exception e)
+                {
+                    RLog.Error($"[StoneGate] [StoneGateStoreMono] [DestroyGate] Something Went Wrong Raising CloseStoneGate Client Event. Error: {e}");
+                }
                 if (Testing.Settings.logExtraStoneGateStoreMono) { Misc.Msg($"[StoneGate] [StoneGateStoreMono] [CloseGate] Sending CloseStoneGate event to server", true); }
             }
 
@@ -396,12 +422,25 @@ namespace StoneGate.Mono
             // Network
             if (BoltNetwork.isRunning && BoltNetwork.isServer && raiseNetwork)
             {
-                Network.HostEvents.Instance.SendHostEvent(Network.HostEvents.HostEvent.DestroyStoneGate, GetChildIndex());
+                try
+                {
+                    Network.HostEvents.Instance.SendHostEvent(Network.HostEvents.HostEvent.DestroyStoneGate, GetChildIndex());
+                }
+                catch (Exception e)
+                {
+                    RLog.Error($"[StoneGate] [StoneGateStoreMono] [DestroyGate] Something Went Wrong Raising DestroyStoneGate Host Event. Error: {e}");
+                }
                 if (Testing.Settings.logExtraStoneGateStoreMono) { Misc.Msg($"[StoneGate] [StoneGateStoreMono] [DestroyGate] Sending DestroyStoneGate event to clients", true); }
             } 
             else if (BoltNetwork.isRunning && BoltNetwork.isClient && raiseNetwork)
             {
-                Network.ClientEvents.Instance.SendClientEvent(Network.ClientEvents.ClientEvent.DestroyStoneGate, GetChildIndex());
+                try
+                {
+                    Network.ClientEvents.Instance.SendClientEvent(Network.ClientEvents.ClientEvent.DestroyStoneGate, GetChildIndex());
+                } catch (Exception e)
+                {
+                    RLog.Error($"[StoneGate] [StoneGateStoreMono] [DestroyGate] Something Went Wrong Raising DestroyStoneGate Client Event. Error: {e}");
+                }
                 if (Testing.Settings.logExtraStoneGateStoreMono) { Misc.Msg($"[StoneGate] [StoneGateStoreMono] [DestroyGate] Sending DestroyStoneGate event to server", true); }
             }
 

@@ -1,4 +1,5 @@
-﻿using SonsSdk;
+﻿using RedLoader;
+using SonsSdk;
 using StoneGate.Objects;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -328,7 +329,14 @@ namespace StoneGate.Tools
                 }
 
                 // Use AddDoor to create the gate
-                CreateGateParent.Instance.AddDoor(rotate, mode, floorBeam, topBeam, rockWall, extraPillar);
+                try
+                {
+                    CreateGateParent.Instance.AddDoor(rotate, mode, floorBeam, topBeam, rockWall, extraPillar);
+                } catch (Exception e)
+                {
+                    RLog.Error($"[Tools] [Gates] [LoadIndivudalSaveData] Failed To Add Door To GateParent. Error: ${e}");
+                }
+                
             }
         }
     }
