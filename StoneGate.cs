@@ -61,8 +61,12 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
 
         if (Assets.Instance.IsLoaded())
         {
+            Tools.MoveScene.MoveToScene(Assets.Instance.StoneGateTool);  // Move Scene
+
             stoneGateCreatorHeldPrefab = Assets.Instance.StoneGateTool;
             stoneGateCreatorHeldPrefab.transform.localScale = Vector3.one * 2f;
+
+            Tools.MoveScene.MoveToScene(stoneGateCreatorHeldPrefab);  // Move Scene
 
             stoneGateCreatorPrefab = stoneGateCreatorHeldPrefab.Instantiate().DontDestroyOnLoad().HideAndDontSave();
             foreach (var renderer in stoneGateCreatorPrefab.GetComponentsInChildren<MeshRenderer>())
@@ -78,9 +82,6 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
             }
 
             stoneGateCreatorHeldPrefab.AddComponent<Mono.StoneGateItemMono>();
-
-            // Move Scene
-            Tools.MoveScene.MoveToScene(stoneGateCreatorHeldPrefab);
             Tools.MoveScene.MoveToScene(stoneGateCreatorPrefab);
 
             Misc.Msg("StoneGateTool Set");
@@ -156,8 +157,8 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         // Ensure CreateGateParent is initialized
         var _ = Objects.CreateGateParent.Instance;
 
-        //ItemData solafiteOre = ItemDatabaseManager.ItemById(664);
-        //solafiteOre._type |= Sons.Items.Core.Types.CraftingMaterial | Sons.Items.Core.Types.Droppable | Sons.Items.Core.Types.Craftable;
+        Tools.MoveScene.MoveToScene(Assets.Instance.StoneGateTool);
+        Tools.MoveScene.MoveToScene(stoneGateCreatorPrefab);
     }
 
     protected override void OnGameStart()
@@ -242,23 +243,25 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         //DebugConsole.Instance.SendCommand($"additem {ToolItemId}");
         //DebugConsole.Instance.SendCommand($"removeitem {ToolItemId}");
 
+        // Ensure all critical objects are in the right scene
+        EnsureObjectsInCorrectScene();
+
         // Load Saved Gates
         if (Testing.Settings.logSavingSystem)
             Misc.Msg("[Loading] Processing deferred load.");
 
         Network.CustomEventHandler.Instance.OnEnterWorld();
 
+        if (Assets.Instance.StoneGateToolUI != null && Assets.Instance.StoneGateToolUI.active)
+        {
+            Assets.Instance.StoneGateToolUI.SetActive(false);
+        }
 
         if (BoltNetwork.isRunning && BoltNetwork.isClient)
         {
             if (Testing.Settings.logSavingSystem)
                 Misc.Msg("[Loading] Skipped Loading StoneGates On Multiplayer Client");
             return;
-        }
-
-        if (Assets.Instance.StoneGateToolUI != null && Assets.Instance.StoneGateToolUI.active)
-        {
-            Assets.Instance.StoneGateToolUI.SetActive(false);
         }
 
         // Process all deferred load data, if host
@@ -268,11 +271,63 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
             Saving.Load.ProcessLoadData(obj);
         }
 
-        // Move Scene
-        Tools.MoveScene.MoveToScene(StoneGateToolUI);
-        Tools.MoveScene.MoveToScene(stoneGateCreatorPrefab);
-        Tools.MoveScene.MoveToScene(stoneGateCreatorHeldPrefab);
-        Tools.MoveScene.MoveToScene(stoneGateCreatorPickupPrefab);
+    }
+
+    private void EnsureObjectsInCorrectScene()
+    {
+        Misc.Msg("[StoneGate] Ensuring objects are in correct scene...");
+
+        if (stoneGateCreatorHeldPrefab != null)
+        {
+            if (stoneGateCreatorHeldPrefab.scene.name != Tools.MoveScene.targetSceneName)
+            {
+                Misc.Msg($"[StoneGate] Moving stoneGateCreatorHeldPrefab to {Tools.MoveScene.targetSceneName}");
+                Tools.MoveScene.MoveToScene(stoneGateCreatorHeldPrefab);
+            }
+        }
+        else
+        {
+            Misc.Msg("[StoneGate] stoneGateCreatorHeldPrefab is null");
+        }
+
+        if (stoneGateCreatorPrefab != null)
+        {
+            if (stoneGateCreatorPrefab.scene.name != Tools.MoveScene.targetSceneName)
+            {
+                Misc.Msg($"[StoneGate] Moving stoneGateCreatorPrefab to {Tools.MoveScene.targetSceneName}");
+                Tools.MoveScene.MoveToScene(stoneGateCreatorPrefab);
+            }
+        }
+        else
+        {
+            Misc.Msg("[StoneGate] stoneGateCreatorPrefab is null");
+        }
+
+        if (stoneGateCreatorPickupPrefab != null)
+        {
+            if (stoneGateCreatorPickupPrefab.scene.name != Tools.MoveScene.targetSceneName)
+            {
+                Misc.Msg($"[StoneGate] Moving stoneGateCreatorPickupPrefab to {Tools.MoveScene.targetSceneName}");
+                Tools.MoveScene.MoveToScene(stoneGateCreatorPickupPrefab);
+            }
+        }
+        else
+        {
+            Misc.Msg("[StoneGate] stoneGateCreatorPickupPrefab is null");
+        }
+
+        if (StoneGateToolUI != null)
+        {
+            if (StoneGateToolUI.scene.name != Tools.MoveScene.targetSceneName)
+            {
+                Misc.Msg($"[StoneGate] Moving StoneGateToolUI to {Tools.MoveScene.targetSceneName}");
+                Tools.MoveScene.MoveToScene(StoneGateToolUI);
+            }
+        }
+        else
+        {
+            Misc.Msg("[StoneGate] StoneGateToolUI is null");
+        }
     }
 
     internal static Structure.StoneGate stoneGate;
