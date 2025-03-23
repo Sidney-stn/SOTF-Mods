@@ -8,6 +8,7 @@ using Sons.Items.Core;
 using SonsSdk;
 using SonsSdk.Attributes;
 using SUI;
+using System.Diagnostics.Tracing;
 using TheForest;
 using UnityEngine;
 using static Sons.Input.InputSystem;
@@ -27,7 +28,10 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
 
         // Uncomment this to automatically apply harmony patches in your assembly.
         HarmonyPatchAll = true;
+        Instance = this;
     }
+
+    public static StoneGate Instance;
 
     public const int ToolItemId = 751152;
 
@@ -75,6 +79,10 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
 
             stoneGateCreatorHeldPrefab.AddComponent<Mono.StoneGateItemMono>();
 
+            // Move Scene
+            Tools.MoveScene.MoveToScene(stoneGateCreatorHeldPrefab);
+            Tools.MoveScene.MoveToScene(stoneGateCreatorPrefab);
+
             Misc.Msg("StoneGateTool Set");
         }
         else { RLog.Error("Asset Not Loaded"); }
@@ -92,7 +100,14 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
             {
                 RLog.Error("[StoneGate] StoneGateToolUI Asset Not Found");
             }
-            else { RLog.Msg("[StoneGate] StoneGateToolUI Asset Found"); StoneGateToolUI.SetActive(false); Misc.Msg("StoneGateToolUI Set"); }
+            else { 
+                RLog.Msg("[StoneGate] StoneGateToolUI Asset Found");
+                StoneGateToolUI.SetActive(false);
+                Misc.Msg("StoneGateToolUI Set");
+
+                // Move Scene
+                Tools.MoveScene.MoveToScene(StoneGateToolUI);
+            }
 
             // Registering Save System
             var manager = new Saving.Manager();
@@ -125,7 +140,14 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         if (StoneGateToolUI == null)
         {
             RLog.Error("[StoneGate] StoneGateToolUI Asset Not Found");
-        } else { RLog.Msg("[StoneGate] StoneGateToolUI Asset Found"); StoneGateToolUI.SetActive(false); Misc.Msg("StoneGateToolUI Set"); }
+        } else { 
+            RLog.Msg("[StoneGate] StoneGateToolUI Asset Found");
+            StoneGateToolUI.SetActive(false);
+            Misc.Msg("StoneGateToolUI Set");
+
+            // Move Scene
+            Tools.MoveScene.MoveToScene(StoneGateToolUI);
+        }
 
         // Registering Save System
         var manager = new Saving.Manager();
@@ -155,8 +177,24 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         {
             RLog.Msg(System.ConsoleColor.Blue, "[StoneGate] [DEDICATED SERVER] OnFirstGameActivation");
         }
+        if (Testing.Settings.useFakeItemForTesting)
+        {
+            Misc.Msg("Using Fake Item For Testing");
+            GameObject test = DebugTools.CreatePrimitive(PrimitiveType.Sphere, null, Color.red);
+            test.DontDestroyOnLoad().HideAndDontSave();
+            stoneGateCreatorItemData = ItemTools.CreateAndRegisterItem(ToolItemId, "Stone Gate Creator", maxAmount: 1, description: "Create Stone Gates");
+            stoneGateCreatorItemData.SetupHeld(EquipmentSlot.RightHand, new[] { AnimatorVariables.molotovHeld });
+            stoneGateCreatorPickupPrefab = test;
+            stoneGateCreatorItemData._heldPrefab = test.transform;
+            Misc.Msg("Fake Item Created");
+            Tools.MoveScene.MoveToScene(test);
+            Tools.MoveScene.MoveToScene(stoneGateCreatorPickupPrefab);
+            Tools.MoveScene.MoveToScene(stoneGateCreatorHeldPrefab);
+            return;
+        }
+
         stoneGateCreatorItemData = ItemTools.CreateAndRegisterItem(ToolItemId, "Stone Gate Creator", maxAmount: 1, description: "Create Stone Gates");
-        stoneGateCreatorItemData.SetIcon(stoneGateCreatorTexture);
+        //stoneGateCreatorItemData.SetIcon(stoneGateCreatorTexture);
 
         // Some parameters for holdable stuff
         stoneGateCreatorItemData.SetupHeld(EquipmentSlot.RightHand, new[] { AnimatorVariables.molotovHeld });
@@ -166,6 +204,10 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
 
         // also use the same model for the held item
         stoneGateCreatorItemData._heldPrefab = stoneGateCreatorHeldPrefab.transform;
+
+        // Move Scene
+        Tools.MoveScene.MoveToScene(stoneGateCreatorPickupPrefab);
+        Tools.MoveScene.MoveToScene(stoneGateCreatorHeldPrefab);
 
     }
 
@@ -198,7 +240,7 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         RLog.Msg(System.Drawing.Color.SeaGreen, "[ ADDED ITEM: StoneGateTool]");
 
         //DebugConsole.Instance.SendCommand($"additem {ToolItemId}");
-        DebugConsole.Instance.SendCommand($"removeitem {ToolItemId}");
+        //DebugConsole.Instance.SendCommand($"removeitem {ToolItemId}");
 
         // Load Saved Gates
         if (Testing.Settings.logSavingSystem)
@@ -214,12 +256,23 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
             return;
         }
 
+        if (Assets.Instance.StoneGateToolUI != null && Assets.Instance.StoneGateToolUI.active)
+        {
+            Assets.Instance.StoneGateToolUI.SetActive(false);
+        }
+
         // Process all deferred load data, if host
         while (Saving.Load.deferredLoadQueue.Count > 0)
         {
             var obj = Saving.Load.deferredLoadQueue.Dequeue();
             Saving.Load.ProcessLoadData(obj);
         }
+
+        // Move Scene
+        Tools.MoveScene.MoveToScene(StoneGateToolUI);
+        Tools.MoveScene.MoveToScene(stoneGateCreatorPrefab);
+        Tools.MoveScene.MoveToScene(stoneGateCreatorHeldPrefab);
+        Tools.MoveScene.MoveToScene(stoneGateCreatorPickupPrefab);
     }
 
     internal static Structure.StoneGate stoneGate;

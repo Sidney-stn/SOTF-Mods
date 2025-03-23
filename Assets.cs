@@ -60,7 +60,8 @@ namespace StoneGate
                 RLog.Error("[StoneGate] StoneGateTool Asset Not Found");
                 return;
             }
-            StoneGateTool.HideAndDontSave().DontDestroyOnLoad();
+            StoneGateTool.DontDestroyOnLoad().HideAndDontSave();
+            Tools.MoveScene.MoveToScene(StoneGateTool);
 
 
             // Set Rigidbody To Kinematic True
@@ -98,6 +99,7 @@ namespace StoneGate
             }
             StoneGateToolUI.HideAndDontSave().DontDestroyOnLoad();
             StoneGateToolUI.SetActive(false);  // Hide The UI By Default
+
 
             // Unload the bundle, but keep loaded assets
             assetBundle.Unload(false);

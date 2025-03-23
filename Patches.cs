@@ -4,6 +4,7 @@ using Sons.Gui;
 using Sons.Inventory;
 using Sons.Multiplayer.Client;
 using StoneGate.Structure;
+using TheForest.Items.Inventory;
 using UnityEngine;
 
 namespace StoneGate
@@ -92,6 +93,25 @@ namespace StoneGate
             //    Misc.Msg("[MultiplayerFix] [PrefixTwo] Skipping StoneGate Tool, Multiplayer");
             //    return false;  // Skip the original method
             //}
+            return true;  // Call the original method
+        }
+    }
+
+    [HarmonyPatch(typeof(PlayerInventory))]
+    [HarmonyPatch("Open")]
+    internal class MultiplayerFixFour
+    {
+        [HarmonyPrefix]
+        public static bool PrefixFour()
+        {
+            Misc.Msg("PlayerInventory Open");
+            Misc.Msg("Missing Refs:");
+            Debug.ItemRefs.LogMissingRefs();
+            Misc.Msg("All Refs:");
+            Debug.ItemRefs.LogAllRefs();
+            Misc.Msg("Scenes:");
+            Debug.ItemRefs.LogSceneOfRefs();
+
             return true;  // Call the original method
         }
     }

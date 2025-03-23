@@ -12,5 +12,7 @@ namespace StoneGate.Testing
         internal static bool logSavingSystem = true;
         internal static bool superLogSavingSystem = true;
         internal static bool logPatches = true;
+        internal static bool logScene = true;
+        internal static bool useFakeItemForTesting = true;
     }
 }

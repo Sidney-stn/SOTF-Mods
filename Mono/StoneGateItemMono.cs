@@ -34,6 +34,10 @@ namespace StoneGate.Mono
             Objects.ActiveItem.active = this;
 
             animController = GetComponent<Animator>();
+            if (animController == null)
+            {
+                RLog.Error("[StoneGate] [StoneGateItemMono] [Start] Animator is null");
+            }
 
             StoneGateUi.OpenMainPanel();
 
