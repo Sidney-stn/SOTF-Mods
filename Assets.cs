@@ -31,6 +31,19 @@ namespace StoneGate
         public void LoadAssets()
         {
             if (_loaded) { return; }
+            if (Testing.Settings.useFakeItemForTesting == true)
+            {
+                StoneGateTool = DebugTools.CreatePrimitive(PrimitiveType.Sphere, null, Color.red);
+                Tools.MoveScene.MoveToScene(StoneGateTool);
+                StoneGateTool.AddComponent<Animator>();
+
+                StoneGateToolUI = new GameObject("StoneGateToolUI");
+                Tools.MoveScene.MoveToScene(StoneGateToolUI);
+
+                _loaded = true;
+                return;
+            }
+
             string dataPath = Application.dataPath;
             // sotfPath Are 1 Level Up From The DataPath
             string sotfPath = Directory.GetParent(dataPath).FullName;
@@ -60,7 +73,6 @@ namespace StoneGate
                 RLog.Error("[StoneGate] StoneGateTool Asset Not Found");
                 return;
             }
-            StoneGateTool.DontDestroyOnLoad().HideAndDontSave();
             Tools.MoveScene.MoveToScene(StoneGateTool);
 
 
@@ -97,7 +109,6 @@ namespace StoneGate
                 RLog.Error("[StoneGate] StoneGateToolUI Asset Not Found");
                 return;
             }
-            StoneGateToolUI.HideAndDontSave().DontDestroyOnLoad();
             StoneGateToolUI.SetActive(false);  // Hide The UI By Default
 
 

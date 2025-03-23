@@ -97,23 +97,23 @@ namespace StoneGate
         }
     }
 
-    [HarmonyPatch(typeof(PlayerInventory))]
-    [HarmonyPatch("Open")]
-    internal class MultiplayerFixFour
-    {
-        [HarmonyPrefix]
-        public static bool PrefixFour()
-        {
-            Misc.Msg("PlayerInventory Open");
-            Misc.Msg("Missing Refs:");
-            Debug.ItemRefs.LogMissingRefs();
-            Misc.Msg("All Refs:");
-            Debug.ItemRefs.LogAllRefs();
-            Misc.Msg("Scenes:");
-            Debug.ItemRefs.LogSceneOfRefs();
+    //[HarmonyPatch(typeof(PlayerInventory))]
+    //[HarmonyPatch("Open")]
+    //internal class MultiplayerFixFour
+    //{
+    //    [HarmonyPrefix]
+    //    public static bool PrefixFour()
+    //    {
+    //        Misc.Msg("PlayerInventory Open");
+    //        Misc.Msg("Missing Refs:");
+    //        Debug.ItemRefs.LogMissingRefs();
+    //        Misc.Msg("All Refs:");
+    //        Debug.ItemRefs.LogAllRefs();
+    //        Misc.Msg("Scenes:");
+    //        Debug.ItemRefs.LogSceneOfRefs();
 
-            return true;  // Call the original method
-        }
-    }
+    //        return true;  // Call the original method
+    //    }
+    //}
 
 }

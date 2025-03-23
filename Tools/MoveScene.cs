@@ -18,7 +18,7 @@ namespace StoneGate.Tools
                 return false;
             }
 
-            // Skip if already in correct scene
+            // Check if already in DontDestroyOnLoad scene
             if (objectToMove.scene.name == targetSceneName)
             {
                 if (Testing.Settings.logScene)
@@ -28,58 +28,24 @@ namespace StoneGate.Tools
                 return true;
             }
 
-            // Get the target scene
-            Scene targetScene = SceneManager.GetSceneByName(targetSceneName);
-            if (targetScene.IsValid())
+            try
             {
-                try
-                {
-                    SceneManager.MoveGameObjectToScene(objectToMove, targetScene);
-                    objectToMove.DontDestroyOnLoad().HideAndDontSave();
+                // Instead of trying to find and use the DontDestroyOnLoad scene directly,
+                // just use Unity's built-in DontDestroyOnLoad method
+                UnityEngine.Object.DontDestroyOnLoad(objectToMove);
 
-                    if (Testing.Settings.logScene)
-                    {
-                        Misc.Msg($"[MoveScene] [MoveToScene] Successfully moved {objectToMove.name} to {targetSceneName}", true);
-                    }
-                    return true;
-                }
-                catch (Exception ex)
+                // Additional Unity extensions if needed 
+                objectToMove.HideAndDontSave();
+
+                if (Testing.Settings.logScene)
                 {
-                    Misc.Msg($"[MoveScene] [MoveToScene] Error moving {objectToMove.name}: {ex.Message}", true);
-                    return false;
+                    Misc.Msg($"[MoveScene] [MoveToScene] Successfully moved {objectToMove.name} to DontDestroyOnLoad scene", true);
                 }
+                return true;
             }
-            else
+            catch (Exception ex)
             {
-                Misc.Msg($"[MoveScene] [MoveToScene] Target Scene {targetSceneName} is invalid", true);
-
-                // Try to create the DontDestroyOnLoad scene by using GameObject.DontDestroyOnLoad
-                try
-                {
-                    GameObject tempObject = new GameObject("TempSceneCreator");
-                    GameObject.DontDestroyOnLoad(tempObject);
-
-                    // Try again
-                    targetScene = SceneManager.GetSceneByName(targetSceneName);
-                    if (targetScene.IsValid())
-                    {
-                        SceneManager.MoveGameObjectToScene(objectToMove, targetScene);
-                        GameObject.Destroy(tempObject); // Clean up
-
-                        if (Testing.Settings.logScene)
-                        {
-                            Misc.Msg($"[MoveScene] [MoveToScene] Successfully moved {objectToMove.name} to {targetSceneName} after creating scene", true);
-                        }
-                        return true;
-                    }
-
-                    GameObject.Destroy(tempObject); // Clean up
-                }
-                catch (Exception ex)
-                {
-                    Misc.Msg($"[MoveScene] [MoveToScene] Failed to create DontDestroyOnLoad scene: {ex.Message}", true);
-                }
-
+                Misc.Msg($"[MoveScene] [MoveToScene] Error moving {objectToMove.name}: {ex.Message}", true);
                 return false;
             }
         }

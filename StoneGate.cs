@@ -5,6 +5,7 @@ using Il2CppInterop.Runtime.Injection;
 using RedLoader;
 using Sons.Items;
 using Sons.Items.Core;
+using Sons.Weapon;
 using SonsSdk;
 using SonsSdk.Attributes;
 using SUI;
@@ -46,11 +47,19 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
 
         // Load assets
         Assets.Instance.LoadAssets();
-        stoneGateCreatorTexture = AssetLoaders.LoadTexture(Assets.Instance.GetStoneGateToolPath());
-        stoneGateCreatorTexture.hideFlags = HideFlags.HideAndDontSave;
+        if (Testing.Settings.useFakeItemForTesting == false)
+        {
+            stoneGateCreatorTexture = AssetLoaders.LoadTexture(Assets.Instance.GetStoneGateToolPath());
+            stoneGateCreatorTexture.hideFlags = HideFlags.HideAndDontSave;
 
-        stoneGateOpenCloseIcon = AssetLoaders.LoadTexture(Assets.Instance.GetOpenCloseIconPath());
-        stoneGateOpenCloseIcon.hideFlags = HideFlags.HideAndDontSave;
+            stoneGateOpenCloseIcon = AssetLoaders.LoadTexture(Assets.Instance.GetOpenCloseIconPath());
+            stoneGateOpenCloseIcon.hideFlags = HideFlags.HideAndDontSave;
+        } else
+        {
+            stoneGateCreatorTexture = null;
+            stoneGateOpenCloseIcon = null;
+        }
+            
 
         // Registier Classes In Il2cpp
         ClassInjector.RegisterTypeInIl2Cpp<Mono.StoneGateItemMono>();
@@ -68,7 +77,7 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
 
             Tools.MoveScene.MoveToScene(stoneGateCreatorHeldPrefab);  // Move Scene
 
-            stoneGateCreatorPrefab = stoneGateCreatorHeldPrefab.Instantiate().DontDestroyOnLoad().HideAndDontSave();
+            stoneGateCreatorPrefab = stoneGateCreatorHeldPrefab.Instantiate();
             foreach (var renderer in stoneGateCreatorPrefab.GetComponentsInChildren<MeshRenderer>())
             {
                 // the renderers need colliders
@@ -82,6 +91,7 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
             }
 
             stoneGateCreatorHeldPrefab.AddComponent<Mono.StoneGateItemMono>();
+
             Tools.MoveScene.MoveToScene(stoneGateCreatorPrefab);
 
             Misc.Msg("StoneGateTool Set");
@@ -96,7 +106,6 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
 
             // Instantiate Ui
             StoneGateToolUI = GameObject.Instantiate(Assets.Instance.StoneGateToolUI);
-            StoneGateToolUI.DontDestroyOnLoad().HideAndDontSave();
             if (StoneGateToolUI == null)
             {
                 RLog.Error("[StoneGate] StoneGateToolUI Asset Not Found");
@@ -137,7 +146,6 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
 
         // Instantiate Ui
         StoneGateToolUI = GameObject.Instantiate(Assets.Instance.StoneGateToolUI);
-        StoneGateToolUI.DontDestroyOnLoad().HideAndDontSave();
         if (StoneGateToolUI == null)
         {
             RLog.Error("[StoneGate] StoneGateToolUI Asset Not Found");
@@ -182,13 +190,12 @@ public class StoneGate : SonsMod, IOnAfterSpawnReceiver
         {
             Misc.Msg("Using Fake Item For Testing");
             GameObject test = DebugTools.CreatePrimitive(PrimitiveType.Sphere, null, Color.red);
-            test.DontDestroyOnLoad().HideAndDontSave();
+            Tools.MoveScene.MoveToScene(test);
             stoneGateCreatorItemData = ItemTools.CreateAndRegisterItem(ToolItemId, "Stone Gate Creator", maxAmount: 1, description: "Create Stone Gates");
             stoneGateCreatorItemData.SetupHeld(EquipmentSlot.RightHand, new[] { AnimatorVariables.molotovHeld });
             stoneGateCreatorPickupPrefab = test;
             stoneGateCreatorItemData._heldPrefab = test.transform;
             Misc.Msg("Fake Item Created");
-            Tools.MoveScene.MoveToScene(test);
             Tools.MoveScene.MoveToScene(stoneGateCreatorPickupPrefab);
             Tools.MoveScene.MoveToScene(stoneGateCreatorHeldPrefab);
             return;
