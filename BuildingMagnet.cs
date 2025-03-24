@@ -1,4 +1,5 @@
 ﻿using SonsSdk;
+using TheForest.Utils;
 
 namespace BuildingMagnet;
 
@@ -36,5 +37,7 @@ public class BuildingMagnet : SonsMod
     protected override void OnGameStart()
     {
         // This is called once the player spawns in the world and gains control.
+        if (LocalPlayer.GameObject.GetComponent<BuildingMagnetMono>() == null)
+            LocalPlayer.GameObject.AddComponent<BuildingMagnetMono>();
     }
 }
