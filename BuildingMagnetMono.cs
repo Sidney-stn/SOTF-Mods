@@ -263,7 +263,7 @@ namespace BuildingMagnet
 
         private IEnumerator MoveObjectToPlayerSmoothly(GameObject obj)
         {
-            // Check if the object has a rigidbody and disable it temporarily
+            // Store rigidbody state
             Rigidbody rb = obj.GetComponent<Rigidbody>();
             bool hadRigidbody = false;
             bool wasKinematic = false;
@@ -273,6 +273,19 @@ namespace BuildingMagnet
                 hadRigidbody = true;
                 wasKinematic = rb.isKinematic;
                 rb.isKinematic = true;
+            }
+
+            // Get player and object colliders
+            Collider[] objColliders = obj.GetComponentsInChildren<Collider>();
+            Collider[] playerColliders = LocalPlayer.GameObject.GetComponentsInChildren<Collider>();
+
+            // Ignore collisions between player and object
+            foreach (Collider objCollider in objColliders)
+            {
+                foreach (Collider playerCollider in playerColliders)
+                {
+                    Physics.IgnoreCollision(objCollider, playerCollider, true);
+                }
             }
 
             // Move object smoothly to player
@@ -311,6 +324,15 @@ namespace BuildingMagnet
                 if (hadRigidbody && rb != null)
                 {
                     rb.isKinematic = wasKinematic;
+                }
+
+                // Restore collision detection
+                foreach (Collider objCollider in objColliders)
+                {
+                    foreach (Collider playerCollider in playerColliders)
+                    {
+                        Physics.IgnoreCollision(objCollider, playerCollider, false);
+                    }
                 }
 
                 // Remove from currently attracted objects

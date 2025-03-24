@@ -1,9 +1,9 @@
 {
   "$schema": "https://raw.githubusercontent.com/ToniMacaroni/RedLoader/main/MetadataSchema.json",
   "id": "BuildingMagnet",
-  "author": "You",
+  "author": "SmokyAce",
   "version": "1.0.0",
-  "description": "A mod that does something.",
+  "description": "Adds a magnet feature to some objects",
   "gameVersion": "1.0.0",
   "type": "Mod",
   "url": "..."
