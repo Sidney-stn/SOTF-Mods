@@ -329,17 +329,7 @@ namespace BuildingMagnet
             // Move object smoothly to player
             float startTime = Time.time;
             Vector3 startPosition = obj.transform.position;
-
-            bool client = false;
-            if (BoltNetwork.isRunning && BoltNetwork.isClient)
-            {
-                client = true;
-                BoltEntity boltEntity = obj.GetComponent<BoltEntity>();
-
-                Network.ClientEvents.Instance.SendClientEvent(Network.ClientEvents.ClientEvent.ServerReleaseControl, boltEntity.networkId);
-            }
                 
-
             while (obj != null)
             {
                 // Verify exclusion is still applied (extra safety check)
@@ -403,12 +393,6 @@ namespace BuildingMagnet
 
                 // Remove from tracking collections
                 _magnetTracking.RemoveObject(obj);
-
-                if (client)
-                {
-                    BoltEntity boltEntity = obj.GetComponent<BoltEntity>();
-                    Network.ClientEvents.Instance.SendClientEvent(Network.ClientEvents.ClientEvent.ServerTakeControl, boltEntity.networkId);
-                }
             }
         }
 

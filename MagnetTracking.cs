@@ -31,6 +31,17 @@ namespace BuildingMagnet
                 return false;
 
             _trackedObjects.Add(instanceId, obj);
+            if (BoltNetwork.isRunning && BoltNetwork.isClient)
+            {
+                BoltEntity boltEntity = obj.GetComponent<BoltEntity>();
+                if (boltEntity.isOwner == false && !boltEntity.hasControl)
+                {
+                    Network.ClientEvents.Instance.SendClientEvent(Network.ClientEvents.ClientEvent.ServerReleaseControl, boltEntity.networkId);
+                } else if (boltEntity.isOwner)
+                {
+                    boltEntity.TakeControl();
+                }
+            }
             return true;
         }
 
@@ -104,6 +115,13 @@ namespace BuildingMagnet
 
             bool objectRemoved = _trackedObjects.Remove(instanceId);
             _movementCoroutines.Remove(instanceId);
+
+            if (BoltNetwork.isRunning && BoltNetwork.isClient)
+            {
+                BoltEntity boltEntity = obj.GetComponent<BoltEntity>();
+                boltEntity.ReleaseControl();
+                Network.ClientEvents.Instance.SendClientEvent(Network.ClientEvents.ClientEvent.ServerTakeControl, boltEntity.networkId);
+            }
 
             return objectRemoved;
         }
