@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ToniMacaroni/RedLoader/main/MetadataSchema.json",
+  "id": "LogSledAutoPickup",
+  "author": "SmokyAce",
+  "version": "1.0.0",
+  "description": "Select what type of object the logsled will auto pickup",
+  "gameVersion": "1.0.0",
+  "type": "Mod",
+  "platform": "Client",
+  "url": "https://sotf-mods.com/mods/smokyace/logsledautopickup"
+}
