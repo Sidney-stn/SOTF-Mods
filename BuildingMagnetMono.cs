@@ -281,8 +281,18 @@ namespace BuildingMagnet
             LayerMask playerLayerMask = 1 << playerLayerIndex;
 
             // Get all colliders on the object
-            //Collider[] colliders = obj.GetComponentsInChildren<Collider>(true); // include inactive objects
-            Collider[] colliders = obj.GetComponents<Collider>(); // include inactive objects
+            Collider[] colliders;
+            if (obj.name == "StonePickup(Clone)")
+            {
+                // For stones, include all child colliders
+                colliders = obj.GetComponentsInChildren<Collider>();
+                RLog.Msg($"[BuildingMagnet] Using GetComponentsInChildren for Stone: {colliders.Length} colliders found");
+            }
+            else
+            {
+                // For other objects, use the original approach
+                colliders = obj.GetComponents<Collider>();
+            }
             Dictionary<Collider, LayerMask> originalExcludeLayers = new Dictionary<Collider, LayerMask>();
 
             // Get player colliders for direct collision ignoring
@@ -320,73 +330,115 @@ namespace BuildingMagnet
             float startTime = Time.time;
             Vector3 startPosition = obj.transform.position;
 
-            while (obj != null)
+            BoltEntity boltEntity = null;
+            if (BoltNetwork.isRunning && BoltNetwork.isClient)
             {
-                // Verify exclusion is still applied (extra safety check)
-                foreach (Collider collider in colliders)
+                boltEntity = obj.GetComponent<BoltEntity>();
+
+                while (obj != null)
                 {
-                    if (collider != null && (collider.excludeLayers & playerLayerMask) != playerLayerMask)
+                    // Verify exclusion is still applied (extra safety check)
+                    foreach (Collider collider in colliders)
                     {
-                        RLog.Msg($"[BuildingMagnet] Warning: Player layer exclusion was lost, reapplying to {obj.name}");
-                        collider.excludeLayers |= playerLayerMask;
+                        if (collider != null && (collider.excludeLayers & playerLayerMask) != playerLayerMask)
+                        {
+                            RLog.Msg($"[BuildingMagnet] Warning: Player layer exclusion was lost, reapplying to {obj.name}");
+                            collider.excludeLayers |= playerLayerMask;
+                        }
                     }
+
+                    float journeyLength = Vector3.Distance(obj.transform.position, LocalPlayer.Transform.position);
+
+                    // Calculate movement
+                    float distCovered = (Time.time - startTime) * _moveSpeed;
+                    float fractionOfJourney = distCovered / journeyLength;
+                    if (boltEntity == null)
+                    {
+                        obj.transform.position = Vector3.Lerp(
+                        obj.transform.position,
+                        LocalPlayer.Transform.position,
+                        fractionOfJourney * Time.deltaTime * 10f
+                        );
+                    } else
+                    {
+                        if (boltEntity.hasControl == false)
+                        {
+                            boltEntity.TakeControl();
+                            RLog.Msg($"[BuildingMagnet] Took control of {obj.name}");
+                            if (boltEntity.hasControl == false)
+                            {
+                                RLog.Msg(ConsoleColor.DarkYellow, $"[BuildingMagnet] Failed to take control of {obj.name}");
+                                // Restore to original condition
+                                if (hadRigidbody && rb != null)
+                                {
+                                    rb.isKinematic = wasKinematic;
+                                }
+                                foreach (Collider collider in colliders)
+                                {
+                                    if (collider != null && originalExcludeLayers.TryGetValue(collider, out LayerMask original))
+                                    {
+                                        collider.excludeLayers = original;
+                                    }
+                                }
+                                foreach (var (objCollider, playerCollider, wasIgnoring) in ignoredCollisionPairs)
+                                {
+                                    if (objCollider != null && playerCollider != null)
+                                    {
+                                        Physics.IgnoreCollision(objCollider, playerCollider, wasIgnoring);
+                                    }
+                                }
+                                _magnetTracking.RemoveObject(obj);
+                                yield break;
+                            }
+                        }
+                        boltEntity.transform.position = Vector3.Lerp(
+                        obj.transform.position,
+                        LocalPlayer.Transform.position,
+                        fractionOfJourney * Time.deltaTime * 10f
+                        );
+                    }
+                    
+
+
+                    yield return null;
                 }
 
-                float journeyLength = Vector3.Distance(obj.transform.position, LocalPlayer.Transform.position);
+                // Clean up
+                if (obj != null)
+                {
+                    // Final position adjustment
+                    obj.transform.position = LocalPlayer.Transform.position;
 
-                // If we're close enough, break out of the loop
-                //if (journeyLength < 1f)
-                //{
-                //    break;
-                //}
+                    // Restore original exclude layers
+                    foreach (Collider collider in colliders)
+                    {
+                        if (collider != null && originalExcludeLayers.TryGetValue(collider, out LayerMask original))
+                        {
+                            collider.excludeLayers = original;
+                        }
+                    }
 
-                // Calculate movement
-                float distCovered = (Time.time - startTime) * _moveSpeed;
-                float fractionOfJourney = distCovered / journeyLength;
-                obj.transform.position = Vector3.Lerp(
-                    obj.transform.position,
-                    LocalPlayer.Transform.position,
-                    fractionOfJourney * Time.deltaTime * 10f
-                );
+                    // Restore original collision ignore states
+                    foreach (var (objCollider, playerCollider, wasIgnoring) in ignoredCollisionPairs)
+                    {
+                        if (objCollider != null && playerCollider != null)
+                        {
+                            Physics.IgnoreCollision(objCollider, playerCollider, wasIgnoring);
+                        }
+                    }
 
-                yield return null;
+                    // Restore rigidbody state if needed
+                    if (hadRigidbody && rb != null)
+                    {
+                        rb.isKinematic = wasKinematic;
+                    }
+
+                    RLog.Msg($"[BuildingMagnet] Restored collision settings for {obj.name}");
+                }
+
+                // Remove from tracking collections
+                _magnetTracking.RemoveObject(obj);
             }
-
-            // Clean up
-            if (obj != null)
-            {
-                // Final position adjustment
-                obj.transform.position = LocalPlayer.Transform.position;
-
-                // Restore original exclude layers
-                foreach (Collider collider in colliders)
-                {
-                    if (collider != null && originalExcludeLayers.TryGetValue(collider, out LayerMask original))
-                    {
-                        collider.excludeLayers = original;
-                    }
-                }
-
-                // Restore original collision ignore states
-                foreach (var (objCollider, playerCollider, wasIgnoring) in ignoredCollisionPairs)
-                {
-                    if (objCollider != null && playerCollider != null)
-                    {
-                        Physics.IgnoreCollision(objCollider, playerCollider, wasIgnoring);
-                    }
-                }
-
-                // Restore rigidbody state if needed
-                if (hadRigidbody && rb != null)
-                {
-                    rb.isKinematic = wasKinematic;
-                }
-
-                RLog.Msg($"[BuildingMagnet] Restored collision settings for {obj.name}");
-            }
-
-            // Remove from tracking collections
-            _magnetTracking.RemoveObject(obj);
         }
 
         private void OnDestroy()
