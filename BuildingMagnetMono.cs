@@ -15,8 +15,7 @@ namespace BuildingMagnet
         private LayerMask _defaultLayerMask;      // Default layer mask when mode is ALL or NONE
         private int _maxObjectsToAttract = 10;    // Maximum number of objects to attract at once
 
-        private List<GameObject> _currentlyAttractedObjects = new List<GameObject>();
-        private Dictionary<GameObject, Coroutine> _activeMovementCoroutines = new Dictionary<GameObject, Coroutine>();
+        private MagnetTracking _magnetTracking = new MagnetTracking();
 
         public bool IsEnabled
         {
@@ -121,19 +120,17 @@ namespace BuildingMagnet
         private void ReleaseAllAttractedObjects()
         {
             // Stop all active movement coroutines
-            foreach (var coroutine in _activeMovementCoroutines.Values)
-            {
-                if (coroutine != null)
-                {
-                    StopCoroutine(coroutine);
-                }
-            }
-
-            // Restore normal physics to all attracted objects
-            foreach (var obj in _currentlyAttractedObjects)
+            foreach (var obj in _magnetTracking.GetAllObjects())
             {
                 if (obj != null)
                 {
+                    Coroutine coroutine = _magnetTracking.GetCoroutine(obj);
+                    if (coroutine != null)
+                    {
+                        StopCoroutine(coroutine);
+                    }
+
+                    // Restore normal physics
                     Rigidbody rb = obj.GetComponent<Rigidbody>();
                     if (rb != null)
                     {
@@ -142,9 +139,8 @@ namespace BuildingMagnet
                 }
             }
 
-            // Clear the collections
-            _activeMovementCoroutines.Clear();
-            _currentlyAttractedObjects.Clear();
+            // Clear the tracking
+            _magnetTracking.Clear();
         }
 
         private void Update()
@@ -169,33 +165,35 @@ namespace BuildingMagnet
             // Perform sphere cast
             Collider[] hitColliders = Physics.OverlapSphere(LocalPlayer.Transform.position, Config.MagnetRange.Value, layerMask);
 
+            // Clean up any null references
+            _magnetTracking.CleanupNullReferences();
+
             // Filter and process hits
             foreach (var hitCollider in hitColliders)
             {
                 GameObject hitObject = hitCollider.gameObject;
 
                 // Check if we should attract this object based on its name
-                if (ShouldAttractObject(hitObject) && !_currentlyAttractedObjects.Contains(hitObject))
+                if (ShouldAttractObject(hitObject) && !_magnetTracking.IsTracking(hitObject))
                 {
                     // Add to currently attracted objects, but respect the maximum limit
-                    if (_currentlyAttractedObjects.Count < _maxObjectsToAttract)
+                    if (_magnetTracking.Count < _maxObjectsToAttract)
                     {
-                        _currentlyAttractedObjects.Add(hitObject);
+                        _magnetTracking.AddObject(hitObject);
 
-                        // Start smoothly moving the object to the player
-                        if (_activeMovementCoroutines.ContainsKey(hitObject))
+                        // Stop existing coroutine if there is one
+                        Coroutine existingCoroutine = _magnetTracking.GetCoroutine(hitObject);
+                        if (existingCoroutine != null)
                         {
-                            StopCoroutine(_activeMovementCoroutines[hitObject]);
+                            StopCoroutine(existingCoroutine);
                         }
 
+                        // Start smoothly moving the object to the player
                         Coroutine movementCoroutine = StartCoroutine(MoveObjectToPlayerSmoothly(hitObject).WrapToIl2Cpp());
-                        _activeMovementCoroutines[hitObject] = movementCoroutine;
+                        _magnetTracking.SetCoroutine(hitObject, movementCoroutine);
                     }
                 }
             }
-
-            // Clean up list of attracted objects (remove any that have been destroyed)
-            _currentlyAttractedObjects.RemoveAll(item => item == null);
         }
 
         private bool ShouldAttractObject(GameObject obj)
@@ -263,6 +261,9 @@ namespace BuildingMagnet
 
         private IEnumerator MoveObjectToPlayerSmoothly(GameObject obj)
         {
+            if (obj == null)
+                yield break;
+
             // Check if the object has a rigidbody and disable it temporarily
             Rigidbody rb = obj.GetComponent<Rigidbody>();
             bool hadRigidbody = false;
@@ -280,18 +281,40 @@ namespace BuildingMagnet
             LayerMask playerLayerMask = 1 << playerLayerIndex;
 
             // Get all colliders on the object
-            Collider[] colliders = obj.GetComponentsInChildren<Collider>();
+            //Collider[] colliders = obj.GetComponentsInChildren<Collider>(true); // include inactive objects
+            Collider[] colliders = obj.GetComponents<Collider>(); // include inactive objects
             Dictionary<Collider, LayerMask> originalExcludeLayers = new Dictionary<Collider, LayerMask>();
 
-            // Store original exclude layers and add player layer to exclude
+            // Get player colliders for direct collision ignoring
+            Collider[] playerColliders = LocalPlayer.GameObject.GetComponentsInChildren<Collider>(true);
+            List<(Collider, Collider, bool)> ignoredCollisionPairs = new List<(Collider, Collider, bool)>();
+
+            // Apply double protection:
+            // 1. Exclude player layer in collider.excludeLayers
+            // 2. Use Physics.IgnoreCollision for specific collider pairs
             foreach (Collider collider in colliders)
             {
                 if (collider != null)
                 {
+                    // Store and set excludeLayers
                     originalExcludeLayers[collider] = collider.excludeLayers;
-                    collider.excludeLayers |= playerLayerMask;  // Add player layer to exclude
+                    collider.excludeLayers |= playerLayerMask;
+
+                    // Also use direct Physics.IgnoreCollision as a backup
+                    foreach (Collider playerCollider in playerColliders)
+                    {
+                        if (playerCollider != null)
+                        {
+                            bool wasIgnoring = Physics.GetIgnoreCollision(collider, playerCollider);
+                            Physics.IgnoreCollision(collider, playerCollider, true);
+                            ignoredCollisionPairs.Add((collider, playerCollider, wasIgnoring));
+                        }
+                    }
                 }
             }
+
+            // Log to verify this is happening
+            RLog.Msg($"[BuildingMagnet] Applied collision exclusion to {colliders.Length} colliders for {obj.name}");
 
             // Move object smoothly to player
             float startTime = Time.time;
@@ -299,13 +322,23 @@ namespace BuildingMagnet
 
             while (obj != null)
             {
+                // Verify exclusion is still applied (extra safety check)
+                foreach (Collider collider in colliders)
+                {
+                    if (collider != null && (collider.excludeLayers & playerLayerMask) != playerLayerMask)
+                    {
+                        RLog.Msg($"[BuildingMagnet] Warning: Player layer exclusion was lost, reapplying to {obj.name}");
+                        collider.excludeLayers |= playerLayerMask;
+                    }
+                }
+
                 float journeyLength = Vector3.Distance(obj.transform.position, LocalPlayer.Transform.position);
 
                 // If we're close enough, break out of the loop
-                if (journeyLength < 1f)
-                {
-                    break;
-                }
+                //if (journeyLength < 1f)
+                //{
+                //    break;
+                //}
 
                 // Calculate movement
                 float distCovered = (Time.time - startTime) * _moveSpeed;
@@ -334,33 +367,47 @@ namespace BuildingMagnet
                     }
                 }
 
+                // Restore original collision ignore states
+                foreach (var (objCollider, playerCollider, wasIgnoring) in ignoredCollisionPairs)
+                {
+                    if (objCollider != null && playerCollider != null)
+                    {
+                        Physics.IgnoreCollision(objCollider, playerCollider, wasIgnoring);
+                    }
+                }
+
                 // Restore rigidbody state if needed
                 if (hadRigidbody && rb != null)
                 {
                     rb.isKinematic = wasKinematic;
                 }
 
-                // Remove from currently attracted objects
-                _currentlyAttractedObjects.Remove(obj);
-                _activeMovementCoroutines.Remove(obj);
+                RLog.Msg($"[BuildingMagnet] Restored collision settings for {obj.name}");
             }
+
+            // Remove from tracking collections
+            _magnetTracking.RemoveObject(obj);
         }
 
         private void OnDestroy()
         {
             MagnetValues.ValueChange -= OnModeChange;
 
-            // Stop all coroutines
-            foreach (var coroutine in _activeMovementCoroutines.Values)
+            // Stop all coroutines using the MagnetTracking class
+            foreach (var obj in _magnetTracking.GetAllObjects())
             {
-                if (coroutine != null)
+                if (obj != null)
                 {
-                    StopCoroutine(coroutine);
+                    Coroutine coroutine = _magnetTracking.GetCoroutine(obj);
+                    if (coroutine != null)
+                    {
+                        StopCoroutine(coroutine);
+                    }
                 }
             }
 
-            _activeMovementCoroutines.Clear();
-            _currentlyAttractedObjects.Clear();
+            // Clear the tracking collections
+            _magnetTracking.Clear();
         }
 
         // Optional: Visual debugging
