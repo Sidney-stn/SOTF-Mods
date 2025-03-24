@@ -263,7 +263,7 @@ namespace BuildingMagnet
 
         private IEnumerator MoveObjectToPlayerSmoothly(GameObject obj)
         {
-            // Store rigidbody state
+            // Check if the object has a rigidbody and disable it temporarily
             Rigidbody rb = obj.GetComponent<Rigidbody>();
             bool hadRigidbody = false;
             bool wasKinematic = false;
@@ -275,14 +275,22 @@ namespace BuildingMagnet
                 rb.isKinematic = true;
             }
 
-            // Store and disable colliders
-            Collider[] colliders = obj.GetComponents<Collider>();
-            Dictionary<Collider, bool> originalColliderStates = new Dictionary<Collider, bool>();
+            // Get the player layer as a layer mask
+            int playerLayerIndex = LayerMask.NameToLayer("Player");
+            LayerMask playerLayerMask = 1 << playerLayerIndex;
 
+            // Get all colliders on the object
+            Collider[] colliders = obj.GetComponentsInChildren<Collider>();
+            Dictionary<Collider, LayerMask> originalExcludeLayers = new Dictionary<Collider, LayerMask>();
+
+            // Store original exclude layers and add player layer to exclude
             foreach (Collider collider in colliders)
             {
-                originalColliderStates[collider] = collider.enabled;
-                collider.enabled = false;
+                if (collider != null)
+                {
+                    originalExcludeLayers[collider] = collider.excludeLayers;
+                    collider.excludeLayers |= playerLayerMask;  // Add player layer to exclude
+                }
             }
 
             // Move object smoothly to player
@@ -294,7 +302,7 @@ namespace BuildingMagnet
                 float journeyLength = Vector3.Distance(obj.transform.position, LocalPlayer.Transform.position);
 
                 // If we're close enough, break out of the loop
-                if (journeyLength < 2f)
+                if (journeyLength < 1f)
                 {
                     break;
                 }
@@ -317,19 +325,19 @@ namespace BuildingMagnet
                 // Final position adjustment
                 obj.transform.position = LocalPlayer.Transform.position;
 
+                // Restore original exclude layers
+                foreach (Collider collider in colliders)
+                {
+                    if (collider != null && originalExcludeLayers.TryGetValue(collider, out LayerMask original))
+                    {
+                        collider.excludeLayers = original;
+                    }
+                }
+
                 // Restore rigidbody state if needed
                 if (hadRigidbody && rb != null)
                 {
                     rb.isKinematic = wasKinematic;
-                }
-
-                // Restore collider states
-                foreach (Collider collider in colliders)
-                {
-                    if (originalColliderStates.TryGetValue(collider, out bool wasEnabled))
-                    {
-                        collider.enabled = wasEnabled;
-                    }
                 }
 
                 // Remove from currently attracted objects
