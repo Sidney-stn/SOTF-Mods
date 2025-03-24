@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
-using RedLoader.Unity.IL2CPP.Utils.Collections;
+using System.Collections.Generic;
 using TheForest.Utils;
+using RedLoader.Unity.IL2CPP.Utils.Collections;
 using RedLoader;
 
 namespace BuildingMagnet
@@ -20,7 +22,22 @@ namespace BuildingMagnet
         {
             get
             {
-                return Config.Enabled.Value;
+                if (BuildingMagnet.isItemUnlocked == true && Config.Enabled.Value == true)
+                {
+                    return true;
+                }
+                else if (BuildingMagnet.isItemUnlocked == false && Config.Enabled.Value == true)
+                {
+                    return false;
+                }
+                else if (BuildingMagnet.isItemUnlocked == true && Config.Enabled.Value == false)
+                {
+                    return false;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
@@ -78,6 +95,9 @@ namespace BuildingMagnet
 
         private void OnModeChange(object sender, EventArgs e)
         {
+            // Release all currently attracted objects
+            ReleaseAllAttractedObjects();
+
             _scanForGoName.Clear();
 
             if (Mode == "ALL")
@@ -97,11 +117,45 @@ namespace BuildingMagnet
             }
         }
 
+        // Helper method to release all currently attracted objects
+        private void ReleaseAllAttractedObjects()
+        {
+            // Stop all active movement coroutines
+            foreach (var coroutine in _activeMovementCoroutines.Values)
+            {
+                if (coroutine != null)
+                {
+                    StopCoroutine(coroutine);
+                }
+            }
+
+            // Restore normal physics to all attracted objects
+            foreach (var obj in _currentlyAttractedObjects)
+            {
+                if (obj != null)
+                {
+                    Rigidbody rb = obj.GetComponent<Rigidbody>();
+                    if (rb != null)
+                    {
+                        rb.isKinematic = false;
+                    }
+                }
+            }
+
+            // Clear the collections
+            _activeMovementCoroutines.Clear();
+            _currentlyAttractedObjects.Clear();
+        }
+
         private void Update()
         {
             if (!IsEnabled || Mode == "NONE")
             {
                 return;
+            }
+            if (!LocalPlayer.IsInWorld || LocalPlayer.InWater || LocalPlayer.IsInCaves || LocalPlayer.IsInInventory || LocalPlayer.IsInGolfCart || LocalPlayer.IsGliding || LocalPlayer.IsConstructing || LocalPlayer.IsInMidAction)
+            {
+                ReleaseAllAttractedObjects();
             }
 
             PerformSphereCast();
@@ -285,7 +339,7 @@ namespace BuildingMagnet
         // Optional: Visual debugging
         private void OnDrawGizmosSelected()
         {
-            if (LocalPlayer.Transform.position != null || LocalPlayer.Transform.position != Vector3.zero)
+            if (LocalPlayer.Transform.position != Vector3.zero)
             {
                 // Draw the magnet radius
                 Gizmos.color = Color.yellow;

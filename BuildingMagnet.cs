@@ -1,9 +1,11 @@
-﻿using SonsSdk;
+﻿using Endnight.Utilities;
+using SonsSdk;
+using SonsSdk.Attributes;
 using TheForest.Utils;
 
 namespace BuildingMagnet;
 
-public class BuildingMagnet : SonsMod
+public class BuildingMagnet : SonsMod, IOnAfterSpawnReceiver
 {
     public BuildingMagnet()
     {
@@ -37,7 +39,13 @@ public class BuildingMagnet : SonsMod
     protected override void OnGameStart()
     {
         // This is called once the player spawns in the world and gains control.
-        if (LocalPlayer.GameObject.GetComponent<BuildingMagnetMono>() == null)
-            LocalPlayer.GameObject.AddComponent<BuildingMagnetMono>();
+        
     }
+
+    public void OnAfterSpawn()
+    {
+        LocalPlayer.GameObject.GetOrAddComponent<BuildingMagnetMono>();
+    }
+
+    public static bool isItemUnlocked = true;
 }
