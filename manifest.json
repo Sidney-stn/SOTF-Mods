@@ -6,5 +6,6 @@
   "description": "Adds a magnet feature to some objects",
   "gameVersion": "1.0.0",
   "type": "Mod",
+  "platform": "Universal",
   "url": "..."
 }

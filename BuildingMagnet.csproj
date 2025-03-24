@@ -77,6 +77,12 @@
     <Reference Include="Unity.TextMeshPro">
       <HintPath>$(GameDir)\_RedLoader\Game\Unity.TextMeshPro.dll</HintPath>
     </Reference>
+    <Reference Include="udpkit.common">
+      <HintPath>$(GameDir)\_RedLoader\Game\udpkit.common.dll</HintPath>
+    </Reference>
+    <Reference Include="udpkit">
+      <HintPath>$(GameDir)\_RedLoader\Game\udpkit.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Update="manifest.json">

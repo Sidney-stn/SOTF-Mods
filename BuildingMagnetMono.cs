@@ -330,78 +330,43 @@ namespace BuildingMagnet
             float startTime = Time.time;
             Vector3 startPosition = obj.transform.position;
 
-            BoltEntity boltEntity = null;
+            bool client = false;
             if (BoltNetwork.isRunning && BoltNetwork.isClient)
             {
-                boltEntity = obj.GetComponent<BoltEntity>();
+                client = true;
+                BoltEntity boltEntity = obj.GetComponent<BoltEntity>();
 
-                while (obj != null)
+                Network.ClientEvents.Instance.SendClientEvent(Network.ClientEvents.ClientEvent.ServerReleaseControl, boltEntity.networkId);
+            }
+                
+
+            while (obj != null)
+            {
+                // Verify exclusion is still applied (extra safety check)
+                foreach (Collider collider in colliders)
                 {
-                    // Verify exclusion is still applied (extra safety check)
-                    foreach (Collider collider in colliders)
+                    if (collider != null && (collider.excludeLayers & playerLayerMask) != playerLayerMask)
                     {
-                        if (collider != null && (collider.excludeLayers & playerLayerMask) != playerLayerMask)
-                        {
-                            RLog.Msg($"[BuildingMagnet] Warning: Player layer exclusion was lost, reapplying to {obj.name}");
-                            collider.excludeLayers |= playerLayerMask;
-                        }
+                        RLog.Msg($"[BuildingMagnet] Warning: Player layer exclusion was lost, reapplying to {obj.name}");
+                        collider.excludeLayers |= playerLayerMask;
                     }
-
-                    float journeyLength = Vector3.Distance(obj.transform.position, LocalPlayer.Transform.position);
-
-                    // Calculate movement
-                    float distCovered = (Time.time - startTime) * _moveSpeed;
-                    float fractionOfJourney = distCovered / journeyLength;
-                    if (boltEntity == null)
-                    {
-                        obj.transform.position = Vector3.Lerp(
-                        obj.transform.position,
-                        LocalPlayer.Transform.position,
-                        fractionOfJourney * Time.deltaTime * 10f
-                        );
-                    } else
-                    {
-                        if (boltEntity.hasControl == false)
-                        {
-                            boltEntity.TakeControl();
-                            RLog.Msg($"[BuildingMagnet] Took control of {obj.name}");
-                            if (boltEntity.hasControl == false)
-                            {
-                                RLog.Msg(ConsoleColor.DarkYellow, $"[BuildingMagnet] Failed to take control of {obj.name}");
-                                // Restore to original condition
-                                if (hadRigidbody && rb != null)
-                                {
-                                    rb.isKinematic = wasKinematic;
-                                }
-                                foreach (Collider collider in colliders)
-                                {
-                                    if (collider != null && originalExcludeLayers.TryGetValue(collider, out LayerMask original))
-                                    {
-                                        collider.excludeLayers = original;
-                                    }
-                                }
-                                foreach (var (objCollider, playerCollider, wasIgnoring) in ignoredCollisionPairs)
-                                {
-                                    if (objCollider != null && playerCollider != null)
-                                    {
-                                        Physics.IgnoreCollision(objCollider, playerCollider, wasIgnoring);
-                                    }
-                                }
-                                _magnetTracking.RemoveObject(obj);
-                                yield break;
-                            }
-                        }
-                        boltEntity.transform.position = Vector3.Lerp(
-                        obj.transform.position,
-                        LocalPlayer.Transform.position,
-                        fractionOfJourney * Time.deltaTime * 10f
-                        );
-                    }
-                    
-
-
-                    yield return null;
                 }
+
+                float journeyLength = Vector3.Distance(obj.transform.position, LocalPlayer.Transform.position);
+
+                // Calculate movement
+                float distCovered = (Time.time - startTime) * _moveSpeed;
+                float fractionOfJourney = distCovered / journeyLength;
+                obj.transform.position = Vector3.Lerp(
+                    obj.transform.position,
+                    LocalPlayer.Transform.position,
+                    fractionOfJourney * Time.deltaTime * 10f
+                    );
+
+
+
+                yield return null;
+                
 
                 // Clean up
                 if (obj != null)
@@ -438,6 +403,12 @@ namespace BuildingMagnet
 
                 // Remove from tracking collections
                 _magnetTracking.RemoveObject(obj);
+
+                if (client)
+                {
+                    BoltEntity boltEntity = obj.GetComponent<BoltEntity>();
+                    Network.ClientEvents.Instance.SendClientEvent(Network.ClientEvents.ClientEvent.ServerTakeControl, boltEntity.networkId);
+                }
             }
         }
 
