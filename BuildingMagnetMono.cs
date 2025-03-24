@@ -275,17 +275,14 @@ namespace BuildingMagnet
                 rb.isKinematic = true;
             }
 
-            // Get player and object colliders
-            Collider[] objColliders = obj.GetComponentsInChildren<Collider>();
-            Collider[] playerColliders = LocalPlayer.GameObject.GetComponentsInChildren<Collider>();
+            // Store and disable colliders
+            Collider[] colliders = obj.GetComponents<Collider>();
+            Dictionary<Collider, bool> originalColliderStates = new Dictionary<Collider, bool>();
 
-            // Ignore collisions between player and object
-            foreach (Collider objCollider in objColliders)
+            foreach (Collider collider in colliders)
             {
-                foreach (Collider playerCollider in playerColliders)
-                {
-                    Physics.IgnoreCollision(objCollider, playerCollider, true);
-                }
+                originalColliderStates[collider] = collider.enabled;
+                collider.enabled = false;
             }
 
             // Move object smoothly to player
@@ -297,7 +294,7 @@ namespace BuildingMagnet
                 float journeyLength = Vector3.Distance(obj.transform.position, LocalPlayer.Transform.position);
 
                 // If we're close enough, break out of the loop
-                if (journeyLength < 1f)
+                if (journeyLength < 2f)
                 {
                     break;
                 }
@@ -326,12 +323,12 @@ namespace BuildingMagnet
                     rb.isKinematic = wasKinematic;
                 }
 
-                // Restore collision detection
-                foreach (Collider objCollider in objColliders)
+                // Restore collider states
+                foreach (Collider collider in colliders)
                 {
-                    foreach (Collider playerCollider in playerColliders)
+                    if (originalColliderStates.TryGetValue(collider, out bool wasEnabled))
                     {
-                        Physics.IgnoreCollision(objCollider, playerCollider, false);
+                        collider.enabled = wasEnabled;
                     }
                 }
 
