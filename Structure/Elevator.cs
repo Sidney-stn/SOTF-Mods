@@ -17,7 +17,7 @@ namespace SimpleElevator.Structure
             BlueprintName = "Elevator";
             RegisterInBook = true;
             BookPage = Assets.Instance.ElevatorBookPage;
-            AddComponents = new List<Il2CppSystem.Type> { Il2CppType.Of<Mono.ElevatorControlPanelMono>() };
+            AddComponents = new List<Il2CppSystem.Type> { Il2CppType.Of<Mono.ElevatorMono>() };
             BoltSetterComponent = Il2CppType.Of<Network.ElevatorSetter>();
             RegisterStructure = true;
             AddGrassAndSnow = true;

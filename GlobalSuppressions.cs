@@ -7,3 +7,8 @@ using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>", Scope = "member", Target = "~M:SimpleElevator.Mono.ElevatorMono.Awake")]
 [assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>", Scope = "member", Target = "~M:SimpleElevator.Mono.ElevatorMono.Start")]
+[assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>", Scope = "member", Target = "~M:SimpleElevator.Mono.ElevatorControlPanelMono.Start")]
+[assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>", Scope = "member", Target = "~M:SimpleElevator.Mono.ElevatorControlPanelMono.OnDisable")]
+[assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>", Scope = "member", Target = "~M:SimpleElevator.Mono.ElevatorMono.OnDisable")]
+[assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>", Scope = "member", Target = "~M:SimpleElevator.Mono.ElevatorMono.OnDestroy")]
+[assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>", Scope = "member", Target = "~M:SimpleElevator.Mono.ElevatorControlPanelMono.OnDestroy")]
