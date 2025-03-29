@@ -16,10 +16,8 @@ namespace SimpleElevator.Network
 
             ElevatorSyncEvent.Register();
             ElevatorControlPanelSyncEvent.Register();
-            //Network.Joining.StoneGateJoin.Register();
-
-            //Network.ClientEvents.Register();
-            //Network.HostEvents.Register();
+            
+            Network.ServerTools.ServerEvents.Register();
 
         }
 

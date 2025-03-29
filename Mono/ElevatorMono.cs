@@ -23,6 +23,10 @@ namespace SimpleElevator.Mono
         // Store the original position for returning to the ground floor
         private Vector3 originalPosition;
 
+        // Configurable values for elevator
+        private float elevatorSpeed = 2f; // Slower movement speed
+        private float controlPanelOffset = 0f; // Offset from control panel
+
         private string _upOrDown = "";
         public string UpOrDown
         {
@@ -162,7 +166,6 @@ namespace SimpleElevator.Mono
             Destroy(sphere);
         }
 
-        private float elevatorSpeed = 5f;
         private bool isMoving = false;
         private Vector3 targetPosition;
         private GameObject targetControlPanel;
@@ -231,6 +234,11 @@ namespace SimpleElevator.Mono
                 BoltEntity entity = GetComponent<BoltEntity>();
                 if (entity != null)
                 {
+                    if (entity.isAttached == false)
+                    {
+                        Misc.Msg("[ElevatorControlPanelMono] Entity is not attached", true);
+                        return;
+                    }
                     if (MoveText != null) { MoveText.text = "Requesting\nUp"; }
                     Network.ElevatorSyncEvent.SendState(entity, Network.ElevatorSyncEvent.ElevatorSyncType.MoveUp);
                 }
@@ -280,7 +288,7 @@ namespace SimpleElevator.Mono
             targetControlPanel = closestControlPanel;
             targetPosition = new Vector3(
                 transform.position.x,
-                targetControlPanel.transform.position.y - 0.65f,
+                targetControlPanel.transform.position.y - controlPanelOffset,
                 transform.position.z
             );
 
@@ -293,6 +301,11 @@ namespace SimpleElevator.Mono
                 BoltEntity entity = GetComponent<BoltEntity>();
                 if (entity != null)
                 {
+                    if (entity.isAttached == false)
+                    {
+                        Misc.Msg("[ElevatorControlPanelMono] Entity is not attached", true);
+                        return;
+                    }
                     Network.ElevatorSyncEvent.SendState(entity, Network.ElevatorSyncEvent.ElevatorSyncType.MoveUp);
                 }
             }
@@ -312,6 +325,11 @@ namespace SimpleElevator.Mono
                 BoltEntity entity = GetComponent<BoltEntity>();
                 if (entity != null)
                 {
+                    if (entity.isAttached == false)
+                    {
+                        Misc.Msg("[ElevatorControlPanelMono] Entity is not attached", true);
+                        return;
+                    }
                     if (MoveText != null) { MoveText.text = "Requesting\nDown"; }
                     Network.ElevatorSyncEvent.SendState(entity, Network.ElevatorSyncEvent.ElevatorSyncType.MoveDown);
                 }
@@ -361,7 +379,7 @@ namespace SimpleElevator.Mono
             targetControlPanel = closestControlPanel;
             targetPosition = new Vector3(
                 transform.position.x,
-                targetControlPanel.transform.position.y + 0.65f,
+                targetControlPanel.transform.position.y + controlPanelOffset,
                 transform.position.z
             );
 
@@ -374,6 +392,11 @@ namespace SimpleElevator.Mono
                 BoltEntity entity = GetComponent<BoltEntity>();
                 if (entity != null)
                 {
+                    if (entity.isAttached == false)
+                    {
+                        Misc.Msg("[ElevatorControlPanelMono] Entity is not attached", true);
+                        return;
+                    }
                     Network.ElevatorSyncEvent.SendState(entity, Network.ElevatorSyncEvent.ElevatorSyncType.MoveDown);
                 }
             }
@@ -458,6 +481,11 @@ namespace SimpleElevator.Mono
                 BoltEntity entity = GetComponent<BoltEntity>();
                 if (entity != null)
                 {
+                    if (entity.isAttached == false)
+                    {
+                        Misc.Msg("[ElevatorControlPanelMono] Entity is not attached", true);
+                        return;
+                    }
                     if (MoveText != null) { MoveText.text = "Requesting\nGround"; }
                     // We could add a specific event type for this in the future
                     Network.ElevatorSyncEvent.SendState(entity, Network.ElevatorSyncEvent.ElevatorSyncType.MoveDown);
@@ -481,6 +509,11 @@ namespace SimpleElevator.Mono
                 BoltEntity entity = GetComponent<BoltEntity>();
                 if (entity != null)
                 {
+                    if (entity.isAttached == false)
+                    {
+                        Misc.Msg("[ElevatorControlPanelMono] Entity is not attached", true);
+                        return;
+                    }
                     Network.ElevatorSyncEvent.SendState(entity, Network.ElevatorSyncEvent.ElevatorSyncType.MoveDown);
                 }
             }

@@ -35,6 +35,11 @@ namespace SimpleElevator.Mono
                     BoltEntity entity = GetComponent<BoltEntity>();
                     if (entity != null)
                     {
+                        if (entity.isAttached == false)
+                        {
+                            Misc.Msg("[ElevatorControlPanelMono] Entity is not attached", true);
+                            return;
+                        }
                         Misc.Msg("[ElevatorControlPanelMono] Sending call elevator event to server", true);
                         Network.ElevatorControlPanelSyncEvent.SendState(entity, Network.ElevatorControlPanelSyncEvent.ElevatorControlPanelSyncType.CallElevator);
                     }

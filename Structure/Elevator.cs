@@ -13,7 +13,7 @@ namespace SimpleElevator.Structure
         private Elevator()
         {
             // Initialization code if needed
-            StructureId = 751156;
+            StructureId = 7511110;
             BlueprintName = "Elevator";
             RegisterInBook = true;
             BookPage = Assets.Instance.ElevatorBookPage;

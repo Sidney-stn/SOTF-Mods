@@ -17,14 +17,6 @@ namespace SimpleElevator.Network
                 Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] Received packet on client", true);
             }
 
-            // Read the entity from the packet
-            BoltEntity entity = packet.ReadBoltEntity();
-            if (entity == null)
-            {
-                Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] Entity is null", true);
-                return;
-            }
-
             // Read the sync type
             var type = (ElevatorControlPanelSyncEvent.ElevatorControlPanelSyncType)packet.ReadByte();
 
@@ -41,7 +33,7 @@ namespace SimpleElevator.Network
             }
 
             // Get the ElevatorControlPanelMono component
-            Mono.ElevatorControlPanelMono controlPanelMono = entity.GetComponent<Mono.ElevatorControlPanelMono>();
+            Mono.ElevatorControlPanelMono controlPanelMono = GetComponent<Mono.ElevatorControlPanelMono>();
             if (controlPanelMono == null)
             {
                 Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] ElevatorControlPanelMono component is null", true);

@@ -1,7 +1,7 @@
 ﻿
 using UnityEngine;
 
-namespace SimpleElevator.Testing
+namespace SimpleElevator.Tools
 {
     internal class DedicatedServer
     {

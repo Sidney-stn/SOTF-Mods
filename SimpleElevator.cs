@@ -32,7 +32,7 @@ public class SimpleElevator : SonsMod, IOnAfterSpawnReceiver
 
     protected override void OnInitializeMod()
     {
-        if (Testing.DedicatedServer.IsDeticatedServer())
+        if (Tools.DedicatedServer.IsDeticatedServer())
         {
             RLog.Msg(System.ConsoleColor.Blue, "[SimpleElevator] [DEDICATED SERVER] OnInitializeMod");
         }
@@ -60,7 +60,7 @@ public class SimpleElevator : SonsMod, IOnAfterSpawnReceiver
             RLog.Error("[SimpleElevator] Assets Not Loaded");
         }
 
-        if (Testing.DedicatedServer.IsDeticatedServer())
+        if (Tools.DedicatedServer.IsDeticatedServer())
         {
             // Registering Save System
             //var manager = new Saving.Manager(); // Signs
@@ -71,19 +71,19 @@ public class SimpleElevator : SonsMod, IOnAfterSpawnReceiver
             ElevatorInstance = Structure.Elevator.Instance;
             ElevatorControlPanelInstace = Structure.ElevatorControlPanel.Instance;
 
+
         }
     }
 
     protected override void OnSdkInitialized()
     {
-        if (Testing.DedicatedServer.IsDeticatedServer())
+        if (Tools.DedicatedServer.IsDeticatedServer())
         {
             // This Never Runs On Dedicated Server
             RLog.Msg(System.ConsoleColor.Blue, "[SimpleElevator] [DEDICATED SERVER] OnSdkInitialized");  // This never runs on dedicated server
         }
         // Do your mod initialization which involves game or sdk references here
         // This is for stuff like UI creation, event registration etc.
-        SimpleElevatorUi.Create();
 
         // Add in-game settings ui for your mod.
         SettingsRegistry.CreateSettings(this, null, typeof(Config));
@@ -101,9 +101,9 @@ public class SimpleElevator : SonsMod, IOnAfterSpawnReceiver
 
     protected override void OnGameStart()
     {
-        if (Testing.DedicatedServer.IsDeticatedServer())
+        if (Tools.DedicatedServer.IsDeticatedServer())
         {
-            RLog.Msg(System.ConsoleColor.Blue, "[StoneGate] [DEDICATED SERVER] OnGameStart");
+            RLog.Msg(System.ConsoleColor.Blue, "[SimpleElevator] [DEDICATED SERVER] OnGameStart");
         }
         // Register Network Event Handlers
         Network.Manager.RegisterEventHandlers();
@@ -111,14 +111,18 @@ public class SimpleElevator : SonsMod, IOnAfterSpawnReceiver
 
     private void OnFirstGameActivation()
     {
-        if (Testing.DedicatedServer.IsDeticatedServer())
+        if (Tools.DedicatedServer.IsDeticatedServer())
         {
-            RLog.Msg(System.ConsoleColor.Blue, "[StoneGate] [DEDICATED SERVER] OnFirstGameActivation");
+            RLog.Msg(System.ConsoleColor.Blue, "[SimpleElevator] [DEDICATED SERVER] OnFirstGameActivation");
         }
     }
 
     public void OnAfterSpawn()
     {
+        if (Tools.DedicatedServer.IsDeticatedServer())
+        {
+            RLog.Msg(System.ConsoleColor.Blue, "[SimpleElevator] [DEDICATED SERVER] OnAfterSpawn");
+        }
         LocalPlayer._instance.gameObject.AddComponent<Mono.ScrollMono>();
         if (BoltNetwork.isRunning && BoltNetwork.isClient)
         {
@@ -136,24 +140,19 @@ public class SimpleElevator : SonsMod, IOnAfterSpawnReceiver
 
     }
 
-    [DebugCommand("cast")]
-    private void TestCast(string args)
+    [DebugCommand("SimpleElevatorCmd")]
+    private void SimpleElevatorCmd(string args)
     {
-        Misc.Msg("Cast Command");
-        Transform transform = LocalPlayer._instance._mainCam.transform;
-
+        Misc.Msg("SimpleElevator Command");
         switch (args.ToLower())
         {
-            case "q":
-                RaycastHit[] hits = Physics.BoxCastAll(LocalPlayer.Transform.position, new Vector3(0.5f, 0.5f, 0.5f), transform.forward, transform.rotation, 10f);
-                Misc.Msg($"Hits: {hits.Length}");
-                break;
-            case "e":
-                RaycastHit[] hits2 = Physics.BoxCastAll(LocalPlayer.Transform.position, new Vector3(0.5f, 0.5f, 0.5f), transform.forward, transform.rotation, 10f, LayerMask.GetMask(new string[] { "Terrain", "Default", "Prop" }));
-                Misc.Msg($"Hits: {hits2.Length}");
+            case "null":
+                RLog.Error("[SimpleElevator] Null Command");
+                Network.ServerTools.ServerEvents.Instance.SendServerEvent(Network.ServerTools.ServerEvents.ServerEvent.CheckNull);
                 break;
             default:
                 break;
         }
     }
+
 }

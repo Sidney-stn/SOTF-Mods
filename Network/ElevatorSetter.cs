@@ -7,6 +7,8 @@ namespace SimpleElevator.Network
 {
     internal class ElevatorSetter : MonoBehaviour, Packets.IPacketReader
     {
+        // Configurable values for elevator
+        private float controlPanelOffset = 0f; // Offset from control panel
         public void ReadPacket(UdpPacket packet, BoltConnection fromConnection)
         {
             if (BoltNetwork.isServer)
@@ -16,14 +18,6 @@ namespace SimpleElevator.Network
             else
             {
                 Misc.Msg("[ElevatorSetter] [ReadPacket] Received packet on client", true);
-            }
-
-            // Read the entity from the packet
-            BoltEntity entity = packet.ReadBoltEntity();
-            if (entity == null)
-            {
-                Misc.Msg("[ElevatorSetter] [ReadPacket] Entity is null", true);
-                return;
             }
 
             // Read the sync type
@@ -42,7 +36,7 @@ namespace SimpleElevator.Network
             }
 
             // Get the ElevatorMono component
-            Mono.ElevatorMono elevatorMono = entity.GetComponent<Mono.ElevatorMono>();
+            Mono.ElevatorMono elevatorMono = GetComponent<Mono.ElevatorMono>();
             if (elevatorMono == null)
             {
                 Misc.Msg("[ElevatorSetter] [ReadPacket] ElevatorMono component is null", true);
@@ -94,7 +88,7 @@ namespace SimpleElevator.Network
                             // Apply the visual movement locally without sending network events
                             Vector3 targetPosition = new Vector3(
                                 elevatorMono.transform.position.x,
-                                closestControlPanel.transform.position.y - 0.65f,
+                                closestControlPanel.transform.position.y - controlPanelOffset,
                                 elevatorMono.transform.position.z
                             );
                             elevatorMono.ClientSetTarget(closestControlPanel, targetPosition);
@@ -115,7 +109,7 @@ namespace SimpleElevator.Network
                             // Apply the visual movement locally without sending network events
                             Vector3 targetPosition = new Vector3(
                                 elevatorMono.transform.position.x,
-                                closestControlPanelDown.transform.position.y + 0.65f,
+                                closestControlPanelDown.transform.position.y + controlPanelOffset,
                                 elevatorMono.transform.position.z
                             );
                             elevatorMono.ClientSetTarget(closestControlPanelDown, targetPosition);
