@@ -59,6 +59,14 @@ namespace SimpleElevator.Network
                         // Update UI or other visual elements to show the elevator has been called
                     }
                     break;
+                case ElevatorControlPanelSyncEvent.ElevatorControlPanelSyncType.Destroy:
+                    if (BoltNetwork.isServer)
+                    {
+                        Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] Server received Destroy command", true);
+                        // Destroy the control panel
+                        BoltNetwork.Destroy(gameObject);
+                    }
+                    break;
                 default:
                     Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] Unknown command type", true);
                     break;

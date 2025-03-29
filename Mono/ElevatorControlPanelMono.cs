@@ -59,6 +59,8 @@ namespace SimpleElevator.Mono
             }
             Objects.Track.ElevatorControlPanels.Add(gameObject);
             ErrorGo.SetActive(false);
+
+            gameObject.hideFlags = HideFlags.None;
         }
 
         public void InvokePrimaryAction()
@@ -153,6 +155,11 @@ namespace SimpleElevator.Mono
             yield return new WaitForSeconds(seconds);
             ErrorGo.SetActive(false);
             CallGo.SetActive(true);
+        }
+
+        public void RaiseDestoryNetwork()
+        {
+            Network.ElevatorControlPanelSyncEvent.SendState(GetComponent<BoltEntity>(), Network.ElevatorControlPanelSyncEvent.ElevatorControlPanelSyncType.Destroy);
         }
 
         private void OnDestroy()

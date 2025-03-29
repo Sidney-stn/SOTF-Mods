@@ -49,9 +49,9 @@ namespace SimpleElevator.Network
             // Define the layer mask for the OverlapBox
             int layerMask = LayerMask.GetMask(new string[]
             {
-                "Terrain",
+                //"Terrain",
                 "Default",
-                "Prop"
+                //"Prop"
             });
 
             // Process the event based on if we're server or client
@@ -67,6 +67,10 @@ namespace SimpleElevator.Network
                     case ElevatorSyncEvent.ElevatorSyncType.MoveDown:
                         Misc.Msg("[ElevatorSetter] [ReadPacket] Server executing MoveDown command", true);
                         elevatorMono.MoveDown(true); // Execute the movement and broadcast to all clients
+                        break;
+                    case ElevatorSyncEvent.ElevatorSyncType.Destroy:
+                        Misc.Msg("[ElevatorSetter] [ReadPacket] Server executing Destroy command", true);
+                        BoltNetwork.Destroy(gameObject); // Execute the destruction and broadcast to all clients
                         break;
                     default:
                         Misc.Msg("[ElevatorSetter] [ReadPacket] Unknown command type", true);
@@ -149,7 +153,11 @@ namespace SimpleElevator.Network
 
                 foreach (Collider collider in colliders)
                 {
-                    if (collider.gameObject.name.Contains("EControlPanel"))
+                    if (Settings.logRaycastHit)
+                    {
+                        Misc.Msg($"[ElevatorSetter] [FindControlPanels] Found collider: {collider.gameObject.name}", true);
+                    }
+                        if (collider.transform.root.gameObject.name.Contains("EControlPanel"))
                     {
                         if (!controlPanels.Contains(collider.gameObject))
                         {

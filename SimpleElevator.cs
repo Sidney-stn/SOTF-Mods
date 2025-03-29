@@ -22,7 +22,7 @@ public class SimpleElevator : SonsMod, IOnAfterSpawnReceiver
         //OnGUICallback = MyGUIMethod;
 
         // Uncomment this to automatically apply harmony patches in your assembly.
-        //HarmonyPatchAll = true;
+        HarmonyPatchAll = true;
         Instance = this;
     }
 

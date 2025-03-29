@@ -58,6 +58,7 @@ namespace SimpleElevator.Saving
                         RLog.Error("[SimpleElevator] [Loading] ElevatorGo IS NULL");
                         SonsTools.ShowMessage("Something went worng when loading in elevators");
                     }
+                    elevatorGo.hideFlags = HideFlags.None;
                 }
                 else if (!BoltNetwork.isRunning)
                 {
@@ -69,6 +70,7 @@ namespace SimpleElevator.Saving
                         RLog.Error("[SimpleElevator] [Loading] ElevatorGo IS NULL");
                         SonsTools.ShowMessage("Something went worng when loading in elevators");
                     }
+                    elevatorGo.hideFlags = HideFlags.None;
                 }
             }
 
@@ -94,6 +96,7 @@ namespace SimpleElevator.Saving
                         RLog.Error("[SimpleElevator] [Loading] ControlPanelGo IS NULL");
                         SonsTools.ShowMessage("Something went worng when loading in control panels");
                     }
+                    controlPanelGo.hideFlags = HideFlags.None;
                 }
                 else if (!BoltNetwork.isRunning)
                 {
@@ -105,6 +108,7 @@ namespace SimpleElevator.Saving
                         RLog.Error("[SimpleElevator] [Loading] ControlPanelGo IS NULL");
                         SonsTools.ShowMessage("Something went worng when loading in control panels");
                     }
+                    controlPanelGo.hideFlags = HideFlags.None;
                 }
             }
         }

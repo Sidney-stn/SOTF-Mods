@@ -8,7 +8,8 @@ namespace SimpleElevator.Network
     {
         public enum ElevatorControlPanelSyncType : byte
         {
-            CallElevator = 0
+            CallElevator = 0,
+            Destroy = 1,
         }
 
         private void UpdateStateInternal(BoltEntity entity, ElevatorControlPanelSyncType type, string toSteamId = null)
@@ -30,6 +31,10 @@ namespace SimpleElevator.Network
                 case ElevatorControlPanelSyncType.CallElevator:
                     // Add any additional data needed for CallElevator
                     packet.Packet.WriteString("CALL");
+                    break;
+                case ElevatorControlPanelSyncType.Destroy:
+                    // Add any additional data needed for Destroy
+                    packet.Packet.WriteString("DESTROY");
                     break;
             }
 

@@ -110,6 +110,8 @@ namespace SimpleElevator.Mono
             // Store the original position when the elevator is first placed
             originalPosition = transform.position;
             Misc.Msg($"[ElevatorMono] Original position stored: {originalPosition}", true);
+
+            gameObject.hideFlags = HideFlags.None;
         }
 
 
@@ -176,7 +178,8 @@ namespace SimpleElevator.Mono
         private List<GameObject> FindControlPanelsInDirection(Vector3 direction, float maxDistance)
         {
             List<GameObject> controlPanels = new List<GameObject>();
-            int layerMask = LayerMask.GetMask(new string[] { "Terrain", "Default", "Prop" });
+            //int layerMask = LayerMask.GetMask(new string[] { "Terrain", "Default", "Prop" });
+            int layerMask = LayerMask.GetMask(new string[] { "Default" });
 
             // We'll check multiple positions along the specified direction
             int checkPoints = 4; // Number of check points along the path
@@ -203,7 +206,11 @@ namespace SimpleElevator.Mono
 
                 foreach (Collider collider in colliders)
                 {
-                    if (collider.gameObject.name.Contains("EControlPanel"))
+                    if (Settings.logRaycastHit)
+                    {
+                        Misc.Msg($"[ElevatorMono] [FindControlPanelsInDirection] Found collider: {collider.gameObject.name}", true);
+                    }
+                    if (collider.transform.root.gameObject.name.Contains("EControlPanel"))
                     {
                         if (!controlPanels.Contains(collider.gameObject))
                         {
@@ -523,6 +530,11 @@ namespace SimpleElevator.Mono
 
         public void OnScrollUp() { UpOrDown = "UP"; }
         public void OnScrollDown() { UpOrDown = "DOWN"; }
+
+        public void RaiseDestoryNetwork()
+        {
+            Network.ElevatorControlPanelSyncEvent.SendState(GetComponent<BoltEntity>(), Network.ElevatorControlPanelSyncEvent.ElevatorControlPanelSyncType.Destroy);
+        }
 
         private void OnDestroy()
         {
