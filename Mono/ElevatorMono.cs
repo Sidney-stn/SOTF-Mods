@@ -1,4 +1,5 @@
 ﻿
+using RedLoader;
 using RedLoader.Unity.IL2CPP.Utils.Collections;
 using Sons.Gui.Input;
 using System.Collections;
@@ -122,6 +123,55 @@ namespace SimpleElevator.Mono
             if (MoveGo != null) { MoveGo.SetActive(true); }
         }
 
+        // Debug visualization methods
+        private IEnumerator VisualizeBoxCast(Vector3 center, Vector3 halfExtents, Vector3 direction, float maxDistance, Color color, float duration)
+        {
+            GameObject cubeOrigin = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cubeOrigin.transform.position = center;
+            cubeOrigin.transform.localScale = halfExtents * 2; // Convert half extents to full size
+            cubeOrigin.GetComponent<Renderer>().material.color = new Color(color.r, color.g, color.b, 0.3f);
+            cubeOrigin.GetComponent<Collider>().enabled = false;
+
+            GameObject cubeEnd = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cubeEnd.transform.position = center + (direction.normalized * maxDistance);
+            cubeEnd.transform.localScale = halfExtents * 2;
+            cubeEnd.GetComponent<Renderer>().material.color = new Color(color.r, color.g, color.b, 0.3f);
+            cubeEnd.GetComponent<Collider>().enabled = false;
+
+            GameObject lineObj = new GameObject("DebugLine");
+            LineRenderer line = lineObj.AddComponent<LineRenderer>();
+            line.startWidth = 0.1f;
+            line.endWidth = 0.1f;
+            line.positionCount = 2;
+            line.SetPosition(0, center);
+            line.SetPosition(1, center + (direction.normalized * maxDistance));
+            line.material = new Material(Shader.Find("Sprites/Default"));
+            line.startColor = color;
+            line.endColor = color;
+
+            Misc.Msg($"[VisualizeBoxCast] Drawing box cast from {center} in direction {direction} for {maxDistance} units", true);
+
+            yield return new WaitForSeconds(duration);
+
+            Destroy(cubeOrigin);
+            Destroy(cubeEnd);
+            Destroy(lineObj);
+        }
+
+        private IEnumerator VisualizeHitPoint(Vector3 hitPoint, Color color, float duration)
+        {
+            GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            sphere.transform.position = hitPoint;
+            sphere.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            sphere.GetComponent<Renderer>().material.color = color;
+            sphere.GetComponent<Collider>().enabled = false;
+
+            Misc.Msg($"[VisualizeHitPoint] Drawing hit point at {hitPoint}", true);
+
+            yield return new WaitForSeconds(duration);
+
+            Destroy(sphere);
+        }
         private float elevatorSpeed = 5f;
         private bool isMoving = false;
         private Vector3 targetPosition;
@@ -150,13 +200,23 @@ namespace SimpleElevator.Mono
             // Only server or single player proceeds with the actual movement
 
             // Check if there's a control panel above
+            Vector3 boxCastCenter = transform.position;
+            Vector3 boxCastHalfExtents = new Vector3(2f, 2f, 2f);
+            float maxDistance = 20f;
+
             RaycastHit[] hits = Physics.BoxCastAll(
-                transform.position,
-                new Vector3(2f, 2f, 2f),
+                boxCastCenter,
+                boxCastHalfExtents,
                 Vector3.up,
                 Quaternion.identity,
-                20f
+                maxDistance
             );
+
+            // Visualize the raycast if debug setting is enabled
+            if (Settings.showRaycastElevator)
+            {
+                StartCoroutine(VisualizeBoxCast(boxCastCenter, boxCastHalfExtents, Vector3.up, maxDistance, Color.green, 5f).WrapToIl2Cpp());
+            }
 
             GameObject closestControlPanel = null;
             float closestDistance = float.MaxValue;
@@ -170,6 +230,12 @@ namespace SimpleElevator.Mono
                     {
                         closestDistance = distance;
                         closestControlPanel = hit.transform.gameObject;
+
+                        // Visualize the hit if debug setting is enabled
+                        if (Settings.showRaycastElevator)
+                        {
+                            StartCoroutine(VisualizeHitPoint(hit.transform.position, Color.red, 5f).WrapToIl2Cpp());
+                        }
                     }
                 }
             }
@@ -224,13 +290,23 @@ namespace SimpleElevator.Mono
             // Only server or single player proceeds with the actual movement
 
             // Check if there's a control panel below
+            Vector3 boxCastCenter = transform.position;
+            Vector3 boxCastHalfExtents = new Vector3(2f, 2f, 2f);
+            float maxDistance = 20f;
+
             RaycastHit[] hits = Physics.BoxCastAll(
-                gameObject.transform.position,
-                new Vector3(2f, 2f, 2f),
+                boxCastCenter,
+                boxCastHalfExtents,
                 Vector3.down,
                 Quaternion.identity,
-                20f
+                maxDistance
             );
+
+            // Visualize the raycast if debug setting is enabled
+            if (Settings.showRaycastElevator)
+            {
+                StartCoroutine(VisualizeBoxCast(boxCastCenter, boxCastHalfExtents, Vector3.down, maxDistance, Color.blue, 5f).WrapToIl2Cpp());
+            }
 
             GameObject closestControlPanel = null;
             float closestDistance = float.MaxValue;
@@ -244,6 +320,12 @@ namespace SimpleElevator.Mono
                     {
                         closestDistance = distance;
                         closestControlPanel = hit.transform.gameObject;
+
+                        // Visualize the hit if debug setting is enabled
+                        if (Settings.showRaycastElevator)
+                        {
+                            StartCoroutine(VisualizeHitPoint(hit.transform.position, Color.red, 5f).WrapToIl2Cpp());
+                        }
                     }
                 }
             }
