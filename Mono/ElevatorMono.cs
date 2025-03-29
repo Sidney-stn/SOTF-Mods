@@ -96,7 +96,7 @@ namespace SimpleElevator.Mono
             if (isSetupPrefab) { return; }
             if (LinkUi == null)
             {
-                LinkUi = Tools.LinkUi.CreateLinkUi(gameObject.transform.GetChild(4).gameObject, 1.5f, null, Assets.Instance.LinkUiIcon, null);
+                LinkUi = Tools.LinkUi.CreateLinkUi(gameObject.transform.GetChild(4).gameObject, 2f, null, Assets.Instance.LinkUiIcon, null);
             }
             Destroy(GetComponent<Collider>());  // I Removed Here since it get added from something i dont have in unity
             Objects.Track.Elevators.Add(gameObject);
@@ -231,7 +231,7 @@ namespace SimpleElevator.Mono
                 BoltEntity entity = GetComponent<BoltEntity>();
                 if (entity != null)
                 {
-                    if (MoveText != null) { MoveText.text = "Requesting\nMove Up"; }
+                    if (MoveText != null) { MoveText.text = "Requesting\nUp"; }
                     Network.ElevatorSyncEvent.SendState(entity, Network.ElevatorSyncEvent.ElevatorSyncType.MoveUp);
                 }
                 return;
@@ -248,18 +248,28 @@ namespace SimpleElevator.Mono
             }
 
             // Find the closest control panel above
-            GameObject closestControlPanel = null;
-            float closestDistance = float.MaxValue;
+            // Find the next control panel (closest but not skipping any)
+            GameObject nextControlPanel = null;
+            float nextPanelDistance = float.MaxValue;
 
+            // Sort all control panels by height
+            controlPanelsAbove.Sort((a, b) => a.transform.position.y.CompareTo(b.transform.position.y));
+
+            // Find the next one above our current position
             foreach (GameObject panel in controlPanelsAbove)
             {
-                float distance = Vector3.Distance(transform.position, panel.transform.position);
-                if (distance < closestDistance && panel.transform.position.y > transform.position.y)
+                if (panel.transform.position.y > transform.position.y)
                 {
-                    closestDistance = distance;
-                    closestControlPanel = panel;
+                    float distance = panel.transform.position.y - transform.position.y;
+                    if (distance < nextPanelDistance)
+                    {
+                        nextPanelDistance = distance;
+                        nextControlPanel = panel;
+                    }
                 }
             }
+
+            GameObject closestControlPanel = nextControlPanel;
 
             if (closestControlPanel == null)
             {
@@ -270,7 +280,7 @@ namespace SimpleElevator.Mono
             targetControlPanel = closestControlPanel;
             targetPosition = new Vector3(
                 transform.position.x,
-                targetControlPanel.transform.position.y - 1f,
+                targetControlPanel.transform.position.y - 0.65f,
                 transform.position.z
             );
 
@@ -302,7 +312,7 @@ namespace SimpleElevator.Mono
                 BoltEntity entity = GetComponent<BoltEntity>();
                 if (entity != null)
                 {
-                    if (MoveText != null) { MoveText.text = "Requesting\nMove Down"; }
+                    if (MoveText != null) { MoveText.text = "Requesting\nDown"; }
                     Network.ElevatorSyncEvent.SendState(entity, Network.ElevatorSyncEvent.ElevatorSyncType.MoveDown);
                 }
                 return;
@@ -319,18 +329,28 @@ namespace SimpleElevator.Mono
             }
 
             // Find the closest control panel below
-            GameObject closestControlPanel = null;
-            float closestDistance = float.MaxValue;
+            // Find the next control panel (closest but not skipping any)
+            GameObject nextControlPanel = null;
+            float nextPanelDistance = float.MaxValue;
 
+            // Sort all control panels by height (descending)
+            controlPanelsBelow.Sort((a, b) => b.transform.position.y.CompareTo(a.transform.position.y));
+
+            // Find the next one below our current position
             foreach (GameObject panel in controlPanelsBelow)
             {
-                float distance = Vector3.Distance(transform.position, panel.transform.position);
-                if (distance < closestDistance && panel.transform.position.y < transform.position.y)
+                if (panel.transform.position.y < transform.position.y)
                 {
-                    closestDistance = distance;
-                    closestControlPanel = panel;
+                    float distance = transform.position.y - panel.transform.position.y;
+                    if (distance < nextPanelDistance)
+                    {
+                        nextPanelDistance = distance;
+                        nextControlPanel = panel;
+                    }
                 }
             }
+
+            GameObject closestControlPanel = nextControlPanel;
 
             if (closestControlPanel == null)
             {
@@ -341,7 +361,7 @@ namespace SimpleElevator.Mono
             targetControlPanel = closestControlPanel;
             targetPosition = new Vector3(
                 transform.position.x,
-                targetControlPanel.transform.position.y + 1f,
+                targetControlPanel.transform.position.y + 0.65f,
                 transform.position.z
             );
 
@@ -438,7 +458,7 @@ namespace SimpleElevator.Mono
                 BoltEntity entity = GetComponent<BoltEntity>();
                 if (entity != null)
                 {
-                    if (MoveText != null) { MoveText.text = "Requesting\nGround Floor"; }
+                    if (MoveText != null) { MoveText.text = "Requesting\nGround"; }
                     // We could add a specific event type for this in the future
                     Network.ElevatorSyncEvent.SendState(entity, Network.ElevatorSyncEvent.ElevatorSyncType.MoveDown);
                 }

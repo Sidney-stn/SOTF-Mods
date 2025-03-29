@@ -5,7 +5,9 @@ namespace SimpleElevator.Tools
 {
     internal static class LinkUi
     {
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
         internal static LinkUiElement CreateLinkUi(GameObject toAddLinkUiOn, float maxDistance, Texture? texture, Texture2D? texture2D, Vector3? worldSpaceOffset, string elementId = "screen.take")
+#pragma warning restore CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
         {
             Vector3 _worldOffset = worldSpaceOffset ?? new Vector3(0, (float)0.2, 0);
             LinkUiElement linkUiAdd = toAddLinkUiOn.AddComponent<LinkUiElement>();

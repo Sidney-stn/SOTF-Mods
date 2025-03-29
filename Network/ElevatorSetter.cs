@@ -94,7 +94,7 @@ namespace SimpleElevator.Network
                             // Apply the visual movement locally without sending network events
                             Vector3 targetPosition = new Vector3(
                                 elevatorMono.transform.position.x,
-                                closestControlPanel.transform.position.y - 1f,
+                                closestControlPanel.transform.position.y - 0.65f,
                                 elevatorMono.transform.position.z
                             );
                             elevatorMono.ClientSetTarget(closestControlPanel, targetPosition);
@@ -115,7 +115,7 @@ namespace SimpleElevator.Network
                             // Apply the visual movement locally without sending network events
                             Vector3 targetPosition = new Vector3(
                                 elevatorMono.transform.position.x,
-                                closestControlPanelDown.transform.position.y + 1f,
+                                closestControlPanelDown.transform.position.y + 0.65f,
                                 elevatorMono.transform.position.z
                             );
                             elevatorMono.ClientSetTarget(closestControlPanelDown, targetPosition);
@@ -133,8 +133,8 @@ namespace SimpleElevator.Network
             }
         }
 
-        // Helper method to find the closest control panel in a specific direction
-        private GameObject FindClosestControlPanel(Vector3 startPosition, Vector3 direction, float maxDistance, int layerMask)
+        // Helper method to find all control panels in a specific direction
+        private List<GameObject> FindControlPanels(Vector3 startPosition, Vector3 direction, float maxDistance, int layerMask)
         {
             List<GameObject> controlPanels = new List<GameObject>();
             Vector3 halfExtents = new Vector3(2f, 2f, 2f);
@@ -164,6 +164,14 @@ namespace SimpleElevator.Network
                     }
                 }
             }
+
+            return controlPanels;
+        }
+
+        // Helper method to find the closest control panel in a specific direction
+        private GameObject FindClosestControlPanel(Vector3 startPosition, Vector3 direction, float maxDistance, int layerMask)
+        {
+            List<GameObject> controlPanels = FindControlPanels(startPosition, direction, maxDistance, layerMask);
 
             // Find the closest control panel in the specified direction
             GameObject closestControlPanel = null;
