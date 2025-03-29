@@ -1,8 +1,8 @@
-﻿
-using RedLoader;
+﻿using RedLoader;
 using RedLoader.Unity.IL2CPP.Utils.Collections;
 using Sons.Gui.Input;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -124,38 +124,20 @@ namespace SimpleElevator.Mono
         }
 
         // Debug visualization methods
-        private IEnumerator VisualizeBoxCast(Vector3 center, Vector3 halfExtents, Vector3 direction, float maxDistance, Color color, float duration)
+        private IEnumerator VisualizeBox(Vector3 center, Vector3 size, Quaternion rotation, Color color, float duration)
         {
-            GameObject cubeOrigin = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cubeOrigin.transform.position = center;
-            cubeOrigin.transform.localScale = halfExtents * 2; // Convert half extents to full size
-            cubeOrigin.GetComponent<Renderer>().material.color = new Color(color.r, color.g, color.b, 0.3f);
-            cubeOrigin.GetComponent<Collider>().enabled = false;
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.transform.position = center;
+            cube.transform.rotation = rotation;
+            cube.transform.localScale = size;
+            cube.GetComponent<Renderer>().material.color = new Color(color.r, color.g, color.b, 0.3f);
+            cube.GetComponent<Collider>().enabled = false;
 
-            GameObject cubeEnd = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cubeEnd.transform.position = center + (direction.normalized * maxDistance);
-            cubeEnd.transform.localScale = halfExtents * 2;
-            cubeEnd.GetComponent<Renderer>().material.color = new Color(color.r, color.g, color.b, 0.3f);
-            cubeEnd.GetComponent<Collider>().enabled = false;
-
-            GameObject lineObj = new GameObject("DebugLine");
-            LineRenderer line = lineObj.AddComponent<LineRenderer>();
-            line.startWidth = 0.1f;
-            line.endWidth = 0.1f;
-            line.positionCount = 2;
-            line.SetPosition(0, center);
-            line.SetPosition(1, center + (direction.normalized * maxDistance));
-            line.material = new Material(Shader.Find("Sprites/Default"));
-            line.startColor = color;
-            line.endColor = color;
-
-            Misc.Msg($"[VisualizeBoxCast] Drawing box cast from {center} in direction {direction} for {maxDistance} units", true);
+            Misc.Msg($"[VisualizeBox] Drawing box at {center} with size {size}", true);
 
             yield return new WaitForSeconds(duration);
 
-            Destroy(cubeOrigin);
-            Destroy(cubeEnd);
-            Destroy(lineObj);
+            Destroy(cube);
         }
 
         private IEnumerator VisualizeHitPoint(Vector3 hitPoint, Color color, float duration)
@@ -172,10 +154,61 @@ namespace SimpleElevator.Mono
 
             Destroy(sphere);
         }
+
         private float elevatorSpeed = 5f;
         private bool isMoving = false;
         private Vector3 targetPosition;
         private GameObject targetControlPanel;
+
+        // Helper method to find control panels in a specific direction
+        private List<GameObject> FindControlPanelsInDirection(Vector3 direction, float maxDistance)
+        {
+            List<GameObject> controlPanels = new List<GameObject>();
+            int layerMask = LayerMask.GetMask(new string[] { "Terrain", "Default", "Prop" });
+
+            // We'll check multiple positions along the specified direction
+            int checkPoints = 4; // Number of check points along the path
+            Vector3 halfExtents = new Vector3(2f, 2f, 2f);
+
+            for (int i = 1; i <= checkPoints; i++)
+            {
+                float distanceFraction = (float)i / checkPoints;
+                Vector3 checkPosition = transform.position + (direction * maxDistance * distanceFraction);
+
+                // Use OverlapBox to find all colliders at this position
+                Collider[] colliders = Physics.OverlapBox(
+                    checkPosition,
+                    halfExtents,
+                    transform.rotation,
+                    layerMask
+                );
+
+                // Visualize the check box if debug is enabled
+                if (Settings.showRaycastElevator)
+                {
+                    StartCoroutine(VisualizeBox(checkPosition, halfExtents * 2, transform.rotation, Color.green, 5f).WrapToIl2Cpp());
+                }
+
+                foreach (Collider collider in colliders)
+                {
+                    if (collider.gameObject.name.Contains("EControlPanel"))
+                    {
+                        if (!controlPanels.Contains(collider.gameObject))
+                        {
+                            controlPanels.Add(collider.gameObject);
+
+                            // Visualize the found control panel if debug is enabled
+                            if (Settings.showRaycastElevator)
+                            {
+                                StartCoroutine(VisualizeHitPoint(collider.transform.position, Color.red, 5f).WrapToIl2Cpp());
+                            }
+                        }
+                    }
+                }
+            }
+
+            return controlPanels;
+        }
 
         public void MoveUp(bool raiseNetwork = true)
         {
@@ -198,45 +231,26 @@ namespace SimpleElevator.Mono
             }
 
             // Only server or single player proceeds with the actual movement
-
-            // Check if there's a control panel above
-            Vector3 boxCastCenter = transform.position;
-            Vector3 boxCastHalfExtents = new Vector3(2f, 2f, 2f);
             float maxDistance = 20f;
+            List<GameObject> controlPanelsAbove = FindControlPanelsInDirection(Vector3.up, maxDistance);
 
-            RaycastHit[] hits = Physics.BoxCastAll(
-                boxCastCenter,
-                boxCastHalfExtents,
-                Vector3.up,
-                Quaternion.identity,
-                maxDistance
-            );
-
-            // Visualize the raycast if debug setting is enabled
-            if (Settings.showRaycastElevator)
+            if (controlPanelsAbove.Count == 0)
             {
-                StartCoroutine(VisualizeBoxCast(boxCastCenter, boxCastHalfExtents, Vector3.up, maxDistance, Color.green, 5f).WrapToIl2Cpp());
+                ShowError("No Control\nPanel Found\nAbove");
+                return;
             }
 
+            // Find the closest control panel above
             GameObject closestControlPanel = null;
             float closestDistance = float.MaxValue;
 
-            foreach (RaycastHit hit in hits)
+            foreach (GameObject panel in controlPanelsAbove)
             {
-                if (hit.transform.gameObject.name.Contains("EControlPanel"))
+                float distance = Vector3.Distance(transform.position, panel.transform.position);
+                if (distance < closestDistance && panel.transform.position.y > transform.position.y)
                 {
-                    float distance = Vector3.Distance(transform.position, hit.transform.position);
-                    if (distance < closestDistance && hit.transform.position.y > transform.position.y)
-                    {
-                        closestDistance = distance;
-                        closestControlPanel = hit.transform.gameObject;
-
-                        // Visualize the hit if debug setting is enabled
-                        if (Settings.showRaycastElevator)
-                        {
-                            StartCoroutine(VisualizeHitPoint(hit.transform.position, Color.red, 5f).WrapToIl2Cpp());
-                        }
-                    }
+                    closestDistance = distance;
+                    closestControlPanel = panel;
                 }
             }
 
@@ -288,45 +302,26 @@ namespace SimpleElevator.Mono
             }
 
             // Only server or single player proceeds with the actual movement
-
-            // Check if there's a control panel below
-            Vector3 boxCastCenter = transform.position;
-            Vector3 boxCastHalfExtents = new Vector3(2f, 2f, 2f);
             float maxDistance = 20f;
+            List<GameObject> controlPanelsBelow = FindControlPanelsInDirection(Vector3.down, maxDistance);
 
-            RaycastHit[] hits = Physics.BoxCastAll(
-                boxCastCenter,
-                boxCastHalfExtents,
-                Vector3.down,
-                Quaternion.identity,
-                maxDistance
-            );
-
-            // Visualize the raycast if debug setting is enabled
-            if (Settings.showRaycastElevator)
+            if (controlPanelsBelow.Count == 0)
             {
-                StartCoroutine(VisualizeBoxCast(boxCastCenter, boxCastHalfExtents, Vector3.down, maxDistance, Color.blue, 5f).WrapToIl2Cpp());
+                ShowError("No Control\nPanel Found\nBelow");
+                return;
             }
 
+            // Find the closest control panel below
             GameObject closestControlPanel = null;
             float closestDistance = float.MaxValue;
 
-            foreach (RaycastHit hit in hits)
+            foreach (GameObject panel in controlPanelsBelow)
             {
-                if (hit.transform.gameObject.name.Contains("EControlPanel"))
+                float distance = Vector3.Distance(transform.position, panel.transform.position);
+                if (distance < closestDistance && panel.transform.position.y < transform.position.y)
                 {
-                    float distance = Vector3.Distance(transform.position, hit.transform.position);
-                    if (distance < closestDistance && hit.transform.position.y < transform.position.y)
-                    {
-                        closestDistance = distance;
-                        closestControlPanel = hit.transform.gameObject;
-
-                        // Visualize the hit if debug setting is enabled
-                        if (Settings.showRaycastElevator)
-                        {
-                            StartCoroutine(VisualizeHitPoint(hit.transform.position, Color.red, 5f).WrapToIl2Cpp());
-                        }
-                    }
+                    closestDistance = distance;
+                    closestControlPanel = panel;
                 }
             }
 
@@ -378,10 +373,12 @@ namespace SimpleElevator.Mono
             if (targetPosition.y > transform.position.y)
             {
                 if (MoveText != null) { MoveText.text = "Moving Up"; }
+                UpOrDown = "UP";
             }
             else
             {
                 if (MoveText != null) { MoveText.text = "Moving Down"; }
+                UpOrDown = "DOWN";
             }
 
             while (Vector3.Distance(transform.position, targetPosition) > 0.1f)

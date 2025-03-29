@@ -1,4 +1,5 @@
 ﻿using SonsSdk.Networking;
+using System.Collections.Generic;
 using UdpKit;
 using UnityEngine;
 
@@ -51,6 +52,14 @@ namespace SimpleElevator.Network
             // Read additional data (we don't use this currently, but it's part of the format)
             string actionData = packet.ReadString();
 
+            // Define the layer mask for the OverlapBox
+            int layerMask = LayerMask.GetMask(new string[]
+            {
+                "Terrain",
+                "Default",
+                "Prop"
+            });
+
             // Process the event based on if we're server or client
             if (BoltNetwork.isServer)
             {
@@ -77,30 +86,8 @@ namespace SimpleElevator.Network
                 {
                     case ElevatorSyncEvent.ElevatorSyncType.MoveUp:
                         Misc.Msg("[ElevatorSetter] [ReadPacket] Client applying MoveUp from server", true);
-                        // Check if there's a control panel above
-                        RaycastHit[] hits = Physics.BoxCastAll(
-                            elevatorMono.transform.position,
-                            new Vector3(2f, 2f, 2f),
-                            Vector3.up,
-                            Quaternion.identity,
-                            20f
-                        );
-
-                        GameObject closestControlPanel = null;
-                        float closestDistance = float.MaxValue;
-
-                        foreach (RaycastHit hit in hits)
-                        {
-                            if (hit.transform.gameObject.name.Contains("EControlPanel"))
-                            {
-                                float distance = Vector3.Distance(elevatorMono.transform.position, hit.transform.position);
-                                if (distance < closestDistance && hit.transform.position.y > elevatorMono.transform.position.y)
-                                {
-                                    closestDistance = distance;
-                                    closestControlPanel = hit.transform.gameObject;
-                                }
-                            }
-                        }
+                        // Find the closest control panel above
+                        GameObject closestControlPanel = FindClosestControlPanel(elevatorMono.transform.position, Vector3.up, 20f, layerMask);
 
                         if (closestControlPanel != null)
                         {
@@ -117,32 +104,11 @@ namespace SimpleElevator.Network
                             Misc.Msg("[ElevatorSetter] [ReadPacket] Client couldn't find control panel above", true);
                         }
                         break;
+
                     case ElevatorSyncEvent.ElevatorSyncType.MoveDown:
                         Misc.Msg("[ElevatorSetter] [ReadPacket] Client applying MoveDown from server", true);
-                        // Check if there's a control panel below
-                        RaycastHit[] hitsDown = Physics.BoxCastAll(
-                            elevatorMono.transform.position,
-                            new Vector3(2f, 2f, 2f),
-                            Vector3.down,
-                            Quaternion.identity,
-                            20f
-                        );
-
-                        GameObject closestControlPanelDown = null;
-                        float closestDistanceDown = float.MaxValue;
-
-                        foreach (RaycastHit hit in hitsDown)
-                        {
-                            if (hit.transform.gameObject.name.Contains("EControlPanel"))
-                            {
-                                float distance = Vector3.Distance(elevatorMono.transform.position, hit.transform.position);
-                                if (distance < closestDistanceDown && hit.transform.position.y < elevatorMono.transform.position.y)
-                                {
-                                    closestDistanceDown = distance;
-                                    closestControlPanelDown = hit.transform.gameObject;
-                                }
-                            }
-                        }
+                        // Find the closest control panel below
+                        GameObject closestControlPanelDown = FindClosestControlPanel(elevatorMono.transform.position, Vector3.down, 20f, layerMask);
 
                         if (closestControlPanelDown != null)
                         {
@@ -159,11 +125,65 @@ namespace SimpleElevator.Network
                             Misc.Msg("[ElevatorSetter] [ReadPacket] Client couldn't find control panel below", true);
                         }
                         break;
+
                     default:
                         Misc.Msg("[ElevatorSetter] [ReadPacket] Unknown command type", true);
                         break;
                 }
             }
+        }
+
+        // Helper method to find the closest control panel in a specific direction
+        private GameObject FindClosestControlPanel(Vector3 startPosition, Vector3 direction, float maxDistance, int layerMask)
+        {
+            List<GameObject> controlPanels = new List<GameObject>();
+            Vector3 halfExtents = new Vector3(2f, 2f, 2f);
+            int checkPoints = 4; // Number of check points along the path
+
+            for (int i = 1; i <= checkPoints; i++)
+            {
+                float distanceFraction = (float)i / checkPoints;
+                Vector3 checkPosition = startPosition + (direction * maxDistance * distanceFraction);
+
+                // Use OverlapBox to find all colliders at this position
+                Collider[] colliders = Physics.OverlapBox(
+                    checkPosition,
+                    halfExtents,
+                    Quaternion.identity,
+                    layerMask
+                );
+
+                foreach (Collider collider in colliders)
+                {
+                    if (collider.gameObject.name.Contains("EControlPanel"))
+                    {
+                        if (!controlPanels.Contains(collider.gameObject))
+                        {
+                            controlPanels.Add(collider.gameObject);
+                        }
+                    }
+                }
+            }
+
+            // Find the closest control panel in the specified direction
+            GameObject closestControlPanel = null;
+            float closestDistance = float.MaxValue;
+
+            foreach (GameObject panel in controlPanels)
+            {
+                float distance = Vector3.Distance(startPosition, panel.transform.position);
+                bool isCorrectDirection = direction.y > 0 ?
+                    panel.transform.position.y > startPosition.y :
+                    panel.transform.position.y < startPosition.y;
+
+                if (distance < closestDistance && isCorrectDirection)
+                {
+                    closestDistance = distance;
+                    closestControlPanel = panel;
+                }
+            }
+
+            return closestControlPanel;
         }
     }
 }

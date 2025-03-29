@@ -135,4 +135,25 @@ public class SimpleElevator : SonsMod, IOnAfterSpawnReceiver
         //}
 
     }
+
+    [DebugCommand("cast")]
+    private void TestCast(string args)
+    {
+        Misc.Msg("Cast Command");
+        Transform transform = LocalPlayer._instance._mainCam.transform;
+
+        switch (args.ToLower())
+        {
+            case "q":
+                RaycastHit[] hits = Physics.BoxCastAll(LocalPlayer.Transform.position, new Vector3(0.5f, 0.5f, 0.5f), transform.forward, transform.rotation, 10f);
+                Misc.Msg($"Hits: {hits.Length}");
+                break;
+            case "e":
+                RaycastHit[] hits2 = Physics.BoxCastAll(LocalPlayer.Transform.position, new Vector3(0.5f, 0.5f, 0.5f), transform.forward, transform.rotation, 10f, LayerMask.GetMask(new string[] { "Terrain", "Default", "Prop" }));
+                Misc.Msg($"Hits: {hits2.Length}");
+                break;
+            default:
+                break;
+        }
+    }
 }
