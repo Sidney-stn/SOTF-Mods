@@ -20,6 +20,9 @@ namespace SimpleElevator.Mono
         public GameObject ErrorTextGo { get; private set; }
         public Text ErrorText { get; private set; }
 
+        // Store the original position for returning to the ground floor
+        private Vector3 originalPosition;
+
         private string _upOrDown = "";
         public string UpOrDown
         {
@@ -93,10 +96,14 @@ namespace SimpleElevator.Mono
             if (isSetupPrefab) { return; }
             if (LinkUi == null)
             {
-                LinkUi = Tools.LinkUi.CreateLinkUi(gameObject.transform.GetChild(4).gameObject, 2f, null, Assets.Instance.LinkUiIcon, null);
+                LinkUi = Tools.LinkUi.CreateLinkUi(gameObject.transform.GetChild(4).gameObject, 1.5f, null, Assets.Instance.LinkUiIcon, null);
             }
             Destroy(GetComponent<Collider>());  // I Removed Here since it get added from something i dont have in unity
             Objects.Track.Elevators.Add(gameObject);
+
+            // Store the original position when the elevator is first placed
+            originalPosition = transform.position;
+            Misc.Msg($"[ElevatorMono] Original position stored: {originalPosition}", true);
         }
 
 
@@ -372,12 +379,12 @@ namespace SimpleElevator.Mono
             // Set the text accordingly
             if (targetPosition.y > transform.position.y)
             {
-                if (MoveText != null) { MoveText.text = "Moving Up"; }
+                if (MoveText != null) { MoveText.text = "Moving\nUp"; }
                 UpOrDown = "UP";
             }
             else
             {
-                if (MoveText != null) { MoveText.text = "Moving Down"; }
+                if (MoveText != null) { MoveText.text = "Moving\nDown"; }
                 UpOrDown = "DOWN";
             }
 
@@ -396,7 +403,7 @@ namespace SimpleElevator.Mono
             isMoving = false;
 
             // Reset the text
-            if (MoveText != null) { MoveText.text = "Select Direction"; }
+            if (MoveText != null) { MoveText.text = "Select\nDirection"; }
             UpOrDown = "NONE";
         }
 
@@ -413,6 +420,49 @@ namespace SimpleElevator.Mono
             else
             {
                 ShowError("No\nDirection\nSelected");
+            }
+        }
+
+        // Method to return to the original position (ground floor)
+        public void ReturnToGroundFloor(bool raiseNetwork = true)
+        {
+            if (isMoving)
+            {
+                ShowError("Elevator\nAlready\nMoving");
+                return;
+            }
+
+            // If we're a client, just send the request to the server and return
+            if (raiseNetwork && BoltNetwork.isRunning && BoltNetwork.isClient)
+            {
+                BoltEntity entity = GetComponent<BoltEntity>();
+                if (entity != null)
+                {
+                    if (MoveText != null) { MoveText.text = "Requesting\nGround Floor"; }
+                    // We could add a specific event type for this in the future
+                    Network.ElevatorSyncEvent.SendState(entity, Network.ElevatorSyncEvent.ElevatorSyncType.MoveDown);
+                }
+                return;
+            }
+
+            if (Vector3.Distance(transform.position, originalPosition) < 0.1f)
+            {
+                ShowError("Already At\nGround Floor");
+                return;
+            }
+
+            targetPosition = originalPosition;
+            isMoving = true;
+            StartCoroutine(MoveElevator().WrapToIl2Cpp());
+
+            // If we're the server, notify all clients about the movement
+            if (raiseNetwork && BoltNetwork.isRunning && BoltNetwork.isServer)
+            {
+                BoltEntity entity = GetComponent<BoltEntity>();
+                if (entity != null)
+                {
+                    Network.ElevatorSyncEvent.SendState(entity, Network.ElevatorSyncEvent.ElevatorSyncType.MoveDown);
+                }
             }
         }
 
