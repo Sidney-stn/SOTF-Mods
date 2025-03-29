@@ -61,7 +61,7 @@ namespace SimpleElevator
             }
 
             // Load the GameObject
-            Elevator = assetBundle.LoadAsset<GameObject>("MainElevatorV3");
+            Elevator = assetBundle.LoadAsset<GameObject>("MainElevatorV4");
             if (Elevator == null)
             {
                 RLog.Error("[SimpleElevator] StoneGateTool Asset Not Found");

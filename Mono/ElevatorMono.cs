@@ -1,4 +1,5 @@
 ﻿
+using RedLoader.Unity.IL2CPP.Utils.Collections;
 using Sons.Gui.Input;
 using System.Collections;
 using UnityEngine;
@@ -121,36 +122,203 @@ namespace SimpleElevator.Mono
             if (MoveGo != null) { MoveGo.SetActive(true); }
         }
 
+        private float elevatorSpeed = 5f;
+        private bool isMoving = false;
+        private Vector3 targetPosition;
+        private GameObject targetControlPanel;
+
         public void MoveUp(bool raiseNetwork = true)
         {
-            if (BoltNetwork.isRunning == false)
+            if (isMoving)
             {
-
+                ShowError("Elevator\nAlready\nMoving");
+                return;
             }
-            else if (BoltNetwork.isServer)
-            {
 
+            // If we're a client, just send the request to the server and return
+            if (raiseNetwork && BoltNetwork.isRunning && BoltNetwork.isClient)
+            {
+                BoltEntity entity = GetComponent<BoltEntity>();
+                if (entity != null)
+                {
+                    if (MoveText != null) { MoveText.text = "Requesting\nMove Up"; }
+                    Network.ElevatorSyncEvent.SendState(entity, Network.ElevatorSyncEvent.ElevatorSyncType.MoveUp);
+                }
+                return;
             }
-            else if (BoltNetwork.isClient)
-            {
 
+            // Only server or single player proceeds with the actual movement
+
+            // Check if there's a control panel above
+            RaycastHit[] hits = Physics.BoxCastAll(
+                transform.position,
+                new Vector3(2f, 2f, 2f),
+                Vector3.up,
+                Quaternion.identity,
+                20f
+            );
+
+            GameObject closestControlPanel = null;
+            float closestDistance = float.MaxValue;
+
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.transform.gameObject.name.Contains("EControlPanel"))
+                {
+                    float distance = Vector3.Distance(transform.position, hit.transform.position);
+                    if (distance < closestDistance && hit.transform.position.y > transform.position.y)
+                    {
+                        closestDistance = distance;
+                        closestControlPanel = hit.transform.gameObject;
+                    }
+                }
+            }
+
+            if (closestControlPanel == null)
+            {
+                ShowError("No Control\nPanel Found\nAbove");
+                return;
+            }
+
+            targetControlPanel = closestControlPanel;
+            targetPosition = new Vector3(
+                transform.position.x,
+                targetControlPanel.transform.position.y - 1f,
+                transform.position.z
+            );
+
+            isMoving = true;
+            StartCoroutine(MoveElevator().WrapToIl2Cpp());
+
+            // If we're the server, notify all clients about the movement
+            if (raiseNetwork && BoltNetwork.isRunning && BoltNetwork.isServer)
+            {
+                BoltEntity entity = GetComponent<BoltEntity>();
+                if (entity != null)
+                {
+                    Network.ElevatorSyncEvent.SendState(entity, Network.ElevatorSyncEvent.ElevatorSyncType.MoveUp);
+                }
             }
         }
 
         public void MoveDown(bool raiseNetwork = true)
         {
-            if (BoltNetwork.isRunning == false)
+            if (isMoving)
             {
-
+                ShowError("Elevator\nAlready\nMoving");
+                return;
             }
-            else if (BoltNetwork.isServer)
+
+            // If we're a client, just send the request to the server and return
+            if (raiseNetwork && BoltNetwork.isRunning && BoltNetwork.isClient)
             {
-
+                BoltEntity entity = GetComponent<BoltEntity>();
+                if (entity != null)
+                {
+                    if (MoveText != null) { MoveText.text = "Requesting\nMove Down"; }
+                    Network.ElevatorSyncEvent.SendState(entity, Network.ElevatorSyncEvent.ElevatorSyncType.MoveDown);
+                }
+                return;
             }
-            else if (BoltNetwork.isClient)
+
+            // Only server or single player proceeds with the actual movement
+
+            // Check if there's a control panel below
+            RaycastHit[] hits = Physics.BoxCastAll(
+                gameObject.transform.position,
+                new Vector3(2f, 2f, 2f),
+                Vector3.down,
+                Quaternion.identity,
+                20f
+            );
+
+            GameObject closestControlPanel = null;
+            float closestDistance = float.MaxValue;
+
+            foreach (RaycastHit hit in hits)
             {
-
+                if (hit.transform.gameObject.name.Contains("EControlPanel"))
+                {
+                    float distance = Vector3.Distance(transform.position, hit.transform.position);
+                    if (distance < closestDistance && hit.transform.position.y < transform.position.y)
+                    {
+                        closestDistance = distance;
+                        closestControlPanel = hit.transform.gameObject;
+                    }
+                }
             }
+
+            if (closestControlPanel == null)
+            {
+                ShowError("No Control\nPanel Found\nBelow");
+                return;
+            }
+
+            targetControlPanel = closestControlPanel;
+            targetPosition = new Vector3(
+                transform.position.x,
+                targetControlPanel.transform.position.y + 1f,
+                transform.position.z
+            );
+
+            isMoving = true;
+            StartCoroutine(MoveElevator().WrapToIl2Cpp());
+
+            // If we're the server, notify all clients about the movement
+            if (raiseNetwork && BoltNetwork.isRunning && BoltNetwork.isServer)
+            {
+                BoltEntity entity = GetComponent<BoltEntity>();
+                if (entity != null)
+                {
+                    Network.ElevatorSyncEvent.SendState(entity, Network.ElevatorSyncEvent.ElevatorSyncType.MoveDown);
+                }
+            }
+        }
+
+        // Method for clients to update their local state without sending network events
+        public void ClientSetTarget(GameObject controlPanel, Vector3 target)
+        {
+            if (isMoving)
+            {
+                // Don't interrupt an already moving elevator
+                return;
+            }
+
+            targetControlPanel = controlPanel;
+            targetPosition = target;
+            isMoving = true;
+            StartCoroutine(MoveElevator().WrapToIl2Cpp());
+        }
+
+        private IEnumerator MoveElevator()
+        {
+            // Set the text accordingly
+            if (targetPosition.y > transform.position.y)
+            {
+                if (MoveText != null) { MoveText.text = "Moving Up"; }
+            }
+            else
+            {
+                if (MoveText != null) { MoveText.text = "Moving Down"; }
+            }
+
+            while (Vector3.Distance(transform.position, targetPosition) > 0.1f)
+            {
+                transform.position = Vector3.MoveTowards(
+                    transform.position,
+                    targetPosition,
+                    elevatorSpeed * Time.deltaTime
+                );
+                yield return null;
+            }
+
+            // Ensure exact position
+            transform.position = targetPosition;
+            isMoving = false;
+
+            // Reset the text
+            if (MoveText != null) { MoveText.text = "Select Direction"; }
+            UpOrDown = "NONE";
         }
 
         public void InvokePrimaryAction()

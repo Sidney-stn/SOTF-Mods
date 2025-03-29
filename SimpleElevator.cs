@@ -4,6 +4,7 @@ using RedLoader;
 using SonsSdk;
 using SonsSdk.Attributes;
 using SUI;
+using TheForest.Utils;
 using UnityEngine;
 
 
@@ -42,6 +43,7 @@ public class SimpleElevator : SonsMod, IOnAfterSpawnReceiver
         Assets.Instance.LoadAssets();
 
         // Registier Classes In Il2cpp
+        ClassInjector.RegisterTypeInIl2Cpp<Mono.ScrollMono>();
         ClassInjector.RegisterTypeInIl2Cpp<Mono.ElevatorMono>();
         ClassInjector.RegisterTypeInIl2Cpp<Mono.ElevatorControlPanelMono>();
         ClassInjector.RegisterTypeInIl2Cpp<Network.ElevatorSetter>();
@@ -117,6 +119,7 @@ public class SimpleElevator : SonsMod, IOnAfterSpawnReceiver
 
     public void OnAfterSpawn()
     {
+        LocalPlayer._instance.gameObject.AddComponent<Mono.ScrollMono>();
         if (BoltNetwork.isRunning && BoltNetwork.isClient)
         {
             if (Settings.logSavingSystem)
@@ -130,5 +133,6 @@ public class SimpleElevator : SonsMod, IOnAfterSpawnReceiver
         //    var obj = Saving.Load.deferredLoadQueue.Dequeue();
         //    Saving.Load.ProcessLoadData(obj);
         //}
+
     }
 }

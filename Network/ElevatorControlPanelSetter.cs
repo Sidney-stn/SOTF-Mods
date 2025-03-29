@@ -10,27 +10,65 @@ namespace SimpleElevator.Network
         {
             if (BoltNetwork.isServer)
             {
-                Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] Recived packet on server", true);
+                Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] Received packet on server", true);
             }
             else
             {
-                Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] Recived packet on client", true);
+                Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] Received packet on client", true);
             }
-            var type = (ElevatorSyncEvent.ElevatorSyncType)packet.ReadByte();
+
+            // Read the entity from the packet
+            BoltEntity entity = packet.ReadBoltEntity();
+            if (entity == null)
+            {
+                Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] Entity is null", true);
+                return;
+            }
+
+            // Read the sync type
+            var type = (ElevatorControlPanelSyncEvent.ElevatorControlPanelSyncType)packet.ReadByte();
+
+            // Read the target player steam ID
             string toPlayerSteamId = packet.ReadString();
             if (SonsSdk.Networking.NetUtils.IsDedicatedServer == false)
             {
                 if (toPlayerSteamId.ToLower() != "all" && toPlayerSteamId != Misc.SteamId())
                 {
-                    Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] Recived packet not meant for this player", true);
-                    Misc.Msg($"[ElevatorControlPanelSetter] [ReadPacket] Recived packet meant for: {toPlayerSteamId}", true);
+                    Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] Received packet not meant for this player", true);
+                    Misc.Msg($"[ElevatorControlPanelSetter] [ReadPacket] Received packet meant for: {toPlayerSteamId}", true);
                     return;
                 }
             }
-            
+
+            // Get the ElevatorControlPanelMono component
+            Mono.ElevatorControlPanelMono controlPanelMono = entity.GetComponent<Mono.ElevatorControlPanelMono>();
+            if (controlPanelMono == null)
+            {
+                Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] ElevatorControlPanelMono component is null", true);
+                return;
+            }
+
+            // Read additional data (we don't use this currently, but it's part of the format)
+            string actionData = packet.ReadString();
+
+            // Process the event based on if we're server or client
             switch (type)
             {
+                case ElevatorControlPanelSyncEvent.ElevatorControlPanelSyncType.CallElevator:
+                    if (BoltNetwork.isServer)
+                    {
+                        Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] Server received CallElevator command", true);
+                        // Find the nearest elevator and tell it to move to this control panel
+                        // This would be implemented in a real scenario
+                    }
+                    else if (BoltNetwork.isClient)
+                    {
+                        Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] Client received CallElevator command", true);
+                        // Update UI or other visual elements to show the elevator has been called
+                    }
+                    break;
                 default:
+                    Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] Unknown command type", true);
                     break;
             }
         }

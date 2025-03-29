@@ -83,6 +83,9 @@
     <Reference Include="udpkit">
       <HintPath>$(GameDir)\_RedLoader\Game\udpkit.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(GameDir)\_RedLoader\Game\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Update="manifest.json">

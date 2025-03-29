@@ -8,7 +8,8 @@ namespace SimpleElevator.Network
     {
         public enum ElevatorSyncType : byte
         {
-
+            MoveUp = 0,
+            MoveDown = 1
         }
 
         private void UpdateStateInternal(BoltEntity entity, ElevatorSyncType type, string toSteamId = null)
@@ -27,7 +28,13 @@ namespace SimpleElevator.Network
 
             switch (type)
             {
-                default:
+                case ElevatorSyncType.MoveUp:
+                    // Add any additional data needed for MoveUp
+                    packet.Packet.WriteString("MOVEUP");
+                    break;
+                case ElevatorSyncType.MoveDown:
+                    // Add any additional data needed for MoveDown
+                    packet.Packet.WriteString("MOVEDOWN");
                     break;
             }
 
