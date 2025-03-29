@@ -15,6 +15,7 @@ namespace SimpleElevator
         }
         internal static string GetLocalPlayerSteamId()
         {
+            if (SonsSdk.Networking.NetUtils.IsDedicatedServer == true || Tools.DedicatedServer.IsDeticatedServer() == true) { return ""; }
             ulong? mySteamId = MultiplayerUtilities.GetSteamId(LocalPlayer.Entity);
             if (mySteamId == null || mySteamId == 0)
             {
@@ -48,6 +49,7 @@ namespace SimpleElevator
 
         public static string SteamId()
         {
+            if (SonsSdk.Networking.NetUtils.IsDedicatedServer == true || Tools.DedicatedServer.IsDeticatedServer() == true) { return ""; }
             return MySteamId().Item2;
         }
     }

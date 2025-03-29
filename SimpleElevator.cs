@@ -63,8 +63,8 @@ public class SimpleElevator : SonsMod, IOnAfterSpawnReceiver
         if (Tools.DedicatedServer.IsDeticatedServer())
         {
             // Registering Save System
-            //var manager = new Saving.Manager(); // Signs
-            //SonsSaveTools.Register(manager);
+            var manager = new Saving.Manager(); // Elevator Manager
+            SonsSaveTools.Register(manager);
 
             SdkEvents.OnGameActivated.Subscribe(OnFirstGameActivation, unsubscribeOnFirstInvocation: true);
 
@@ -92,8 +92,8 @@ public class SimpleElevator : SonsMod, IOnAfterSpawnReceiver
 
 
         // Registering Save System
-        //var manager = new Saving.Manager();
-        //SonsSaveTools.Register(manager);
+        var manager = new Saving.Manager(); // Elevator Manager
+        SonsSaveTools.Register(manager);
 
         ElevatorInstance = Structure.Elevator.Instance;
         ElevatorControlPanelInstace = Structure.ElevatorControlPanel.Instance;
@@ -132,11 +132,11 @@ public class SimpleElevator : SonsMod, IOnAfterSpawnReceiver
         }
 
         // Process all deferred load data, if host
-        //while (Saving.Load.deferredLoadQueue.Count > 0)
-        //{
-        //    var obj = Saving.Load.deferredLoadQueue.Dequeue();
-        //    Saving.Load.ProcessLoadData(obj);
-        //}
+        while (Saving.Load.deferredLoadQueue.Count > 0)
+        {
+            var obj = Saving.Load.deferredLoadQueue.Dequeue();
+            Saving.Load.ProcessLoadData(obj);
+        }
 
     }
 

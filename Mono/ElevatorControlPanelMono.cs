@@ -1,5 +1,9 @@
-﻿using Sons.Gui.Input;
+﻿using RedLoader.Unity.IL2CPP.Utils.Collections;
+using Sons.Crafting.Structures;
+using Sons.Gui.Input;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace SimpleElevator.Mono
 {
@@ -7,6 +11,40 @@ namespace SimpleElevator.Mono
     {
         public bool isSetupPrefab = false;
         public LinkUiElement LinkUi { get; private set; }
+
+        public GameObject CallGo
+        {
+            get
+            {
+                return gameObject.transform.GetChild(2).FindChild("Call").gameObject;
+            }
+        }
+        public Text CallText
+        {
+            get
+            {
+                return CallGo.GetComponent<Text>();
+            }
+        }
+        public GameObject ErrorGo
+        {
+            get
+            {
+                return gameObject.transform.GetChild(2).FindChild("Error").gameObject;
+            }
+        }
+        public Text ErrorText
+        {
+            get
+            {
+                return ErrorGo.GetComponent<Text>();
+            }
+        }
+
+        private void Awake()
+        {
+            Destroy(GetComponent<ScrewStructure>());
+        }
 
         // Reference to the closest elevator
         private GameObject closestElevator;
@@ -20,6 +58,7 @@ namespace SimpleElevator.Mono
                 LinkUi = Tools.LinkUi.CreateLinkUi(gameObject.transform.GetChild(1).gameObject, 1.5f, null, Assets.Instance.LinkUiIcon, null);
             }
             Objects.Track.ElevatorControlPanels.Add(gameObject);
+            ErrorGo.SetActive(false);
         }
 
         public void InvokePrimaryAction()
@@ -101,7 +140,19 @@ namespace SimpleElevator.Mono
             else
             {
                 Misc.Msg("[ElevatorControlPanelMono] No elevator found within range", true);
+                StartCoroutine(showError("NO\nELEVATOR\nFOUND").WrapToIl2Cpp());
+                
             }
+        }
+
+        private IEnumerator showError(string error, float seconds = 3f)
+        {
+            ErrorText.text = error;
+            ErrorGo.SetActive(true);
+            CallGo.SetActive(false);
+            yield return new WaitForSeconds(seconds);
+            ErrorGo.SetActive(false);
+            CallGo.SetActive(true);
         }
 
         private void OnDestroy()

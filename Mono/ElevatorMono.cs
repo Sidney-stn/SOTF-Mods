@@ -1,5 +1,6 @@
 ﻿using RedLoader;
 using RedLoader.Unity.IL2CPP.Utils.Collections;
+using Sons.Crafting.Structures;
 using Sons.Gui.Input;
 using System.Collections;
 using System.Collections.Generic;
@@ -52,6 +53,7 @@ namespace SimpleElevator.Mono
 
         private void Awake()
         {
+            Destroy(GetComponent<ScrewStructure>());
             if (isSetupPrefab) { return; }
             if (transform.position == Vector3.zero) { isSetupPrefab = true; return; }
             if (MoveGo == null)
@@ -116,7 +118,7 @@ namespace SimpleElevator.Mono
         {
             if (ErrorTextGo == null) { return; }
             if (ErrorText == null) { return; }
-            showError(error, seconds);
+            StartCoroutine(showError(error, seconds).WrapToIl2Cpp());
         }
 
         private IEnumerator showError(string error, float seconds)

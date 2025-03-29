@@ -13,7 +13,7 @@ namespace SimpleElevator.Structure
         private ElevatorControlPanel()
         {
             // Initialization code if needed
-            StructureId = 7511111;
+            StructureId = 7511115;
             BlueprintName = "ElevatorControlPanel";
             RegisterInBook = true;
             BookPage = Assets.Instance.ElevatorControlPanelBookPage; // Assets.Instance.ConveyorBeltBookPage;

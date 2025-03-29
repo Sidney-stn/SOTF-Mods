@@ -1,5 +1,6 @@
 ﻿using Bolt;
 using RedLoader;
+using SonsSdk.Networking;
 using UdpKit;
 
 namespace SimpleElevator.Network.ServerTools
@@ -46,6 +47,14 @@ namespace SimpleElevator.Network.ServerTools
             if (SimpleElevator.Instance.ElevatorControlPanelInstace == null)
             {
                 RLog.Error("[SimpleElevator] [ServerEvents] [CheckNull] ElevatorControlPanelInstace is null");
+            }
+            if (SimpleElevator.Instance.ElevatorInstance.SetupGameObject == null)
+            {
+                RLog.Error("[SimpleElevator] [ServerEvents] [CheckNull] ElevatorInstance.SetupGameObject is null");
+            }
+            if (SimpleElevator.Instance.ElevatorControlPanelInstace.SetupGameObject == null)
+            {
+                RLog.Error("[SimpleElevator] [ServerEvents] [CheckNull] ElevatorControlPanelInstace.SetupGameObject is null");
             }
         }
 

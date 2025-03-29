@@ -22,7 +22,7 @@ namespace SimpleElevator.Tools
             // Check if already in DontDestroyOnLoad scene
             if (objectToMove.scene.name == targetSceneName)
             {
-                //if (Testing.Settings.logScene)
+                //if (Settings.logScene)
                 //{
                 //    Misc.Msg($"[MoveScene] [MoveToScene] {objectToMove.name} is already in Target Scene", true);
                 //}
@@ -38,7 +38,7 @@ namespace SimpleElevator.Tools
                 // Additional Unity extensions if needed 
                 objectToMove.HideAndDontSave();
 
-                //if (Testing.Settings.logScene)
+                //if (Settings.logScene)
                 //{
                 //    Misc.Msg($"[MoveScene] [MoveToScene] Successfully moved {objectToMove.name} to DontDestroyOnLoad scene", true);
                 //}
