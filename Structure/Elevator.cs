@@ -21,8 +21,10 @@ namespace SimpleElevator.Structure
             BoltSetterComponent = Il2CppType.Of<Network.ElevatorSetter>();
             RegisterStructure = true;
             AddGrassAndSnow = true;
-            GrassSize = new Vector3(0.4f, 0.2f, 1.3f);
-            SnowSize = new Vector3(0.7f, 1, 0.2f);
+            GrassSize = new Vector3(2f, 1f, 2.5f);
+            GrassLocalPos = new Vector3(2f, 1f, 2.5f);
+            SnowSize = new Vector3(2f, 3f, 1f);
+            SnowLocalPos = new Vector3(0f, 0f, -1f);
             MaxPlacementAngle = null;
             SetupStructure(Assets.Instance.Elevator);
         }

@@ -118,6 +118,23 @@ namespace SimpleElevator
                 }
             }
 
+            string imagePath3 = GetImagePath("eleicon");
+            if (string.IsNullOrEmpty(imagePath3))
+            {
+                RLog.Error("[SimpleElevator] ElevatorIcon Image Path Not Found");
+                failedToLoadTexture = true;
+            }
+            else
+            {
+                LinkUiIcon = AssetLoaders.LoadTexture(GetImagePath("eleicon"));
+                LinkUiIcon.hideFlags = HideFlags.HideAndDontSave;
+                if (LinkUiIcon == null)
+                {
+                    RLog.Error("[SimpleElevator] LinkUiIcon Asset Not Found");
+                    failedToLoadTexture = true;
+                }
+            }
+
             if (failedToLoadTexture)
             {
                 Misc.Msg("[SimpleElevator] All Assets Loaded Execpt for 1 or more textures", true);

@@ -34,10 +34,12 @@ namespace SimpleElevator.Structure
         /// GrassSize: Size (Scale) of the grass remover GameObject
         /// </summary>
         internal virtual Vector3? GrassSize { get; set; } = null;
+        internal virtual Vector3? GrassLocalPos { get; set; } = null;
         /// <summary>
         /// SnowSize: Size (Scale) of the snow remover GameObject
         /// </summary>
         internal virtual Vector3? SnowSize { get; set; } = null;
+        internal virtual Vector3? SnowLocalPos { get; set; } = null;
 
         /// <summary>
         /// MaxPlacementAngle: Maximum angle for placement of the structure
@@ -93,7 +95,7 @@ namespace SimpleElevator.Structure
 
             if (AddGrassAndSnow)
             {
-                CleanGrassAndSnow(null, GrassSize, SnowSize);
+                CleanGrassAndSnow(null, GrassSize, SnowSize, GrassLocalPos, SnowLocalPos);
             }
 
             BoltEntity boltEntity = SetupGameObject.AddComponent<BoltEntity>();
@@ -153,7 +155,7 @@ namespace SimpleElevator.Structure
             return 0;  // Default ID if parsing fails
         }
 
-        internal virtual void CleanGrassAndSnow(GameObject addToObj = null, Vector3? grassSize = null, Vector3? snowSize = null)
+        internal virtual void CleanGrassAndSnow(GameObject addToObj = null, Vector3? grassSize = null, Vector3? snowSize = null, Vector3? grassLocalPos = null, Vector3? snowLocalPos = null)
         {
             if (addToObj == null) { addToObj = SetupGameObject; }
             if (SetupGameObject == null) { Misc.Msg("[StructureBase] [CleanGrassAndSnow] Can't add to null object"); return; }
@@ -167,23 +169,27 @@ namespace SimpleElevator.Structure
             {
                 GameObject grassRemoverCopy = GameObject.Instantiate(grassRemover);  // Copy GrassRemover GameObject
                 if (grassSize != null) { grassRemoverCopy.transform.localScale = grassSize.Value; }  // Set GrassRemover GameObject scale
+                if (grassLocalPos != null) { grassRemoverCopy.transform.localPosition = grassLocalPos.Value; }
                 grassRemoverCopy.SetParent(addToObj.transform);  // Set GrassRemover GameObject as child of addToObj
             }
             else
             {
                 Misc.Msg("[StructureBase] [CleanGrassAndSnow] Can't find GrassRemover"); return;
             }
+
             GameObject snowRemover = obj.transform.FindChild("SnowRemover").gameObject;  // Find SnowRemover GameObject
             if (snowRemover != null)
             {
                 GameObject snowRemoverCopy = GameObject.Instantiate(snowRemover);  // Copy SnowRemover GameObject
                 if (snowSize != null) { snowRemoverCopy.transform.localScale = snowSize.Value; }  // Set SnowRemover GameObject scale
+                if (snowLocalPos != null) { snowRemoverCopy.transform.localPosition = snowLocalPos.Value; }
                 snowRemoverCopy.SetParent(addToObj.transform);  // Set SnowRemover GameObject as child of addToObj
             }
             else
             {
                 Misc.Msg("[StructureBase] [CleanGrassAndSnow] Can't find SnowRemover"); return;
             }
+
             GameObject structureEnvironmentCleaner = obj.transform.FindChild("StructureEnvironmentCleaner").gameObject;  // Find StructureEnvironmentCleaner GameObject
             if (structureEnvironmentCleaner != null)
             {

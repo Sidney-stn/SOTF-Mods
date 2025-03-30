@@ -2,10 +2,10 @@
   "$schema": "https://raw.githubusercontent.com/ToniMacaroni/RedLoader/main/MetadataSchema.json",
   "id": "SimpleElevator",
   "author": "SmokyAce",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Simple Elevators",
   "gameVersion": "1.0.0",
   "type": "Mod",
   "platform": "Universal",
-  "url": "..."
+  "url": "https://sotf-mods.com/mods/smokyace/simpleelevator"
 }
