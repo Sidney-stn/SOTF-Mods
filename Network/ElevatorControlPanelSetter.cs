@@ -20,18 +20,6 @@ namespace SimpleElevator.Network
             // Read the sync type
             var type = (ElevatorControlPanelSyncEvent.ElevatorControlPanelSyncType)packet.ReadByte();
 
-            // Read the target player steam ID
-            string toPlayerSteamId = packet.ReadString();
-            if (SonsSdk.Networking.NetUtils.IsDedicatedServer == false)
-            {
-                if (toPlayerSteamId.ToLower() != "all" && toPlayerSteamId != Misc.SteamId())
-                {
-                    Misc.Msg("[ElevatorControlPanelSetter] [ReadPacket] Received packet not meant for this player", true);
-                    Misc.Msg($"[ElevatorControlPanelSetter] [ReadPacket] Received packet meant for: {toPlayerSteamId}", true);
-                    return;
-                }
-            }
-
             // Get the ElevatorControlPanelMono component
             Mono.ElevatorControlPanelMono controlPanelMono = GetComponent<Mono.ElevatorControlPanelMono>();
             if (controlPanelMono == null)

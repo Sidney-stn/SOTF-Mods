@@ -11,7 +11,6 @@ namespace SimpleElevator.Saving
     {
         internal static Queue<Saving.Manager.ElevatorManager> deferredLoadQueue = new Queue<Saving.Manager.ElevatorManager>();
 
-
         /// <summary>
         /// Process the deferred load queue, this is used to load the gates after the world has been loaded
         /// </summary>
@@ -58,7 +57,7 @@ namespace SimpleElevator.Saving
                         RLog.Error("[SimpleElevator] [Loading] ElevatorGo IS NULL");
                         SonsTools.ShowMessage("Something went worng when loading in elevators");
                     }
-                    elevatorGo.hideFlags = HideFlags.None;
+                    //elevatorGo.hideFlags = HideFlags.None;
                 }
                 else if (!BoltNetwork.isRunning)
                 {
@@ -70,7 +69,7 @@ namespace SimpleElevator.Saving
                         RLog.Error("[SimpleElevator] [Loading] ElevatorGo IS NULL");
                         SonsTools.ShowMessage("Something went worng when loading in elevators");
                     }
-                    elevatorGo.hideFlags = HideFlags.None;
+                    //elevatorGo.hideFlags = HideFlags.None;
                 }
             }
 
@@ -90,25 +89,33 @@ namespace SimpleElevator.Saving
                 {
                     if (Settings.logSavingSystem)
                         Misc.Msg("[Loading] Loading ControlPanel On Multiplayer Server");
+                    if (SimpleElevator.Instance.ElevatorControlPanelInstace.SetupGameObject == null)
+                    {
+                        RLog.Error("[SimpleElevator] [Loading] ElevatorControlPanelInstace IS NULL");
+                    }
                     GameObject controlPanelGo = BoltNetwork.Instantiate(SimpleElevator.Instance.ElevatorControlPanelInstace.SetupGameObject, controlPanel.Position, controlPanel.Rotation);
                     if (controlPanelGo == null)
                     {
                         RLog.Error("[SimpleElevator] [Loading] ControlPanelGo IS NULL");
                         SonsTools.ShowMessage("Something went worng when loading in control panels");
                     }
-                    controlPanelGo.hideFlags = HideFlags.None;
+                    //controlPanelGo.hideFlags = HideFlags.None;
                 }
                 else if (!BoltNetwork.isRunning)
                 {
                     if (Settings.logSavingSystem)
                         Misc.Msg("[Loading] Loading ControlPanel On Singleplayer");
+                    if (SimpleElevator.Instance.ElevatorControlPanelInstace.SetupGameObject == null)
+                    {
+                        RLog.Error("[SimpleElevator] [Loading] ElevatorControlPanelInstace IS NULL");
+                    }
                     GameObject controlPanelGo = GameObject.Instantiate(SimpleElevator.Instance.ElevatorControlPanelInstace.SetupGameObject, controlPanel.Position, controlPanel.Rotation);
                     if (controlPanelGo == null)
                     {
                         RLog.Error("[SimpleElevator] [Loading] ControlPanelGo IS NULL");
                         SonsTools.ShowMessage("Something went worng when loading in control panels");
                     }
-                    controlPanelGo.hideFlags = HideFlags.None;
+                    //controlPanelGo.hideFlags = HideFlags.None;
                 }
             }
         }

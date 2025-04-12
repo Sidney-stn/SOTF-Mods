@@ -74,9 +74,6 @@
     <Reference Include="UnityEngine.UIModule">
       <HintPath>$(GameDir)\_RedLoader\Game\UnityEngine.UIModule.dll</HintPath>
     </Reference>
-    <Reference Include="com.rlabrecque.steamworks.net">
-      <HintPath>$(GameDir)\_RedLoader\Game\com.rlabrecque.steamworks.net.dll</HintPath>
-    </Reference>
     <Reference Include="udpkit.common">
       <HintPath>$(GameDir)\_RedLoader\Game\udpkit.common.dll</HintPath>
     </Reference>
